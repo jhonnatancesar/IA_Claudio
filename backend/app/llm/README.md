@@ -20,11 +20,15 @@ Interface LocalLLMProvider, protocolo JSON modelo ↔ orquestrador, validação 
   faixa `MODEL_ORCHESTRATOR`).
 - `prompt.py` (TASK-018) — `BASE_PROMPT`/`get_base_prompt()`/`PROMPT_VERSION`.
   Texto fixo: identidade, princípios, hierarquia de prioridade, regras de
-  confiança, contrato do protocolo JSON. Composição dinâmica com contexto é
-  TASK-019.
+  confiança, contrato do protocolo JSON.
+- `prompt_composer.py` (TASK-019) — `compose_prompt(execution_id, objective,
+  history=None)`/`StepRecord`. Monta o prompt completo: base + pedido atual +
+  histórico de etapas desta execução. Memória/conhecimento/Context Manager
+  ainda não existem — não incluídos.
 
 Testes em `tests/unit/test_llm_provider.py`, `tests/unit/test_ollama_provider.py`,
 `tests/unit/test_llm_protocol.py`, `tests/unit/test_llm_protocol_validator.py`,
-`tests/unit/test_llm_prompt.py` (unitários, com mock do client onde precisa) e
+`tests/unit/test_llm_prompt.py`, `tests/unit/test_llm_prompt_composer.py`
+(unitários, com mock do client onde precisa) e
 `tests/integration/test_ollama_provider_integration.py` (integração real
 contra o Ollama local; pula automaticamente se indisponível).

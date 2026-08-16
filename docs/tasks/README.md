@@ -77,11 +77,16 @@ continue o trabalho.
   `backend/app/llm/protocol_validator.py`, novo código de erro 4001 — ver
   `docs/tasks/TASK-017.md`).
 - **TASK-018** — concluída (prompt-base, `backend/app/llm/prompt.py` — ver
-  `docs/tasks/TASK-018.md`). Suíte completa: 136/136 testes aprovados.
+  `docs/tasks/TASK-018.md`).
+- **TASK-019** — concluída (composição dinâmica de prompt/contexto,
+  `backend/app/llm/prompt_composer.py` — ver `docs/tasks/TASK-019.md`). Suíte
+  completa: 146/146 testes aprovados. **Com esta TASK, o bloco "LLM"
+  (TASK-014 a TASK-019) está completo.**
 
-As demais 129 TASKs permanecem com status **Pendente**.
+As demais 128 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-019 — Criar composição dinâmica de prompt/contexto**.
+Próxima TASK executável: **TASK-020 — Criar modelo de Execution**
+(início do bloco "Orquestração").
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

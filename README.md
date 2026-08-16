@@ -11,10 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-018** concluídas — blocos "Fundação" e "Segurança e
-identidade" completos; `LocalLLMProvider`, `OllamaProvider`, o protocolo JSON
-modelo ↔ orquestrador, sua validação semântica e o prompt-base funcionando.
-Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
+**TASK-001** a **TASK-019** concluídas — blocos "Fundação", "Segurança e
+identidade" e "LLM" completos (provider, protocolo JSON, prompt-base e
+composição dinâmica). Nenhum orquestrador ainda (bloco seguinte). Ver
+[docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
 
@@ -37,5 +37,5 @@ Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Próxima TASK
 
-**TASK-019 — Criar composição dinâmica de prompt/contexto**
-([docs/tasks/TASK-019.md](docs/tasks/TASK-019.md)).
+**TASK-020 — Criar modelo de Execution**
+([docs/tasks/TASK-020.md](docs/tasks/TASK-020.md)).
