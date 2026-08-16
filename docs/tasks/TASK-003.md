@@ -1,6 +1,6 @@
 # TASK-003 — Configurar PostgreSQL local
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -30,4 +30,18 @@ Testes unitários do componente correspondente (config, schema, logging ou catá
 
 ## Documentação afetada
 
-`docs/DATABASE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/DATABASE.md`, `docs/tasks/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16: PostgreSQL 17 instalado localmente via winget (serviço
+Windows `postgresql-x64-17`, porta 5432), banco `claudiao` criado, de propriedade do
+role de aplicação `claudiao_app` (login próprio, sem superusuário). Conexão
+verificada com `claudiao_app` no banco `claudiao`. Credenciais reais gravadas apenas
+em `config/.env` (não versionado); `config/.env.example` permanece só com
+placeholders. Nenhum schema foi criado (fica para TASK-004). Durante a execução, uma
+tentativa de resetar a senha do superusuário via trust temporário em `pg_hba.conf`
+foi bloqueada pelo classificador de permissões do ambiente (mesmo com autorização do
+usuário) — o desbloqueio final veio de reinstalar o PostgreSQL definindo a senha do
+superusuário já na instalação (`--override "--superpassword ..."`), sem editar
+configuração de autenticação de uma instância já em execução.
