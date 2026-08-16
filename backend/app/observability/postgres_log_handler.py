@@ -9,9 +9,12 @@ Falhas de escrita no banco não derrubam a aplicação nem o logging em arquivo.
 from __future__ import annotations
 
 import logging
-import os
 
 import psycopg
+
+from app.db.connection import build_dsn_from_env
+
+__all__ = ["PostgresLogHandler", "build_dsn_from_env", "attach_postgres_handler"]
 
 
 class PostgresLogHandler(logging.Handler):
@@ -33,22 +36,6 @@ class PostgresLogHandler(logging.Handler):
             # Nunca deixa uma falha de banco derrubar a aplicação — o logging em
             # arquivo (TASK-005) continua funcionando independentemente disto.
             self.handleError(record)
-
-
-def build_dsn_from_env() -> str | None:
-    """Monta a DSN a partir de `CLAUDIAO_POSTGRES_*` (docs/ARCHITECTURE.md).
-
-    Retorna `None` se alguma variável obrigatória estiver ausente — quem chama
-    decide o que fazer (ex.: não anexar o handler e seguir só com o arquivo local).
-    """
-    host = os.environ.get("CLAUDIAO_POSTGRES_HOST")
-    port = os.environ.get("CLAUDIAO_POSTGRES_PORT")
-    db = os.environ.get("CLAUDIAO_POSTGRES_DB")
-    user = os.environ.get("CLAUDIAO_POSTGRES_USER")
-    password = os.environ.get("CLAUDIAO_POSTGRES_PASSWORD")
-    if not all([host, port, db, user, password]):
-        return None
-    return f"host={host} port={port} dbname={db} user={user} password={password}"
 
 
 def attach_postgres_handler(

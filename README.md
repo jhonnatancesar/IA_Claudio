@@ -11,10 +11,9 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-008** concluídas — bloco "Fundação" completo (estrutura,
-config, PostgreSQL, schema inicial, logging local e no PostgreSQL, catálogo de
-erros e formato JSON padrão de erro). Nenhuma outra funcionalidade foi
-implementada ainda.
+**TASK-001** a **TASK-009** concluídas — bloco "Fundação" completo e
+autenticação de usuários (hash de senha, criação e login) funcionando. Nenhuma
+outra funcionalidade foi implementada ainda.
 
 ## Documentação
 
@@ -35,5 +34,5 @@ implementada ainda.
 
 ## Próxima TASK
 
-**TASK-009 — Criar autenticação de usuários**
-([docs/tasks/TASK-009.md](docs/tasks/TASK-009.md)).
+**TASK-010 — Criar roles ADMIN e USER**
+([docs/tasks/TASK-010.md](docs/tasks/TASK-010.md)).
