@@ -1,6 +1,6 @@
 # TASK-010 — Criar roles ADMIN e USER
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,19 @@ Testes unitários de autenticação/autorização (criação de usuário, papéi
 
 ## Documentação afetada
 
-`docs/AUTHENTICATION.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/AUTHENTICATION.md`, `docs/ERROR_CATALOG.md`, `docs/tasks/README.md`,
+`backend/app/auth/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/auth/roles.py`: `Role`
+(`ADMIN`/`USER`), `is_admin(role)`, `require_admin(role, details=None)`
+(levanta `ClaudiaoError` com o novo código `2001`/403,
+`FORBIDDEN_ADMIN_ONLY`, registrado no catálogo da TASK-007). Opera sobre a
+string `role` em vez da classe `User` para não criar import circular com
+`app.auth.users`. Pequeno refactor colateral: `VALID_ROLES` em `users.py`
+passou a derivar de `Role` em vez de uma tupla hardcoded duplicada — mesmo
+comportamento externo (`InvalidRoleError` continua igual). Ainda sem nenhum
+chamador real (painel administrativo é TASK-115 em diante) — só a primitiva de
+autorização. 8 testes unitários novos em `tests/unit/test_roles.py`. Suíte
+completa: 60/60 testes aprovados.

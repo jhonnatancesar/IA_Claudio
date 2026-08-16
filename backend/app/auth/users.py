@@ -1,8 +1,8 @@
 """Criação e autenticação de usuários (TASK-009).
 
-`role` aqui é só um valor armazenado na tabela `users` (schema da TASK-004,
-`ADMIN`/`USER` — seção 31 da especificação). Regras de autorização por papel
-(o que cada papel pode fazer) são escopo da TASK-010, não implementadas aqui.
+`role` aqui só é validado e armazenado na tabela `users` (schema da TASK-004,
+`ADMIN`/`USER` — seção 31 da especificação). Regras de autorização por papel (o
+que cada papel pode fazer) são `app.auth.roles` (TASK-010).
 """
 
 from __future__ import annotations
@@ -13,9 +13,10 @@ from uuid import UUID
 import psycopg
 
 from app.auth.password import hash_password, verify_password
+from app.auth.roles import Role
 from app.db.connection import connect
 
-VALID_ROLES = ("ADMIN", "USER")
+VALID_ROLES = tuple(role.value for role in Role)
 
 
 class UserAlreadyExistsError(ValueError):
