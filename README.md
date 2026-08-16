@@ -11,8 +11,8 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001**, **TASK-002** e **TASK-003** concluídas; nenhuma outra funcionalidade
-foi implementada ainda.
+**TASK-001** a **TASK-004** concluídas; nenhuma outra funcionalidade foi
+implementada ainda.
 
 ## Documentação
 
@@ -33,5 +33,5 @@ foi implementada ainda.
 
 ## Próxima TASK
 
-**TASK-004 — Criar schema inicial do banco**
-([docs/tasks/TASK-004.md](docs/tasks/TASK-004.md)).
+**TASK-005 — Criar sistema de logging local**
+([docs/tasks/TASK-005.md](docs/tasks/TASK-005.md)).

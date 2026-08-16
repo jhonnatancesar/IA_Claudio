@@ -28,10 +28,13 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
   previstos na especificação, todos como placeholder — ver `docs/tasks/TASK-002.md`).
 - **TASK-003** — concluída (PostgreSQL 17 local instalado, banco `claudiao` criado
   com role de aplicação próprio — ver `docs/tasks/TASK-003.md` e `docs/DATABASE.md`).
+- **TASK-004** — concluída (schema inicial aplicado: `users`, `applications`,
+  `settings`, `schema_migrations` — ver `docs/tasks/TASK-004.md` e
+  `docs/DATABASE.md`).
 
-As demais 144 TASKs permanecem com status **Pendente**.
+As demais 143 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-004 — Criar schema inicial do banco**.
+Próxima TASK executável: **TASK-005 — Criar sistema de logging local**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

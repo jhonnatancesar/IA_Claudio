@@ -26,6 +26,7 @@ logs/
 
 # Backups locais (seção 42 da especificação — nunca versionar dumps)
 *.sql
+!backend/app/db/migrations/*.sql
 *.dump
 *.sqlite
 *.sqlite3

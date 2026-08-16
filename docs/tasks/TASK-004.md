@@ -1,6 +1,6 @@
 # TASK-004 — Criar schema inicial do banco
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -35,4 +35,16 @@ Testes unitários do componente correspondente (config, schema, logging ou catá
 
 ## Documentação afetada
 
-`docs/DATABASE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/DATABASE.md`, `docs/tasks/README.md`, `backend/app/db/migrations/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16: `backend/app/db/migrations/0001_initial_schema.sql` criado
+e aplicado no banco `claudiao` (via `psql`, com o role `claudiao_app`) — 4 tabelas:
+`schema_migrations` (registro básico de migrations), `users` (usuários, com
+`role` ADMIN/USER), `applications` (aplicações externas, hash de API key) e
+`settings` (configurações administráveis em runtime). Verificado com `\dt` e
+consulta a `schema_migrations`. Nenhum schema de memória, conhecimento, fontes,
+fila, execuções, logs, auditoria, cotas, atualizações ou backups foi criado — fica
+para as TASKs dos respectivos blocos funcionais. Nenhuma ferramenta de migration
+foi escolhida; a aplicação é manual via SQL puro (`docs/OPEN_QUESTIONS.md`, item 1).
