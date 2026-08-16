@@ -18,6 +18,7 @@ em andamento (isso é `orchestrator.run_step()` diretamente).
 from __future__ import annotations
 
 from app.llm.protocol import ModelStep
+from app.orchestrator.cancellation import CancellationToken
 from app.orchestrator.execution import Execution
 from app.orchestrator.orchestrator import ExecutionOrchestrator
 
@@ -31,15 +32,17 @@ def plan_initial_step(
     execution: Execution,
     objective: str,
     model: str,
+    cancellation_token: CancellationToken | None = None,
 ) -> ModelStep:
     """Faz a primeira chamada ao modelo para uma execução nova: interpreta o
     objetivo e decide a primeira etapa (o plano inicial do ciclo).
 
     Só pode ser chamada antes de qualquer etapa existir em `execution` —
     levanta `ExecutionAlreadyPlannedError` caso contrário.
+    `cancellation_token` (TASK-030) é repassado para `run_step`.
     """
     if execution.steps:
         raise ExecutionAlreadyPlannedError(
             "execução já tem etapas — planejamento inicial só vale no começo"
         )
-    return orchestrator.run_step(execution, objective, model)
+    return orchestrator.run_step(execution, objective, model, cancellation_token)

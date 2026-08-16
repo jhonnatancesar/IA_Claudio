@@ -1,6 +1,6 @@
 """`ExecutionOrchestrator` (TASK-023), com validação de plano (TASK-025),
-execução por etapas (TASK-026), aplicação de `max_steps` (TASK-028) e
-detecção de loop (TASK-029).
+execução por etapas (TASK-026), aplicação de `max_steps` (TASK-028),
+detecção de loop (TASK-029) e cancelamento (TASK-030).
 
 Liga as peças já construídas — `LocalLLMProvider` (TASK-014/015), composição
 de prompt (TASK-019), protocolo e sua validação sintática (TASK-016/017), a
@@ -8,12 +8,10 @@ validação de plano do orquestrador (TASK-025) e o modelo `Execution`
 (TASK-020) — no ciclo descrito em docs/ARCHITECTURE.md (seção
 "Orquestrador"): compõe o prompt, chama o modelo, valida a resposta, executa
 a ferramenta pedida e devolve o resultado ao modelo, repetindo até haver uma
-resposta final, um loop ser detectado ou o limite de `max_steps`
-(`ExecutionPolicy`, TASK-022) ser atingido.
+resposta final, um loop ser detectado, o limite de `max_steps`
+(`ExecutionPolicy`, TASK-022) ser atingido, ou a execução ser cancelada.
 
-**Não** é o ciclo completo do orquestrador ainda: replanejamento é
-`app.orchestrator.replanner` (TASK-027, módulo separado); cancelamento
-(TASK-030) é TASK futura.
+Replanejamento é `app.orchestrator.replanner` (TASK-027, módulo separado).
 """
 
 from __future__ import annotations
@@ -26,6 +24,7 @@ from app.llm.prompt_composer import StepRecord, compose_prompt
 from app.llm.protocol import Action, ModelStep
 from app.llm.protocol_validator import validate_step
 from app.llm.provider import CompletionRequest, LocalLLMProvider, LocalLLMProviderError
+from app.orchestrator.cancellation import CancellationToken, ExecutionCancelledError
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.loop_detector import DEFAULT_REPEAT_THRESHOLD, LOOP_DETECTED, detect_loop
 from app.orchestrator.plan_validator import validate_plan
@@ -66,26 +65,42 @@ class ExecutionOrchestrator:
         self.tool_executor = tool_executor
         self.loop_repeat_threshold = loop_repeat_threshold
 
-    def run_step(self, execution: Execution, objective: str, model: str) -> ModelStep:
+    def run_step(
+        self,
+        execution: Execution,
+        objective: str,
+        model: str,
+        cancellation_token: CancellationToken | None = None,
+    ) -> ModelStep:
         """Executa um passo real do ciclo do orquestrador.
 
-        Inicia a execução se ainda estiver `PENDING`; compõe o prompt com o
-        histórico atual, incluindo observações de etapas anteriores
-        (`app.llm.prompt_composer`); chama o modelo; valida a resposta contra
-        o protocolo (`app.llm.protocol_validator`); valida o plano contra a
-        execução e a política (`app.orchestrator.plan_validator`, TASK-025);
-        registra a etapa em `execution`. Se a etapa for `RESPOND`, conclui a
-        execução usando `reason` como resultado (o protocolo, TASK-016, não
-        define um campo de resposta final separado).
+        Inicia a execução se ainda estiver `PENDING`; se `cancellation_token`
+        já estiver cancelado, cancela `execution` e levanta
+        `ExecutionCancelledError` antes de qualquer outra checagem (TASK-030
+        — cancelamento externo/interno, verificado a cada etapa); compõe o
+        prompt com o histórico atual, incluindo observações de etapas
+        anteriores (`app.llm.prompt_composer`); chama o modelo; valida a
+        resposta contra o protocolo (`app.llm.protocol_validator`); valida o
+        plano contra a execução e a política (`app.orchestrator.plan_validator`,
+        TASK-025); registra a etapa em `execution`. Se a etapa for `RESPOND`,
+        conclui a execução usando `reason` como resultado (o protocolo,
+        TASK-016, não define um campo de resposta final separado).
 
         Qualquer falha — do runtime (`LocalLLMProviderError`), do
         protocolo/plano (`ClaudiaoError`), o limite de `max_steps` da
         política sendo atingido (TASK-028) ou um loop sendo detectado
         (TASK-029) — marca `execution` como `FAILED` antes de propagar a
         exceção original (todas via `ClaudiaoError`, exceto a do runtime).
+        Cancelamento é distinto: marca `execution` como `CANCELLED`, não
+        `FAILED`.
         """
         if execution.status == ExecutionStatus.PENDING:
             execution.start()
+
+        if cancellation_token is not None and cancellation_token.is_cancelled:
+            reason = cancellation_token.reason or "execução cancelada"
+            execution.cancel(reason)
+            raise ExecutionCancelledError(reason)
 
         if execution.step_count >= self.policy.max_steps:
             error = ClaudiaoError(
@@ -129,13 +144,17 @@ class ExecutionOrchestrator:
         return step
 
     def run_until_response(
-        self, execution: Execution, objective: str, model: str
+        self,
+        execution: Execution,
+        objective: str,
+        model: str,
+        cancellation_token: CancellationToken | None = None,
     ) -> ModelStep:
         """Executa etapas em sequência (seção 6 da especificação mestre:
         "Executa uma etapa" → "Resultado volta para o modelo" → "Modelo
         interpreta") até o modelo decidir `RESPOND`, o limite de `max_steps`
         da política ser atingido (TASK-028), um loop ser detectado
-        (TASK-029) ou uma falha ocorrer.
+        (TASK-029), a execução ser cancelada (TASK-030) ou uma falha ocorrer.
 
         A cada etapa `USE_TOOL`, executa a ferramenta via `tool_executor` e
         registra o resultado como observação da etapa
@@ -143,12 +162,15 @@ class ExecutionOrchestrator:
         próxima chamada. Levanta `ToolExecutorNotConfiguredError` se nenhum
         `tool_executor` foi configurado; qualquer exceção da execução da
         ferramenta marca `execution` como `FAILED` antes de propagar.
-        `max_steps` e detecção de loop são verificados dentro de `run_step`,
-        então se aplicam tanto ao chamar `run_step` diretamente quanto por
-        aqui.
+        `max_steps`, detecção de loop e cancelamento são verificados dentro
+        de `run_step`, então se aplicam tanto ao chamar `run_step`
+        diretamente quanto por aqui — `cancellation_token` é checado no
+        início de cada etapa, então cancelar entre uma chamada de ferramenta
+        e a próxima etapa interrompe o ciclo antes da próxima chamada ao
+        modelo.
         """
         while True:
-            step = self.run_step(execution, objective, model)
+            step = self.run_step(execution, objective, model, cancellation_token)
             if step.action == Action.RESPOND:
                 return step
 

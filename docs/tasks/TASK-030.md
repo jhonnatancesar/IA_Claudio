@@ -1,6 +1,6 @@
 # TASK-030 — Implementar cancelamento
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,32 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Adicionado o estado `ExecutionStatus.CANCELLED`
+(previsto desde a TASK-020) e `Execution.cancel(reason)` — mesmo padrão de
+`fail()`, qualquer estado não-terminal pode ser cancelado. Criado
+`backend/app/orchestrator/cancellation.py`: `CancellationToken`
+(cooperativo, sem threads/async) e `ExecutionCancelledError` (não é
+`ClaudiaoError` — cancelamento não é uma falha de domínio).
+`ExecutionOrchestrator.run_step`/`run_until_response` ganharam o parâmetro
+opcional `cancellation_token`, checado antes de qualquer chamada ao modelo
+(cobre cancelamento externo e interno pelo mesmo mecanismo);
+`plan_initial_step` (TASK-024) e `replan` (TASK-027) repassam o token
+adiante. `CANCELLED`, sendo terminal, também passou a bloquear
+replanejamento.
+
+O erro JSON específico de timeout de aplicação (seção 26 da especificação)
+continua sendo escopo da TASK-071 — aqui só a primitiva de cancelamento do
+orquestrador.
+
+10 testes unitários de `Execution.cancel()`/`CancellationToken` + 4 de
+integração no orquestrador (cancelamento antes de chamar o modelo,
+cancelamento no meio do loop via `tool_executor`, `plan_initial_step`
+repassando o token, `replan` rejeitando execução já cancelada). Suíte
+completa: 247/247 testes aprovados.
+
+**Com esta TASK, o bloco "Orquestração" (TASK-020 a TASK-030) está
+completo.**
