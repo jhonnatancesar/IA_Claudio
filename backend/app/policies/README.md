@@ -4,6 +4,8 @@ Documentação: docs/ORCHESTRATOR.md. TASKs: TASK-022.
 
 Regras de execução por aplicação/contexto (ExecutionPolicy): permissões de pesquisa, limites, timeout, contexto.
 
-Nenhum código foi criado neste módulo ainda — este README existe apenas para manter
-o diretório versionado e documentar seu propósito antes da implementação (ver
-AGENTS.md e docs/OPEN_QUESTIONS.md sobre a stack de implementação).
+- `execution_policy.py` (TASK-022) — `ExecutionPolicy` (dataclass imutável),
+  `InvalidExecutionPolicyError`, `for_chat()`/`for_application(timeout_seconds=...)`.
+  Só o modelo; quem aplica a política é o `ExecutionOrchestrator` (TASK-023).
+
+Testes em `tests/unit/test_execution_policy.py`.
