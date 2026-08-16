@@ -170,6 +170,19 @@ Não há dependência obrigatória de tool calling nativo do modelo.
 }
 ```
 
+### Implementação (TASK-016)
+
+`backend/app/llm/protocol.py`: `ModelStep` (dataclass) representa uma etapa —
+`execution_id`, `action` (`Action`: `USE_TOOL`/`RESPOND` — conjunto mínimo
+sustentado pela especificação; sem valor próprio para replanejamento, que
+volta a gerar etapas neste mesmo protocolo), `confidence` (`Confidence`:
+`LOW`/`MEDIUM`/`HIGH` — reaproveitado por TASK-031/TASK-033, não duplicado),
+`reason`, `tool` (obrigatório quando `action` é `USE_TOOL`) e `parameters`.
+`to_dict()`/`to_json()`/`from_dict()`/`from_json()` fazem a
+serialização/decodificação básica, com `ProtocolDecodeError` para JSON
+malformado, campo obrigatório ausente ou valor fora do enum. Validação mais
+profunda contra entrada adversarial é escopo da TASK-017.
+
 ## Hierarquia interna de prioridade
 
 1. Segurança e guardrails.
