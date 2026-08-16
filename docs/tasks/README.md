@@ -83,11 +83,19 @@ continue o trabalho.
   esta TASK, o bloco "LLM" (TASK-014 a TASK-019) está completo.**
 - **TASK-020** — concluída (modelo de `Execution`,
   `backend/app/orchestrator/execution.py` — ver `docs/tasks/TASK-020.md`).
-  Suíte completa: 161/161 testes aprovados.
 
-As demais 127 TASKs permanecem com status **Pendente**.
+**Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-020, a `main` local foi
+enviada ao GitHub, `docs/HANDOFF.md` atualizado, e as branches `task-003` a
+`task-020` (até então só locais) foram sincronizadas com o remoto a pedido do
+usuário.
 
-Próxima TASK executável: **TASK-021 — Implementar execution_id**.
+- **TASK-021** — concluída (`execution_id`,
+  `backend/app/orchestrator/execution_id.py`, `Execution.new()` — ver
+  `docs/tasks/TASK-021.md`). Suíte completa: 166/166 testes aprovados.
+
+As demais 126 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-022 — Criar ExecutionPolicy**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -1,6 +1,6 @@
 # TASK-021 — Implementar execution_id
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,13 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/orchestrator/execution_id.py`:
+`generate_execution_id()` (UUID4). Adicionada a fábrica `Execution.new(origin)`
+em `execution.py` (TASK-020), que cria uma `Execution` já com `execution_id`
+gerado. 6 testes unitários novos, incluindo um de integração entre módulos
+(execution_id gerado aqui passa na checagem de formato UUID de
+`validate_step`, TASK-017). Suíte completa: 166/166 testes aprovados.
