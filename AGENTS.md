@@ -77,6 +77,31 @@ TASK → Branch própria → Implementação → Validação/Testes → Atualiza
 - Commits seguem as regras normais de Git do agente/ferramenta em uso — nunca sem
   confirmação explícita do usuário para ações que afetam o repositório remoto.
 
+## Regra de checkpoint: a cada 10 TASKs concluídas
+
+Exceção à regra acima de "push só quando pedido" — a cada 10 TASKs concluídas
+(TASK-010, TASK-020, TASK-030, ...):
+
+1. **Push automático** — enviar a `main` local para `origin/main` no GitHub, sem
+   precisar de pedido explícito nesse ponto específico (o usuário já pediu isso
+   como prática permanente).
+2. **Atualizar `docs/HANDOFF.md`** — documento de estado vivo do projeto, escrito
+   para que **outra IA/agente, numa sessão nova e sem este histórico de
+   conversa, consiga continuar o trabalho** só lendo esse arquivo (mais o resto
+   de `docs/`). Deve cobrir, atualizado a cada checkpoint:
+   - o que já foi implementado (TASKs concluídas, num resumo — não repetir o
+     detalhe de cada `docs/tasks/TASK-XXX.md`);
+   - decisões técnicas já tomadas e por quê (aponta para `docs/DECISION_LOG.md`,
+     resume as mais relevantes para retomar o trabalho);
+   - estado do ambiente local (Postgres instalado, banco `claudiao`, onde ficam
+     as credenciais reais — `config/.env`, nunca no documento);
+   - armadilhas/lições aprendidas que não são óbvias (ex.: bloqueios do
+     classificador de permissões, o `.gitignore` que escondia `.sql`);
+   - a próxima TASK executável e qualquer decisão pendente que a bloqueie.
+   Não reescrever o histórico de checkpoints anteriores — manter uma seção de
+   histórico curta no fim do arquivo (data, TASK do checkpoint, resumo de uma
+   linha), no mesmo espírito de não silenciar mudanças do `docs/DECISION_LOG.md`.
+
 ## Estado atual
 
 Repositório em organização inicial. Nenhuma TASK funcional foi executada.
