@@ -33,10 +33,11 @@ resume como trabalhar dentro deste repositório.
   - Política de pesquisa diferente para chat (pede autorização) e para aplicações
     (definida pela própria aplicação).
   - Marco de uso na TASK-087.
-- A stack de implementação (linguagem, framework web, ORM etc.) ainda **não** foi
-  decidida (ver `docs/OPEN_QUESTIONS.md`). Não escolher silenciosamente durante uma
-  TASK de infraestrutura — se uma TASK exigir essa decisão, registrar a proposta em
-  `docs/DECISION_LOG.md` e pedir aprovação antes de prosseguir.
+- A linguagem do backend é **Python** (`docs/DECISION_LOG.md`, DEC-005). Framework
+  web, ORM e ferramenta de migration **ainda não** foram decididos (ver
+  `docs/OPEN_QUESTIONS.md`, item 1). Não escolher nenhum desses silenciosamente
+  durante uma TASK de infraestrutura — se uma TASK exigir essa decisão, registrar a
+  proposta em `docs/DECISION_LOG.md` e pedir aprovação antes de prosseguir.
 - Todo o trabalho neste projeto — mensagens de progresso, documentação, TASKs,
   decision log — é conduzido em português do Brasil (PT-BR). Elementos técnicos que
   precisam permanecer literais (código, nomes de arquivo/função, comandos, variáveis

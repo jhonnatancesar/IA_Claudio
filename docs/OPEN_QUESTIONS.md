@@ -6,14 +6,17 @@ agente sem aprovação explícita do usuário — ver `AGENTS.md`.
 
 ## 1. Linguagem/stack de implementação
 
-A especificação mestre define arquitetura, componentes e contratos, mas não escolhe
+A especificação mestre define arquitetura, componentes e contratos, mas não escolhia
 linguagem de programação, framework web, ORM nem ferramenta de migration para o
-PostgreSQL. O AIShoppingAgent usa Python/FastAPI, mas isso é o projeto de referência
-de **organização**, não uma decisão de stack herdada automaticamente pelo Claudião
-(ver `docs/DECISION_LOG.md`, DEC-001 e DEC-004).
+PostgreSQL. O AIShoppingAgent usa Python/FastAPI, mas isso era o projeto de
+referência de **organização**, não uma decisão de stack herdada automaticamente pelo
+Claudião.
 
-**Status:** aberto. Nenhuma TASK de fundação (TASK-001 a TASK-008) deve escolher a
-stack sem essa decisão ser tomada explicitamente pelo usuário primeiro.
+**Status:** **parcialmente resolvido.** Na TASK-005, o usuário escolheu **Python**
+como linguagem do backend (`docs/DECISION_LOG.md`, DEC-005) — primeira TASK que
+exigia código de aplicação real. Framework web, ORM e ferramenta de migration
+**continuam em aberto**, a decidir quando a TASK que precisar deles chegar (ex.:
+TASK-067, API local; a persistência de TASK-004 usa SQL puro via `psql`, sem ORM).
 
 ## 2. Hardware definitivo
 

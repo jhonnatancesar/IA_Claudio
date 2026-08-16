@@ -53,3 +53,19 @@ organização, porque a especificação mestre não define essa decisão. Ver
 `docs/OPEN_QUESTIONS.md`. O esqueleto de código em `backend/`, `frontend/`, `tests/`
 e `config/` foi criado de forma agnóstica de linguagem (diretórios com `README.md`
 explicando o propósito de cada módulo), para não travar essa decisão futura.
+
+## DEC-005 — Linguagem do backend: Python
+
+**Data:** 2026-08-16
+
+A TASK-005 (logging local) é a primeira TASK que exige código de aplicação real —
+não dá para prosseguir sem escolher linguagem (ver DEC-004/`docs/OPEN_QUESTIONS.md`,
+item 1). O usuário escolheu **Python** entre as opções apresentadas (Python, Node.js/
+TypeScript, Go), pela maturidade do ecossistema de IA local (SDK oficial do Ollama)
+e por bibliotecas de logging rotativo na própria biblioteca padrão.
+
+Escopo desta decisão: só a **linguagem**. Framework web, ORM e ferramenta de
+migration continuam em aberto — cada um é decidido quando a TASK que precisar dele
+chegar (ex.: TASK-067, API local). `requires-python >= 3.11` em
+`backend/pyproject.toml`; a máquina de desenvolvimento atual tem Python 3.14.6, mas
+o mínimo é deliberadamente mais baixo para não travar em uma versão tão recente.
