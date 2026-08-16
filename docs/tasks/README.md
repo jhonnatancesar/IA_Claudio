@@ -52,13 +52,17 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
   `Role`/`is_admin`/`require_admin`, novo código de erro 2001 — ver
   `docs/tasks/TASK-010.md`). Suíte completa: 60/60 testes aprovados.
 
-**Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-010, a `main` local é
-enviada ao GitHub e `docs/HANDOFF.md` é criado/atualizado para permitir que
-outra IA continue o trabalho.
+**Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-010, a `main` local foi
+enviada ao GitHub e `docs/HANDOFF.md` criado para permitir que outra IA
+continue o trabalho.
 
-As demais 137 TASKs permanecem com status **Pendente**.
+- **TASK-011** — concluída (autenticação de aplicações via API key,
+  `backend/app/auth/api_keys.py` — ver `docs/tasks/TASK-011.md`). Suíte
+  completa: 69/69 testes aprovados.
 
-Próxima TASK executável: **TASK-011 — Criar autenticação de aplicações via API key**.
+As demais 136 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-012 — Implementar criptografia de segredos**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
