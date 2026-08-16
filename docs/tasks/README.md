@@ -65,12 +65,16 @@ continue o trabalho.
   TASK, o bloco "Segurança e identidade" (TASK-009 a TASK-013) está
   completo.**
 - **TASK-014** — concluída (interface `LocalLLMProvider`,
-  `backend/app/llm/provider.py` — ver `docs/tasks/TASK-014.md`). Suíte
-  completa: 91/91 testes aprovados.
+  `backend/app/llm/provider.py` — ver `docs/tasks/TASK-014.md`).
+- **TASK-015** — concluída (`OllamaProvider`,
+  `backend/app/llm/providers/ollama_provider.py`, SDK oficial `ollama` —
+  DEC-008 — ver `docs/tasks/TASK-015.md`). Ollama instalado e rodando
+  localmente; nenhum modelo baixado. Suíte completa: 101/101 testes
+  aprovados.
 
-As demais 133 TASKs permanecem com status **Pendente**.
+As demais 132 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-015 — Implementar OllamaProvider**.
+Próxima TASK executável: **TASK-016 — Criar protocolo JSON modelo ↔ orquestrador**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -31,6 +31,12 @@ a organização do repositório.
 Seção 4: "O modelo definitivo será escolhido por testes, não por chute." Nenhum modelo
 foi escolhido, baixado ou testado nesta sessão, por instrução explícita do usuário.
 
+**Atualização (TASK-015):** o runtime **Ollama** já está instalado e rodando
+nesta máquina de desenvolvimento (`docs/DECISION_LOG.md`, DEC-008), e o
+`OllamaProvider` já funciona contra ele — mas isso é só o runtime/cliente.
+Nenhum modelo foi puxado (`ollama pull`); a escolha do modelo continua
+inteiramente em aberto.
+
 **Status:** aberto, intencionalmente adiado.
 
 ## 4. Valor exato do limite fixo de memória por usuário/aplicação

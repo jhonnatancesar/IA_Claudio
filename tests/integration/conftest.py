@@ -1,8 +1,7 @@
-"""Fixtures compartilhadas dos testes de integração com o PostgreSQL local.
-
-Extraído do teste de integração da TASK-006 para reaproveitar em outros módulos
-que também têm teste de integração real (ex.: TASK-009, autenticação) sem
-duplicar a lógica de carregar credenciais.
+"""Fixtures compartilhadas dos testes de integração com serviços locais reais
+(PostgreSQL, Ollama). Extraído do teste de integração da TASK-006 para
+reaproveitar em outros módulos que também têm teste de integração real (ex.:
+TASK-009, autenticação; TASK-015, Ollama) sem duplicar a lógica de disponibilidade.
 """
 
 from pathlib import Path
@@ -11,6 +10,7 @@ import psycopg
 import pytest
 
 from app.db.connection import build_dsn_from_env
+from app.llm.providers.ollama_provider import DEFAULT_HOST, OllamaProvider
 
 _ENV_FILE = Path(__file__).resolve().parent.parent.parent / "config" / ".env"
 _REQUIRED_VARS = (
@@ -53,3 +53,12 @@ def postgres_dsn(monkeypatch):
     except Exception as exc:
         pytest.skip(f"PostgreSQL local indisponível para o teste de integração: {exc}")
     return dsn
+
+
+@pytest.fixture
+def ollama_provider():
+    """`OllamaProvider` contra um Ollama local acessível, ou pula o teste."""
+    provider = OllamaProvider(host=DEFAULT_HOST)
+    if not provider.is_available():
+        pytest.skip("Ollama local indisponível — pulando teste de integração.")
+    return provider

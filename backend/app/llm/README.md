@@ -6,7 +6,12 @@ Interface LocalLLMProvider, protocolo JSON modelo ↔ orquestrador, validação 
 
 - `provider.py` (TASK-014) — `LocalLLMProvider` (classe abstrata),
   `CompletionRequest`/`CompletionResponse`, `LocalLLMProviderError`. Só a
-  interface — `OllamaProvider` (implementação concreta) é TASK-015; protocolo
-  JSON por etapa é TASK-016/TASK-017.
+  interface; protocolo JSON por etapa é TASK-016/TASK-017.
+- `providers/ollama_provider.py` (TASK-015) — `OllamaProvider`, via SDK
+  oficial `ollama` (DEC-008). Ollama instalado e rodando localmente nesta
+  máquina; nenhum modelo baixado ainda (`docs/OPEN_QUESTIONS.md`, item 3).
 
-Testes em `tests/unit/test_llm_provider.py`.
+Testes em `tests/unit/test_llm_provider.py`, `tests/unit/test_ollama_provider.py`
+(unitários, com mock do client) e
+`tests/integration/test_ollama_provider_integration.py` (integração real
+contra o Ollama local; pula automaticamente se indisponível).
