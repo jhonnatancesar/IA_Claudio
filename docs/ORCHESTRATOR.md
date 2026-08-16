@@ -60,6 +60,20 @@ Quando é necessário replanejar, o agente pode descartar o restante do plano an
 gerar um plano completo novo. O novo plano volta a passar pela validação do
 orquestrador (mesmas regras do plano inicial).
 
+**Implementação (TASK-027):** `backend/app/orchestrator/replanner.py`,
+`replan(orchestrator, old_execution, objective, model)`. O protocolo
+(TASK-016) não tem uma "action" própria de replanejamento, e `Execution`
+(TASK-020) não sabe "esvaziar" seu histórico no meio do caminho — descartar
+o plano anterior aqui significa encerrar a execução atual (`fail()`, único
+estado terminal disponível para isso hoje; um estado dedicado pode fazer
+mais sentido quando `CANCELLED` existir, TASK-030) e criar uma execução nova
+(`execution_id` novo, mesmo `origin`), cujo primeiro plano passa por
+`plan_initial_step` (TASK-024) — que já inclui `validate_plan` (TASK-025)
+dentro de `run_step`, garantindo "mesmas regras do plano inicial".
+`CannotReplanFinishedExecutionError` se `old_execution` já estiver
+`COMPLETED`/`FAILED`. O histórico da execução antiga não é apagado, só
+marcado como encerrado — fica disponível para auditoria/debug.
+
 ## Modelo de `Execution` (TASK-020)
 
 Implementado em `backend/app/orchestrator/execution.py`: `Execution`

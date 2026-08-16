@@ -26,13 +26,17 @@ Núcleo determinístico: Execution, ExecutionPolicy, ExecutionOrchestrator, plan
 - `plan_validator.py` (TASK-025) — `validate_plan(step, execution, policy)`.
   Checa `execution_id` da etapa contra a execução e `WEB_SEARCH` contra
   `ExecutionPolicy.web_search_allowed`; chamado dentro de `run_step`.
+- `replanner.py` (TASK-027) — `replan(orchestrator, old_execution, objective,
+  model)`/`CannotReplanFinishedExecutionError`. Encerra `old_execution`
+  (`fail()`) e cria uma execução nova com `plan_initial_step` — mesmas
+  regras do plano inicial, incluindo `validate_plan`.
 
 Testes em `tests/unit/test_execution.py`, `tests/unit/test_execution_id.py`,
 `tests/unit/test_execution_observation.py`,
 `tests/unit/test_execution_orchestrator.py`,
 `tests/unit/test_execution_orchestrator_tool_loop.py`,
-`tests/unit/test_planner.py`, `tests/unit/test_plan_validator.py` (provider e
-tool_executor fakes) e
+`tests/unit/test_planner.py`, `tests/unit/test_plan_validator.py`,
+`tests/unit/test_replanner.py` (provider e tool_executor fakes) e
 `tests/integration/test_execution_orchestrator_integration.py`,
 `tests/integration/test_planner_integration.py` (Ollama real; pulam
 automaticamente se indisponível).
