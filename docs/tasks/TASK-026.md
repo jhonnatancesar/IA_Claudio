@@ -1,6 +1,6 @@
 # TASK-026 — Implementar execução por etapas
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,25 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Fecha o ciclo "executa etapa → resultado volta ao
+modelo → modelo interpreta" (seção 6 da especificação). Estendido
+`Execution` (TASK-020): novo campo `observations` (paralelo a `steps`) e
+`set_last_observation()`. `run_step` (TASK-023) passou a incluir observações
+no histórico do prompt. Novo `ExecutionOrchestrator.run_until_response()`:
+loop que chama `run_step`, executa `USE_TOOL` via `tool_executor`
+(`ToolExecutor = Callable[[ModelStep], str]`, novo parâmetro do construtor)
+e realimenta o resultado, até `RESPOND`; `ToolExecutorNotConfiguredError` se
+nenhum executor foi passado. Nenhuma ferramenta real ainda — Tool Registry é
+TASK-046 em diante. Sem `max_steps`/detecção de loop (TASK-028/TASK-029):
+um `tool_executor` mal comportado pode gerar laço sem fim, aceito nesta
+TASK. 5 testes de `Execution.observations`/`set_last_observation` + 6 de
+`run_until_response` com provider e tool_executor fakes (resposta direta,
+uma ferramenta, múltiplas ferramentas, observação realimentada no prompt,
+executor ausente, executor que falha). Sem teste de integração novo — o
+único caminho testável contra o Ollama real sem modelo baixado (erro de
+modelo inexistente) já está coberto pelas TASK-023/024. Suíte completa:
+212/212 testes aprovados.

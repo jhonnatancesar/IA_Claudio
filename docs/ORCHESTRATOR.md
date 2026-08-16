@@ -123,10 +123,9 @@ como resultado (o protocolo não define um campo de resposta final separado).
 Qualquer falha — `LocalLLMProviderError` do runtime ou `ClaudiaoError` do
 protocolo/plano — marca a execução como `FAILED` antes de propagar a exceção.
 
-**O que ainda não existia aqui** (TASKs futuras constroem em cima): execução de
-ferramentas de verdade (TASK-026 — hoje `USE_TOOL` só é registrado, nenhuma
-ferramenta roda), replanejamento (TASK-027), aplicação de `max_steps`
-(TASK-028), detecção de loop (TASK-029), cancelamento (TASK-030).
+**O que ainda não existia aqui** (TASKs futuras constroem em cima):
+replanejamento (TASK-027), aplicação de `max_steps` (TASK-028), detecção de
+loop (TASK-029), cancelamento (TASK-030).
 
 ## Planejamento inicial (TASK-024)
 
@@ -162,3 +161,28 @@ Implementado em `backend/app/orchestrator/plan_validator.py`:
 Só essas duas regras por ora — validar se a ferramenta pedida existe de fato
 é escopo de TASKs futuras (o Tool Registry ainda não existe, TASK-046 em
 diante).
+
+## Execução por etapas (TASK-026)
+
+Fecha o ciclo da seção 6 da especificação mestre: "Executa uma etapa" →
+"Resultado volta para o modelo" → "Modelo interpreta".
+
+- `Execution.observations` (`backend/app/orchestrator/execution.py`) — lista
+  paralela a `steps`, uma observação (ou `None`) por etapa.
+  `set_last_observation(observation)` anexa o resultado da etapa mais
+  recente; levanta `InvalidExecutionStateError` sem etapas ou se a última já
+  tiver observação. `run_step` (TASK-023) agora monta o histórico do prompt
+  incluindo essas observações.
+- `ExecutionOrchestrator.run_until_response(execution, objective, model)`
+  (`orchestrator.py`) — chama `run_step` em loop: se a etapa for `USE_TOOL`,
+  executa via `tool_executor` (`ToolExecutor = Callable[[ModelStep], str]`,
+  passado no construtor do orquestrador) e registra o resultado como
+  observação antes da próxima chamada; para no primeiro `RESPOND`.
+  `ToolExecutorNotConfiguredError` se nenhum `tool_executor` foi configurado.
+  Qualquer exceção da ferramenta marca a execução como `FAILED`.
+
+Nenhuma ferramenta real existe ainda — o `tool_executor` é fornecido por
+quem chama (testes usam um fake). Sem `max_steps`/detecção de loop ainda
+(TASK-028/TASK-029): um `tool_executor` mal comportado, ou um modelo que
+nunca decide `RESPOND`, pode gerar um laço sem fim — aceito nesta TASK,
+resolvido nas seguintes.

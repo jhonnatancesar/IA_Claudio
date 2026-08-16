@@ -102,12 +102,15 @@ usuário.
   `backend/app/orchestrator/planner.py` — ver `docs/tasks/TASK-024.md`).
 - **TASK-025** — concluída (validação de plano,
   `backend/app/orchestrator/plan_validator.py`, novos códigos de erro
-  4002/4003 — ver `docs/tasks/TASK-025.md`). Suíte completa: 201/201 testes
-  aprovados.
+  4002/4003 — ver `docs/tasks/TASK-025.md`).
+- **TASK-026** — concluída (execução por etapas,
+  `Execution.observations`/`set_last_observation`,
+  `ExecutionOrchestrator.run_until_response` — ver
+  `docs/tasks/TASK-026.md`). Suíte completa: 212/212 testes aprovados.
 
-As demais 122 TASKs permanecem com status **Pendente**.
+As demais 121 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-026 — Implementar execução por etapas**.
+Próxima TASK executável: **TASK-027 — Implementar replanejamento completo**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
