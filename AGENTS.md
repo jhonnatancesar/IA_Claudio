@@ -45,23 +45,36 @@ resume como trabalhar dentro deste repositório.
 ## Workflow oficial de execução de TASKs
 
 ```
-TASK → Implementação → Validação/Testes → Atualização documental → Commit → Push
+TASK → Branch própria → Implementação → Validação/Testes → Atualização documental
+     → Commit → Merge na main local → (Push só quando pedido)
 ```
 
 1. **Preparação** — ler a TASK e os documentos afetados; confirmar dependências
    satisfeitas; levantar qualquer credencial/configuração ausente e pedir ao usuário
    antes de começar (nunca inventar valores).
-2. **Implementação** — cobrir exatamente o objetivo e o escopo declarados.
-3. **Testes** — cobrir os testes esperados listados na TASK; seguir
+2. **Branch** — criar uma branch própria para a TASK a partir da `main` local (ex.:
+   `task-003`), nunca commitar a TASK diretamente na `main`.
+3. **Implementação** — cobrir exatamente o objetivo e o escopo declarados.
+4. **Testes** — cobrir os testes esperados listados na TASK; seguir
    `docs/TESTING.md`.
-4. **Atualização documental** — atualizar os documentos afetados e
+5. **Atualização documental** — atualizar os documentos afetados e
    `docs/tasks/README.md`; se a TASK gerou uma decisão nova, registrar em
    `docs/DECISION_LOG.md`.
-5. **Encerramento** — só marcar a TASK como concluída quando os critérios de aceite
+6. **Encerramento** — só marcar a TASK como concluída quando os critérios de aceite
    descritos nela forem realmente satisfeitos.
+7. **Merge local** — depois de concluída, fazer merge da branch da TASK na `main`
+   **local**, mantendo a `main` local sempre atualizada com o trabalho concluído.
 
-Commits e push seguem as regras normais de Git do agente/ferramenta em uso — nunca
-sem confirmação explícita do usuário para ações que afetam o repositório remoto.
+## Regra de Git: branch por TASK, push só quando pedido
+
+- Cada TASK vive na sua própria branch local (nome sugerido: `task-XXX`).
+- A `main` **local** é sempre atualizada (merge) assim que a TASK é concluída — nunca
+  fica desatualizada esperando aprovação.
+- A `main` **remota** (`origin/main` no GitHub) só é atualizada quando o usuário
+  pedir explicitamente — nunca fazer `git push` para `main` por conta própria, mesmo
+  depois de concluir e mergear uma TASK localmente.
+- Commits seguem as regras normais de Git do agente/ferramenta em uso — nunca sem
+  confirmação explícita do usuário para ações que afetam o repositório remoto.
 
 ## Estado atual
 
