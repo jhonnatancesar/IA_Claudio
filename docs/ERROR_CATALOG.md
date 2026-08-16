@@ -34,6 +34,7 @@ nasce pequeno — só os erros que a própria fundação já precisa:
 | 4002 | 502 | execution_id da etapa não corresponde à execução em andamento |
 | 4003 | 403 | Ferramenta solicitada não autorizada pela política de execução |
 | 4004 | 429 | Número máximo de etapas (max_steps) da execução foi atingido |
+| 4005 | 409 | Loop detectado: a mesma decisão foi repetida sem progresso |
 | 9000 | 500 | Erro interno desconhecido |
 
 Cada TASK futura registra os códigos específicos que precisar quando chegar sua

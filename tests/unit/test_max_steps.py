@@ -24,14 +24,18 @@ class _ScriptedProvider(LocalLLMProvider):
 
 
 class _InfiniteToolProvider(LocalLLMProvider):
-    """Sempre pede a mesma ferramenta — nunca decide RESPOND (simula um
-    modelo/tool_executor que não converge, cenário que max_steps precisa
-    conter até a TASK-029 trazer detecção de loop)."""
+    """Sempre pede a mesma ferramenta, mas com parâmetros diferentes a cada
+    vez (progresso real, não repetição) — nunca decide RESPOND. Simula um
+    modelo que não converge, cenário que max_steps precisa conter. Varia os
+    parâmetros de propósito para não disparar a detecção de loop (TASK-029),
+    testada à parte, e isolar o comportamento de max_steps aqui."""
 
     def __init__(self, execution_id: str) -> None:
         self._execution_id = execution_id
+        self._count = 0
 
     def complete(self, request: CompletionRequest) -> CompletionResponse:
+        self._count += 1
         return CompletionResponse(
             text=json.dumps(
                 {
@@ -40,7 +44,7 @@ class _InfiniteToolProvider(LocalLLMProvider):
                     "tool": "WEB_SEARCH",
                     "confidence": "LOW",
                     "reason": "preciso pesquisar de novo",
-                    "parameters": {},
+                    "parameters": {"query": f"tentativa {self._count}"},
                 }
             ),
             model=request.model,

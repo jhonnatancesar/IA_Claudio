@@ -1,5 +1,6 @@
 """`ExecutionOrchestrator` (TASK-023), com validação de plano (TASK-025),
-execução por etapas (TASK-026) e aplicação de `max_steps` (TASK-028).
+execução por etapas (TASK-026), aplicação de `max_steps` (TASK-028) e
+detecção de loop (TASK-029).
 
 Liga as peças já construídas — `LocalLLMProvider` (TASK-014/015), composição
 de prompt (TASK-019), protocolo e sua validação sintática (TASK-016/017), a
@@ -7,15 +8,12 @@ validação de plano do orquestrador (TASK-025) e o modelo `Execution`
 (TASK-020) — no ciclo descrito em docs/ARCHITECTURE.md (seção
 "Orquestrador"): compõe o prompt, chama o modelo, valida a resposta, executa
 a ferramenta pedida e devolve o resultado ao modelo, repetindo até haver uma
-resposta final ou o limite de `max_steps` (`ExecutionPolicy`, TASK-022) ser
-atingido.
+resposta final, um loop ser detectado ou o limite de `max_steps`
+(`ExecutionPolicy`, TASK-022) ser atingido.
 
 **Não** é o ciclo completo do orquestrador ainda: replanejamento é
-`app.orchestrator.replanner` (TASK-027, módulo separado); detecção de loop
-(TASK-029) e cancelamento (TASK-030) são TASKs futuras. Sem detecção de
-loop, um `tool_executor` que sempre "resolve" sem levar a uma resposta ainda
-pode consumir todas as etapas permitidas até `max_steps` barrar — TASK-029
-detecta padrões repetitivos antes disso.
+`app.orchestrator.replanner` (TASK-027, módulo separado); cancelamento
+(TASK-030) é TASK futura.
 """
 
 from __future__ import annotations
@@ -29,6 +27,7 @@ from app.llm.protocol import Action, ModelStep
 from app.llm.protocol_validator import validate_step
 from app.llm.provider import CompletionRequest, LocalLLMProvider, LocalLLMProviderError
 from app.orchestrator.execution import Execution, ExecutionStatus
+from app.orchestrator.loop_detector import DEFAULT_REPEAT_THRESHOLD, LOOP_DETECTED, detect_loop
 from app.orchestrator.plan_validator import validate_plan
 from app.policies.execution_policy import ExecutionPolicy
 
@@ -60,10 +59,12 @@ class ExecutionOrchestrator:
         provider: LocalLLMProvider,
         policy: ExecutionPolicy,
         tool_executor: ToolExecutor | None = None,
+        loop_repeat_threshold: int = DEFAULT_REPEAT_THRESHOLD,
     ) -> None:
         self.provider = provider
         self.policy = policy
         self.tool_executor = tool_executor
+        self.loop_repeat_threshold = loop_repeat_threshold
 
     def run_step(self, execution: Execution, objective: str, model: str) -> ModelStep:
         """Executa um passo real do ciclo do orquestrador.
@@ -78,9 +79,10 @@ class ExecutionOrchestrator:
         define um campo de resposta final separado).
 
         Qualquer falha — do runtime (`LocalLLMProviderError`), do
-        protocolo/plano (`ClaudiaoError`) ou o limite de `max_steps` da
-        política sendo atingido (também `ClaudiaoError`, TASK-028) — marca
-        `execution` como `FAILED` antes de propagar a exceção original.
+        protocolo/plano (`ClaudiaoError`), o limite de `max_steps` da
+        política sendo atingido (TASK-028) ou um loop sendo detectado
+        (TASK-029) — marca `execution` como `FAILED` antes de propagar a
+        exceção original (todas via `ClaudiaoError`, exceto a do runtime).
         """
         if execution.status == ExecutionStatus.PENDING:
             execution.start()
@@ -116,6 +118,13 @@ class ExecutionOrchestrator:
 
         if step.action == Action.RESPOND:
             execution.complete(step.reason)
+        elif detect_loop(execution, threshold=self.loop_repeat_threshold):
+            error = ClaudiaoError(
+                LOOP_DETECTED,
+                details={"tool": step.tool, "repeated": self.loop_repeat_threshold},
+            )
+            execution.fail(str(error))
+            raise error
 
         return step
 
@@ -125,16 +134,18 @@ class ExecutionOrchestrator:
         """Executa etapas em sequência (seção 6 da especificação mestre:
         "Executa uma etapa" → "Resultado volta para o modelo" → "Modelo
         interpreta") até o modelo decidir `RESPOND`, o limite de `max_steps`
-        da política ser atingido (TASK-028) ou uma falha ocorrer.
+        da política ser atingido (TASK-028), um loop ser detectado
+        (TASK-029) ou uma falha ocorrer.
 
         A cada etapa `USE_TOOL`, executa a ferramenta via `tool_executor` e
         registra o resultado como observação da etapa
         (`Execution.set_last_observation`), disponível para o modelo na
         próxima chamada. Levanta `ToolExecutorNotConfiguredError` se nenhum
         `tool_executor` foi configurado; qualquer exceção da execução da
-        ferramenta marca `execution` como `FAILED` antes de propagar. O
-        limite de `max_steps` é verificado dentro de `run_step`, então se
-        aplica tanto ao chamar `run_step` diretamente quanto por aqui.
+        ferramenta marca `execution` como `FAILED` antes de propagar.
+        `max_steps` e detecção de loop são verificados dentro de `run_step`,
+        então se aplicam tanto ao chamar `run_step` diretamente quanto por
+        aqui.
         """
         while True:
             step = self.run_step(execution, objective, model)

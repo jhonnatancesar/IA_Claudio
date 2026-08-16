@@ -13,13 +13,18 @@ Núcleo determinístico: Execution, ExecutionPolicy, ExecutionOrchestrator, plan
 - `execution_id.py` (TASK-021) — `generate_execution_id()` (UUID4). Reenvios/
   retries sempre geram um novo, nunca reaproveitam.
 - `orchestrator.py` (TASK-023) — `ExecutionOrchestrator(provider, policy,
-  tool_executor=None)`. `run_step(execution, objective, model)` faz um passo
-  real: checa `max_steps` (TASK-028, código 4004) antes de chamar o modelo,
-  compõe prompt (com histórico + observações), chama o provider, valida a
-  resposta, valida o plano, registra a etapa, conclui se `RESPOND`.
-  `run_until_response(execution, objective, model)` (TASK-026) chama
-  `run_step` em loop, executando `USE_TOOL` via `tool_executor` e
-  realimentando o resultado, até `RESPOND` ou `max_steps` ser atingido.
+  tool_executor=None, loop_repeat_threshold=3)`. `run_step(execution,
+  objective, model)` faz um passo real: checa `max_steps` (TASK-028, código
+  4004) antes de chamar o modelo, compõe prompt (com histórico +
+  observações), chama o provider, valida a resposta, valida o plano,
+  registra a etapa, conclui se `RESPOND` ou checa detecção de loop
+  (TASK-029, código 4005) caso contrário. `run_until_response(execution,
+  objective, model)` (TASK-026) chama `run_step` em loop, executando
+  `USE_TOOL` via `tool_executor` e realimentando o resultado, até `RESPOND`,
+  `max_steps` ou um loop detectado.
+- `loop_detector.py` (TASK-029) — `detect_loop(execution, threshold=3)`.
+  Loop = últimas `threshold` etapas com `action`/`tool`/`parameters`
+  idênticos; parâmetros diferentes não contam (progresso real).
 - `planner.py` (TASK-024) — `plan_initial_step(orchestrator, execution,
   objective, model)`/`ExecutionAlreadyPlannedError`. Casca fina sobre
   `run_step`, só para a primeira etapa de uma execução nova.
@@ -36,8 +41,9 @@ Testes em `tests/unit/test_execution.py`, `tests/unit/test_execution_id.py`,
 `tests/unit/test_execution_orchestrator.py`,
 `tests/unit/test_execution_orchestrator_tool_loop.py`,
 `tests/unit/test_planner.py`, `tests/unit/test_plan_validator.py`,
-`tests/unit/test_replanner.py`, `tests/unit/test_max_steps.py` (provider e
-tool_executor fakes) e
-`tests/integration/test_execution_orchestrator_integration.py`,
+`tests/unit/test_replanner.py`, `tests/unit/test_max_steps.py`,
+`tests/unit/test_loop_detector.py`,
+`tests/unit/test_orchestrator_loop_detection.py` (provider e tool_executor
+fakes) e `tests/integration/test_execution_orchestrator_integration.py`,
 `tests/integration/test_planner_integration.py` (Ollama real; pulam
 automaticamente se indisponível).
