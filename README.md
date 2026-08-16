@@ -18,6 +18,8 @@ para o estado detalhado do projeto.
 
 ## Documentação
 
+- [docs/HANDOFF.md](docs/HANDOFF.md) — estado vivo do projeto, atualizado a cada
+  10 TASKs concluídas; ponto de partida para retomar o trabalho numa sessão nova.
 - [docs/](docs/) — arquitetura, escopo, memória, conhecimento, confiança/guardrails,
   ferramentas, API, segurança, observabilidade, cotas, painel, operação, backup,
   updater, banco de dados e testes.
