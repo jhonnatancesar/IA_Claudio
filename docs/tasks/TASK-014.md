@@ -1,6 +1,6 @@
 # TASK-014 — Criar interface LocalLLMProvider
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,15 @@ Testes unitários do provider e do protocolo JSON (parser/validator contra JSON 
 
 ## Documentação afetada
 
-`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `backend/app/llm/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/llm/provider.py`:
+`LocalLLMProvider` (ABC, `complete()`/`is_available()`), `CompletionRequest`/
+`CompletionResponse` (dataclasses frozen), `LocalLLMProviderError`. Só a
+interface — sem implementação concreta (TASK-015) e sem o protocolo JSON por
+etapa (TASK-016/TASK-017). 7 testes unitários novos (instanciação direta da
+ABC falha, subclasse incompleta falha, defaults do request, imutabilidade,
+provider fake completo e indisponível). Suíte completa: 91/91 testes
+aprovados.
