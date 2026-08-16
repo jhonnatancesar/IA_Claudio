@@ -97,12 +97,14 @@ usuário.
   `docs/tasks/TASK-022.md`).
 - **TASK-023** — concluída (`ExecutionOrchestrator`,
   `backend/app/orchestrator/orchestrator.py`, primeiro ciclo real de um
-  passo — ver `docs/tasks/TASK-023.md`). Suíte completa: 190/190 testes
-  aprovados.
+  passo — ver `docs/tasks/TASK-023.md`).
+- **TASK-024** — concluída (planejamento inicial,
+  `backend/app/orchestrator/planner.py` — ver `docs/tasks/TASK-024.md`).
+  Suíte completa: 194/194 testes aprovados.
 
-As demais 124 TASKs permanecem com status **Pendente**.
+As demais 123 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-024 — Implementar planejamento inicial**.
+Próxima TASK executável: **TASK-025 — Implementar validação de plano**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

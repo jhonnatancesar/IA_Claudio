@@ -1,6 +1,6 @@
 # TASK-024 — Implementar planejamento inicial
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,16 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/orchestrator/planner.py`:
+`plan_initial_step(orchestrator, execution, objective, model)` — casca fina
+sobre `ExecutionOrchestrator.run_step` (TASK-023), só permitida antes de
+qualquer etapa existir na execução (`ExecutionAlreadyPlannedError` caso
+contrário). No protocolo desta V1 não há schema separado de "plano
+multi-etapa" — o plano inicial é a primeira `ModelStep` decidida. 3 testes
+unitários (execução nova, execução já iniciada manualmente mas sem etapas,
+rejeição de replanejar via esta função) + 1 teste de integração real contra
+o Ollama local. Suíte completa: 194/194 testes aprovados.

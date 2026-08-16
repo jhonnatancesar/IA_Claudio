@@ -16,8 +16,12 @@ Núcleo determinístico: Execution, ExecutionPolicy, ExecutionOrchestrator, plan
   `run_step(execution, objective, model)` faz um passo real: compõe prompt,
   chama o provider, valida a resposta, registra a etapa, conclui se
   `RESPOND`. Política ainda não aplicada (guardada só para TASKs futuras).
+- `planner.py` (TASK-024) — `plan_initial_step(orchestrator, execution,
+  objective, model)`/`ExecutionAlreadyPlannedError`. Casca fina sobre
+  `run_step`, só para a primeira etapa de uma execução nova.
 
 Testes em `tests/unit/test_execution.py`, `tests/unit/test_execution_id.py`,
-`tests/unit/test_execution_orchestrator.py` (provider fake) e
-`tests/integration/test_execution_orchestrator_integration.py` (Ollama real;
-pula automaticamente se indisponível).
+`tests/unit/test_execution_orchestrator.py`, `tests/unit/test_planner.py`
+(provider fake) e `tests/integration/test_execution_orchestrator_integration.py`,
+`tests/integration/test_planner_integration.py` (Ollama real; pulam
+automaticamente se indisponível).

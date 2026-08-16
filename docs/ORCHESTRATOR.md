@@ -122,8 +122,24 @@ como resultado (o protocolo não define um campo de resposta final separado).
 Qualquer falha — `LocalLLMProviderError` do runtime ou `ClaudiaoError` do
 protocolo — marca a execução como `FAILED` antes de propagar a exceção.
 
-**O que ainda não existe aqui** (TASKs futuras constroem em cima): planejamento
-inicial (TASK-024), validação de plano multi-etapa (TASK-025), execução de
+**O que ainda não existia aqui** (TASKs futuras constroem em cima): execução de
 ferramentas de verdade (TASK-026 — hoje `USE_TOOL` só é registrado, nenhuma
 ferramenta roda), replanejamento (TASK-027), aplicação de `max_steps`
 (TASK-028), detecção de loop (TASK-029), cancelamento (TASK-030).
+
+## Planejamento inicial (TASK-024)
+
+Implementado em `backend/app/orchestrator/planner.py`. No protocolo desta V1
+(um JSON por etapa, seção 7) não existe um schema separado de "plano
+multi-etapa" — o plano inicial descrito no ciclo do orquestrador (seção 6,
+"modelo interpreta o objetivo" / "modelo cria plano") é a **primeira**
+`ModelStep` decidida para a execução.
+
+`plan_initial_step(orchestrator, execution, objective, model)` é uma casca
+fina sobre `ExecutionOrchestrator.run_step` (TASK-023) que só pode ser
+chamada antes de qualquer etapa existir na execução — levanta
+`ExecutionAlreadyPlannedError` caso contrário. Dá nome e lugar próprios ao
+"criar plano" do ciclo, distinto de continuar um ciclo já em andamento
+(`orchestrator.run_step()` diretamente). Validação de que essa primeira
+etapa é um plano aceitável é TASK-025; descartar e gerar um plano novo
+(replanejar) é TASK-027.

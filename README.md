@@ -11,11 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-023** concluídas — blocos "Fundação", "Segurança e
-identidade" e "LLM" completos; bloco "Orquestração" em andamento —
-`ExecutionOrchestrator` já executa um passo real de ponta a ponta (modelo →
-protocolo → registro na execução). Ver [docs/HANDOFF.md](docs/HANDOFF.md)
-para o estado detalhado do projeto.
+**TASK-001** a **TASK-024** concluídas — blocos "Fundação", "Segurança e
+identidade" e "LLM" completos; bloco "Orquestração" em andamento
+(`ExecutionOrchestrator`, planejamento inicial). Ver
+[docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
 
@@ -38,5 +37,5 @@ para o estado detalhado do projeto.
 
 ## Próxima TASK
 
-**TASK-024 — Implementar planejamento inicial**
-([docs/tasks/TASK-024.md](docs/tasks/TASK-024.md)).
+**TASK-025 — Implementar validação de plano**
+([docs/tasks/TASK-025.md](docs/tasks/TASK-025.md)).
