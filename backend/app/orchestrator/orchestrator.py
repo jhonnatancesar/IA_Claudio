@@ -1,5 +1,5 @@
-"""`ExecutionOrchestrator` (TASK-023), com validação de plano (TASK-025) e
-execução por etapas (TASK-026).
+"""`ExecutionOrchestrator` (TASK-023), com validação de plano (TASK-025),
+execução por etapas (TASK-026) e aplicação de `max_steps` (TASK-028).
 
 Liga as peças já construídas — `LocalLLMProvider` (TASK-014/015), composição
 de prompt (TASK-019), protocolo e sua validação sintática (TASK-016/017), a
@@ -7,21 +7,22 @@ validação de plano do orquestrador (TASK-025) e o modelo `Execution`
 (TASK-020) — no ciclo descrito em docs/ARCHITECTURE.md (seção
 "Orquestrador"): compõe o prompt, chama o modelo, valida a resposta, executa
 a ferramenta pedida e devolve o resultado ao modelo, repetindo até haver uma
-resposta final.
+resposta final ou o limite de `max_steps` (`ExecutionPolicy`, TASK-022) ser
+atingido.
 
-**Não** é o ciclo completo do orquestrador ainda: replanejamento (TASK-027),
-aplicação de `max_steps` (TASK-028), detecção de loop (TASK-029) e
-cancelamento (TASK-030) são TASKs futuras que constroem em cima do que
-existe aqui. A `ExecutionPolicy` é usada pela validação de plano (autorização
-de pesquisa), mas `max_steps` ainda não é imposto — isso é a TASK-028; sem
-isso, `run_until_response` pode entrar em um laço sem fim se o modelo (ou um
-`tool_executor` mal comportado) nunca decidir `RESPOND`.
+**Não** é o ciclo completo do orquestrador ainda: replanejamento é
+`app.orchestrator.replanner` (TASK-027, módulo separado); detecção de loop
+(TASK-029) e cancelamento (TASK-030) são TASKs futuras. Sem detecção de
+loop, um `tool_executor` que sempre "resolve" sem levar a uma resposta ainda
+pode consumir todas as etapas permitidas até `max_steps` barrar — TASK-029
+detecta padrões repetitivos antes disso.
 """
 
 from __future__ import annotations
 
 from typing import Callable
 
+from app.errors.catalog import ErrorDomain, register_error
 from app.errors.response import ClaudiaoError
 from app.llm.prompt_composer import StepRecord, compose_prompt
 from app.llm.protocol import Action, ModelStep
@@ -30,6 +31,13 @@ from app.llm.provider import CompletionRequest, LocalLLMProvider, LocalLLMProvid
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.plan_validator import validate_plan
 from app.policies.execution_policy import ExecutionPolicy
+
+MAX_STEPS_EXCEEDED = register_error(
+    ErrorDomain.MODEL_ORCHESTRATOR,
+    4004,
+    429,
+    "Número máximo de etapas (max_steps) da execução foi atingido",
+)
 
 ToolExecutor = Callable[[ModelStep], str]
 """Função que executa a ferramenta pedida por uma etapa `USE_TOOL` e retorna
@@ -69,12 +77,20 @@ class ExecutionOrchestrator:
         execução usando `reason` como resultado (o protocolo, TASK-016, não
         define um campo de resposta final separado).
 
-        Qualquer falha — do runtime (`LocalLLMProviderError`) ou do
-        protocolo/plano (`ClaudiaoError`) — marca `execution` como `FAILED`
-        antes de propagar a exceção original.
+        Qualquer falha — do runtime (`LocalLLMProviderError`), do
+        protocolo/plano (`ClaudiaoError`) ou o limite de `max_steps` da
+        política sendo atingido (também `ClaudiaoError`, TASK-028) — marca
+        `execution` como `FAILED` antes de propagar a exceção original.
         """
         if execution.status == ExecutionStatus.PENDING:
             execution.start()
+
+        if execution.step_count >= self.policy.max_steps:
+            error = ClaudiaoError(
+                MAX_STEPS_EXCEEDED, details={"max_steps": self.policy.max_steps}
+            )
+            execution.fail(str(error))
+            raise error
 
         history = [
             StepRecord(step=step, observation=observation)
@@ -108,14 +124,17 @@ class ExecutionOrchestrator:
     ) -> ModelStep:
         """Executa etapas em sequência (seção 6 da especificação mestre:
         "Executa uma etapa" → "Resultado volta para o modelo" → "Modelo
-        interpreta") até o modelo decidir `RESPOND` ou uma falha ocorrer.
+        interpreta") até o modelo decidir `RESPOND`, o limite de `max_steps`
+        da política ser atingido (TASK-028) ou uma falha ocorrer.
 
         A cada etapa `USE_TOOL`, executa a ferramenta via `tool_executor` e
         registra o resultado como observação da etapa
         (`Execution.set_last_observation`), disponível para o modelo na
         próxima chamada. Levanta `ToolExecutorNotConfiguredError` se nenhum
         `tool_executor` foi configurado; qualquer exceção da execução da
-        ferramenta marca `execution` como `FAILED` antes de propagar.
+        ferramenta marca `execution` como `FAILED` antes de propagar. O
+        limite de `max_steps` é verificado dentro de `run_step`, então se
+        aplica tanto ao chamar `run_step` diretamente quanto por aqui.
         """
         while True:
             step = self.run_step(execution, objective, model)

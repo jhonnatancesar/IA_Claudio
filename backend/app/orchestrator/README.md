@@ -14,12 +14,12 @@ Núcleo determinístico: Execution, ExecutionPolicy, ExecutionOrchestrator, plan
   retries sempre geram um novo, nunca reaproveitam.
 - `orchestrator.py` (TASK-023) — `ExecutionOrchestrator(provider, policy,
   tool_executor=None)`. `run_step(execution, objective, model)` faz um passo
-  real: compõe prompt (com histórico + observações), chama o provider,
-  valida a resposta, valida o plano, registra a etapa, conclui se `RESPOND`.
+  real: checa `max_steps` (TASK-028, código 4004) antes de chamar o modelo,
+  compõe prompt (com histórico + observações), chama o provider, valida a
+  resposta, valida o plano, registra a etapa, conclui se `RESPOND`.
   `run_until_response(execution, objective, model)` (TASK-026) chama
   `run_step` em loop, executando `USE_TOOL` via `tool_executor` e
-  realimentando o resultado, até `RESPOND`. `max_steps` ainda não aplicado
-  (TASK-028) — sem isso, pode entrar em laço sem fim.
+  realimentando o resultado, até `RESPOND` ou `max_steps` ser atingido.
 - `planner.py` (TASK-024) — `plan_initial_step(orchestrator, execution,
   objective, model)`/`ExecutionAlreadyPlannedError`. Casca fina sobre
   `run_step`, só para a primeira etapa de uma execução nova.
@@ -36,7 +36,8 @@ Testes em `tests/unit/test_execution.py`, `tests/unit/test_execution_id.py`,
 `tests/unit/test_execution_orchestrator.py`,
 `tests/unit/test_execution_orchestrator_tool_loop.py`,
 `tests/unit/test_planner.py`, `tests/unit/test_plan_validator.py`,
-`tests/unit/test_replanner.py` (provider e tool_executor fakes) e
+`tests/unit/test_replanner.py`, `tests/unit/test_max_steps.py` (provider e
+tool_executor fakes) e
 `tests/integration/test_execution_orchestrator_integration.py`,
 `tests/integration/test_planner_integration.py` (Ollama real; pulam
 automaticamente se indisponível).

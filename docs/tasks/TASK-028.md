@@ -1,6 +1,6 @@
 # TASK-028 — Implementar max_steps
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,20 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/ERROR_CATALOG.md`, `docs/tasks/README.md`,
+`backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. `ExecutionOrchestrator.run_step` (TASK-023) passou
+a checar `execution.step_count >= policy.max_steps` **antes** de chamar o
+modelo — se o limite já foi atingido, marca a execução `FAILED` e levanta
+`ClaudiaoError` com o novo código `4004` (`MAX_STEPS_EXCEEDED`, HTTP 429),
+sem gastar uma chamada ao provider. `run_until_response` (TASK-026) herda o
+limite automaticamente, por chamar `run_step` em loop.
+
+5 testes unitários novos (limite já atingido rejeita nova etapa sem chamar o
+provider, loop `run_until_response` para exatamente em `max_steps` etapas
+com um provider que nunca decide `RESPOND`, `max_steps` padrão de 10
+respeitado, conclusão normal abaixo do limite). Suíte completa: 222/222
+testes aprovados.
