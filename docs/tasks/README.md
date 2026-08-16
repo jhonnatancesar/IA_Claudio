@@ -106,11 +106,14 @@ usuário.
 - **TASK-026** — concluída (execução por etapas,
   `Execution.observations`/`set_last_observation`,
   `ExecutionOrchestrator.run_until_response` — ver
-  `docs/tasks/TASK-026.md`). Suíte completa: 212/212 testes aprovados.
+  `docs/tasks/TASK-026.md`).
+- **TASK-027** — concluída (replanejamento completo,
+  `backend/app/orchestrator/replanner.py` — ver `docs/tasks/TASK-027.md`).
+  Suíte completa: 217/217 testes aprovados.
 
-As demais 121 TASKs permanecem com status **Pendente**.
+As demais 120 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-027 — Implementar replanejamento completo**.
+Próxima TASK executável: **TASK-028 — Implementar max_steps**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

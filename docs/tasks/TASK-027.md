@@ -1,6 +1,6 @@
 # TASK-027 — Implementar replanejamento completo
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,20 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/orchestrator/replanner.py`:
+`replan(orchestrator, old_execution, objective, model)` — encerra a execução
+atual (`fail()`, único estado terminal disponível para isso hoje — um
+estado dedicado pode fazer mais sentido quando `CANCELLED` existir,
+TASK-030) e cria uma execução nova (`execution_id` novo, mesmo `origin`) via
+`plan_initial_step` (TASK-024), garantindo que o novo plano passe pelas
+mesmas regras do plano inicial, incluindo `validate_plan` (TASK-025).
+`CannotReplanFinishedExecutionError` para execução já terminal. Histórico da
+execução antiga preservado, só marcada como encerrada.
+
+5 testes unitários novos (descarta e cria nova, preserva histórico antigo,
+rejeita replanejar execução já concluída/já falhada, novo plano passa pela
+validação de plano). Suíte completa: 217/217 testes aprovados.

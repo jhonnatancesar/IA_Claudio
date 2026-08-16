@@ -11,11 +11,11 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-026** concluídas — blocos "Fundação", "Segurança e
-identidade" e "LLM" completos; bloco "Orquestração" em andamento — o ciclo
-completo de execução por etapas (com ferramentas via `tool_executor`) já
-funciona. Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do
-projeto.
+**TASK-001** a **TASK-027** concluídas — blocos "Fundação", "Segurança e
+identidade" e "LLM" completos; bloco "Orquestração" em andamento — ciclo de
+execução por etapas e replanejamento completo já funcionam. Faltam
+`max_steps`, detecção de loop e cancelamento para fechar o bloco. Ver
+[docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
 
@@ -38,5 +38,5 @@ projeto.
 
 ## Próxima TASK
 
-**TASK-027 — Implementar replanejamento completo**
-([docs/tasks/TASK-027.md](docs/tasks/TASK-027.md)).
+**TASK-028 — Implementar max_steps**
+([docs/tasks/TASK-028.md](docs/tasks/TASK-028.md)).
