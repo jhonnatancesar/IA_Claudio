@@ -64,7 +64,13 @@ def _use_tool_json(execution_id: str) -> str:
 
 
 def _orchestrator(provider: LocalLLMProvider) -> ExecutionOrchestrator:
-    return ExecutionOrchestrator(provider=provider, policy=ExecutionPolicy.for_chat())
+    # web_search_allowed=True: estes testes cobrem o ciclo genérico de
+    # etapas, não a política (TASK-025, testada à parte) — sem isso, os
+    # cenários com USE_TOOL/WEB_SEARCH seriam rejeitados pela validação de
+    # plano antes de chegar ao que o teste realmente quer verificar.
+    return ExecutionOrchestrator(
+        provider=provider, policy=ExecutionPolicy.for_chat(web_search_allowed=True)
+    )
 
 
 def test_run_step_starts_pending_execution():
@@ -164,3 +170,33 @@ def test_orchestrator_stores_provider_and_policy():
 
     assert orchestrator.provider is provider
     assert orchestrator.policy is policy
+
+
+def test_run_step_fails_execution_when_web_search_not_authorized_by_policy():
+    """Regressão (TASK-025): run_step agora também valida o plano contra a
+    ExecutionPolicy — WEB_SEARCH sem autorização deve falhar a execução,
+    mesmo com um JSON de protocolo perfeitamente válido."""
+    execution = Execution.new(origin="chat")
+    provider = _ScriptedProvider([_use_tool_json(execution.execution_id)])
+    orchestrator = ExecutionOrchestrator(
+        provider=provider, policy=ExecutionPolicy.for_chat(web_search_allowed=False)
+    )
+
+    with pytest.raises(ClaudiaoError):
+        orchestrator.run_step(execution, objective="pergunta", model="qualquer")
+
+    assert execution.status == ExecutionStatus.FAILED
+    assert execution.step_count == 0  # rejeitado antes de add_step
+
+
+def test_run_step_allows_web_search_when_authorized_by_policy():
+    execution = Execution.new(origin="chat")
+    provider = _ScriptedProvider([_use_tool_json(execution.execution_id)])
+    orchestrator = ExecutionOrchestrator(
+        provider=provider, policy=ExecutionPolicy.for_chat(web_search_allowed=True)
+    )
+
+    step = orchestrator.run_step(execution, objective="pergunta", model="qualquer")
+
+    assert step.tool == "WEB_SEARCH"
+    assert execution.status == ExecutionStatus.RUNNING
