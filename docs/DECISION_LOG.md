@@ -98,3 +98,21 @@ sem alternativa razoável (reimplementar AEAD na mão seria pior, não melhor, e
 não há motivo para preferir outra lib) — registrada aqui por transparência, sem
 pausar para confirmação prévia. Não decide de onde vem a chave mestra (isso é
 TASK-013).
+
+## DEC-008 — Ollama instalado localmente; SDK oficial `ollama`
+
+**Data:** 2026-08-16
+
+A TASK-015 (implementar `OllamaProvider`) pediu confirmação explícita do
+usuário (não é uma decisão técnica de baixo risco como DEC-006/DEC-007, porque
+envolve instalar software novo no sistema, não só uma biblioteca Python): o
+usuário escolheu instalar o runtime **Ollama** de verdade nesta máquina (via
+`winget install Ollama.Ollama`, serviço rodando em `http://localhost:11434`),
+em vez de só implementar contra mocks. Nenhum modelo foi baixado — isso
+continua em aberto (`docs/OPEN_QUESTIONS.md`, item 3).
+
+Para o código do provider, escolhido o **SDK oficial `ollama`** (pacote
+`ollama` no PyPI, mantido pela Ollama Inc.) em vez de chamadas HTTP manuais —
+mesma categoria de DEC-006/DEC-007: técnica, de baixo risco, sem alternativa
+melhor (reimplementar o cliente HTTP à mão não traria vantagem), registrada
+por transparência.

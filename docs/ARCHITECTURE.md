@@ -78,8 +78,20 @@ abstrata) com `complete(request: CompletionRequest) -> CompletionResponse` e
 geração; `CompletionResponse` carrega o texto bruto, ainda não validado contra
 o protocolo JSON do orquestrador (TASK-016/TASK-017).
 `LocalLLMProviderError` cobre falhas de comunicação com o runtime (timeout,
-indisponibilidade). Nenhuma implementação concreta ainda — `OllamaProvider` é
-TASK-015.
+indisponibilidade).
+
+### `OllamaProvider` (TASK-015)
+
+Implementado em `backend/app/llm/providers/ollama_provider.py`, usando o SDK
+oficial `ollama` (DEC-008). `complete()` chama `Client.generate()`, mapeia
+`temperature`/`max_tokens` para `options` (`num_predict`), e converte
+`ollama.ResponseError`/`ConnectionError` em `LocalLLMProviderError`.
+`is_available()` chama `Client.list()` e retorna `False` para qualquer
+exceção. Ollama está instalado e rodando localmente nesta máquina de
+desenvolvimento (`http://localhost:11434`), mas **nenhum modelo foi baixado**
+— o provider funciona com qualquer modelo que existir no Ollama local, mas
+sem um modelo puxado, `complete()` levanta `LocalLLMProviderError` (modelo não
+encontrado). Ver `docs/OPEN_QUESTIONS.md`, item 3.
 
 ## Arquitetura de alto nível
 

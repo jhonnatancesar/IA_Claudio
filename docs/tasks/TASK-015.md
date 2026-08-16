@@ -1,6 +1,6 @@
 # TASK-015 — Implementar OllamaProvider
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,22 @@ Testes unitários do provider e do protocolo JSON (parser/validator contra JSON 
 
 ## Documentação afetada
 
-`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ARCHITECTURE.md`, `docs/OPEN_QUESTIONS.md` (item 3),
+`docs/DECISION_LOG.md` (DEC-008), `docs/tasks/README.md`,
+`backend/app/llm/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Com confirmação explícita do usuário, o runtime
+**Ollama** foi instalado de verdade nesta máquina (`winget install
+Ollama.Ollama`, serviço em `http://localhost:11434`) — nenhum modelo baixado
+(`docs/OPEN_QUESTIONS.md`, item 3, continua aberto). Criado
+`backend/app/llm/providers/ollama_provider.py`: `OllamaProvider`, usando o SDK
+oficial `ollama` (DEC-008). `complete()` chama `Client.generate()`, mapeia
+`temperature`/`max_tokens`, converte `ollama.ResponseError`/`ConnectionError`
+em `LocalLLMProviderError`; `is_available()` via `Client.list()`.
+
+9 testes unitários com mock do client (sem depender do Ollama real) + 2 de
+integração real (servidor disponível; modelo inexistente levanta o erro
+esperado — confirmado rodando de verdade, não pulado). Suíte completa:
+101/101 testes aprovados.

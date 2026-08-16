@@ -11,11 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-014** concluídas — blocos "Fundação" e "Segurança e
-identidade" completos, e a interface `LocalLLMProvider` criada (bloco "LLM"
-em andamento). Nenhuma implementação concreta de modelo ainda (Ollama é
-TASK-015). Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do
-projeto.
+**TASK-001** a **TASK-015** concluídas — blocos "Fundação" e "Segurança e
+identidade" completos; `LocalLLMProvider` e `OllamaProvider` funcionando
+(Ollama instalado e rodando localmente, sem nenhum modelo baixado ainda). Ver
+[docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
 
@@ -38,5 +37,5 @@ projeto.
 
 ## Próxima TASK
 
-**TASK-015 — Implementar OllamaProvider**
-([docs/tasks/TASK-015.md](docs/tasks/TASK-015.md)).
+**TASK-016 — Criar protocolo JSON modelo ↔ orquestrador**
+([docs/tasks/TASK-016.md](docs/tasks/TASK-016.md)).
