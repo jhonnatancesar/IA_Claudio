@@ -39,12 +39,22 @@ Credenciais reais ficam **somente** em `config/.env` (nunca versionado — ver
 `.gitignore`); `config/.env.example` documenta os nomes das variáveis, sem valores
 reais.
 
-## Escopo desta fase
+## Schema inicial (TASK-004)
 
-Nenhuma migration ou schema foi criada ainda. `backend/app/db/` e
-`backend/app/db/migrations/` existem como esqueleto de diretório para quando a TASK
-TASK-004 for executada (criar o schema inicial, cobrindo usuários, aplicações,
-configurações e registros básicos — ver `docs/tasks/TASK-004.md`).
+Aplicado em `backend/app/db/migrations/0001_initial_schema.sql` (SQL puro via
+`psql`, sem ferramenta de migration dedicada — ver `docs/OPEN_QUESTIONS.md`, item 1):
+
+- `schema_migrations` — registro básico das migrations aplicadas.
+- `users` — usuários humanos, com `role` (`ADMIN`/`USER`, seção 31 da especificação)
+  e hash de senha.
+- `applications` — aplicações externas, com hash da API key.
+- `settings` — configurações administráveis em runtime pelo painel (`docs/PANEL.md`),
+  distintas do arquivo de bootstrap `config/.env*` (TASK-002).
+
+Os demais domínios de dados (memória, conhecimento, fontes, histórico de fontes,
+blacklist, conversas, resumos, execuções, fila, logs, auditoria, cotas,
+atualizações, backups) ainda não têm schema — cada um ganha o seu na TASK do bloco
+funcional correspondente, conforme `docs/BACKLOG.md`.
 
 ## TASKs relacionadas
 
