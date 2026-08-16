@@ -50,7 +50,7 @@ orçamento mais restrito que aplicações.
 
 - `max_steps` inicial sugerido: **10**, configurável conforme aplicação/contexto.
   **Aplicado (TASK-028)** — ver seção `ExecutionOrchestrator` abaixo.
-- Detecção de loop — ainda não implementada (TASK-029).
+- Detecção de loop. **Implementada (TASK-029)** — ver seção própria abaixo.
 - Cancelamento externo/interno — ainda não implementado (TASK-030).
 - Erro irrecuperável.
 - No chat não há timeout fixo (timeout é definido pela aplicação — ver `API.md`).
@@ -203,7 +203,24 @@ Fecha o ciclo da seção 6 da especificação mestre: "Executa uma etapa" →
   Qualquer exceção da ferramenta marca a execução como `FAILED`.
 
 Nenhuma ferramenta real existe ainda — o `tool_executor` é fornecido por
-quem chama (testes usam um fake). Sem `max_steps`/detecção de loop ainda
-(TASK-028/TASK-029): um `tool_executor` mal comportado, ou um modelo que
-nunca decide `RESPOND`, pode gerar um laço sem fim — aceito nesta TASK,
-resolvido nas seguintes.
+quem chama (testes usam um fake). `max_steps` (TASK-028) e detecção de loop
+(TASK-029) limitam um `tool_executor` mal comportado ou um modelo que nunca
+decide `RESPOND` — ver as seções próprias abaixo.
+
+## Detecção de loop (TASK-029)
+
+Implementado em `backend/app/orchestrator/loop_detector.py`:
+`detect_loop(execution, threshold=3)` — heurística mais simples e
+defensável, já que a especificação (seção 30) só lista "detecção de loop"
+como limite, sem detalhar o critério: as últimas `threshold` etapas são
+consideradas um loop se tiverem a mesma assinatura (`action`/`tool`/
+`parameters` idênticos). `RESPOND` entre as últimas `threshold` etapas nunca
+conta como loop. `ExecutionOrchestrator` ganhou o parâmetro
+`loop_repeat_threshold` (padrão `3`) e chama `detect_loop` logo depois de
+`add_step`, quando a etapa não é `RESPOND`; se detectado, marca a execução
+`FAILED` e levanta `ClaudiaoError` com o novo código `4005`
+(`LOOP_DETECTED`, HTTP 409).
+
+Repetir a mesma ferramenta com **parâmetros diferentes** a cada chamada não
+é loop — é progresso real (ex.: buscas sucessivas com termos diferentes).
+Só a repetição exata das últimas `threshold` decisões conta.

@@ -110,12 +110,15 @@ usuário.
 - **TASK-027** — concluída (replanejamento completo,
   `backend/app/orchestrator/replanner.py` — ver `docs/tasks/TASK-027.md`).
 - **TASK-028** — concluída (`max_steps` aplicado em `run_step`, novo código
-  de erro 4004 — ver `docs/tasks/TASK-028.md`). Suíte completa: 222/222
-  testes aprovados.
+  de erro 4004 — ver `docs/tasks/TASK-028.md`).
+- **TASK-029** — concluída (detecção de loop,
+  `backend/app/orchestrator/loop_detector.py`, novo código de erro 4005 —
+  ver `docs/tasks/TASK-029.md`). Suíte completa: 233/233 testes aprovados.
 
-As demais 119 TASKs permanecem com status **Pendente**.
+As demais 118 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-029 — Implementar detecção de loop**.
+Próxima TASK executável: **TASK-030 — Implementar cancelamento** (fecha o
+bloco "Orquestração").
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
