@@ -1,0 +1,63 @@
+# Linguagem/runtime de implementação ainda não definidos (ver docs/OPEN_QUESTIONS.md).
+# Este .gitignore cobre padrões genéricos e será ajustado quando a stack for escolhida.
+
+# Segredos e configuração local — nunca versionar
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+config/*.local.*
+.secrets/
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Chave mestra de criptografia (fora do PostgreSQL por decisão da especificação, seção 32)
+master.key
+*.master-key
+
+# Logs locais (rotação em arquivo — seção 35 da especificação)
+*.log
+logs/
+
+# Backups locais (seção 42 da especificação — nunca versionar dumps)
+*.sql
+*.dump
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.backup
+backups/
+
+# Artefatos de teste e cobertura
+.coverage
+htmlcov/
+coverage.xml
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+
+# Bytecode / build de linguagens comuns (mantido genérico até a stack ser escolhida)
+__pycache__/
+*.py[cod]
+node_modules/
+dist/
+build/
+*.class
+
+# Ambientes virtuais / dependências locais
+.venv/
+venv/
+backend/.venv/
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
