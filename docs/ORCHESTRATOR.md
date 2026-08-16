@@ -87,3 +87,20 @@ um `execution_id` único"; "Reenvios e retries manuais sempre geram novo
 direto quando não houver um `execution_id` externo definido, inclusive em
 retries. O formato UUID gerado aqui é compatível com a checagem de
 `validate_step` (TASK-017).
+
+## `ExecutionPolicy` (TASK-022)
+
+Implementado em `backend/app/policies/execution_policy.py` (não em
+`orchestrator/` — o diagrama de `ARCHITECTURE.md` já reserva o Policy Engine
+como componente próprio): `ExecutionPolicy` (dataclass imutável) —
+`web_search_allowed`, `max_steps` (padrão `10`, seção 30),
+`timeout_seconds`. `InvalidExecutionPolicyError` para valores inválidos
+(`max_steps`/`timeout_seconds` não positivos).
+
+Duas fábricas capturam as regras da especificação: `for_chat()` — sempre
+`timeout_seconds=None` (seção 30: "No chat não haverá timeout fixo"),
+pesquisa não pré-autorizada por padrão (seção 18.1: autorização é pedida por
+vez, não declarada de antemão); `for_application(timeout_seconds=...)` —
+exige `timeout_seconds` (seção 26: "O timeout é definido pela própria
+aplicação"). Só o modelo — quem aplica a política de fato é o
+`ExecutionOrchestrator` (TASK-023).

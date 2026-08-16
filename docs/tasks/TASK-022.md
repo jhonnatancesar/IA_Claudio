@@ -1,6 +1,6 @@
 # TASK-022 — Criar ExecutionPolicy
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,14 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/policies/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/policies/execution_policy.py`
+(no módulo `policies/` dedicado, não em `orchestrator/` — corrigido durante a
+própria TASK após um primeiro rascunho no lugar errado): `ExecutionPolicy`
+(dataclass imutável: `web_search_allowed`, `max_steps` padrão `10`,
+`timeout_seconds`), `InvalidExecutionPolicyError`, fábricas `for_chat()` (sem
+timeout fixo) e `for_application(timeout_seconds=...)` (timeout obrigatório).
+14 testes unitários novos. Suíte completa: 180/180 testes aprovados.
