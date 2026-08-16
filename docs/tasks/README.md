@@ -35,10 +35,13 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
   `docs/DECISION_LOG.md`, DEC-005; logging local rotativo em
   `backend/app/observability/logging_config.py`, 7 testes aprovados — ver
   `docs/tasks/TASK-005.md`).
+- **TASK-006** — concluída (logging estruturado no PostgreSQL, tabela `logs`,
+  `postgres_log_handler.py`, driver psycopg — DEC-006; 13/13 testes aprovados,
+  incluindo integração real com o banco — ver `docs/tasks/TASK-006.md`).
 
-As demais 142 TASKs permanecem com status **Pendente**.
+As demais 141 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-006 — Criar logging estruturado no PostgreSQL**.
+Próxima TASK executável: **TASK-007 — Criar catálogo interno de erros**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

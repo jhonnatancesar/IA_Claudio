@@ -69,3 +69,18 @@ migration continuam em aberto — cada um é decidido quando a TASK que precisar
 chegar (ex.: TASK-067, API local). `requires-python >= 3.11` em
 `backend/pyproject.toml`; a máquina de desenvolvimento atual tem Python 3.14.6, mas
 o mínimo é deliberadamente mais baixo para não travar em uma versão tão recente.
+
+## DEC-006 — Driver de PostgreSQL: psycopg 3
+
+**Data:** 2026-08-16
+
+A TASK-006 (logging estruturado no PostgreSQL) exigiu a primeira dependência
+externa do backend Python. Escolhido `psycopg[binary]` (psycopg 3), driver oficial
+recomendado pelo próprio projeto PostgreSQL para Python — sem alternativa razoável
+para essa necessidade pontual (conexão direta, sem ORM). Não decidida sem aviso: ao
+contrário da escolha de linguagem (DEC-005), essa é uma decisão técnica de baixo
+risco, quase inevitável uma vez que a linguagem é Python e a persistência é
+PostgreSQL (`docs/DATABASE.md`) — registrada aqui por transparência, sem pausar
+para confirmação prévia. Não é uma escolha de ORM (isso continua em aberto,
+`docs/OPEN_QUESTIONS.md`, item 1) — psycopg é usado aqui só como driver raw (SQL
+direto), como já vinha sendo feito nas migrations (TASK-003/TASK-004).

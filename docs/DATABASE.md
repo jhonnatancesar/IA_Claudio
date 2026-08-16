@@ -51,10 +51,16 @@ Aplicado em `backend/app/db/migrations/0001_initial_schema.sql` (SQL puro via
 - `settings` — configurações administráveis em runtime pelo painel (`docs/PANEL.md`),
   distintas do arquivo de bootstrap `config/.env*` (TASK-002).
 
+## Logs (TASK-006)
+
+`backend/app/db/migrations/0002_logs.sql` — tabela `logs` (`timestamp`, `level`,
+`logger`, `message`, `context jsonb`), índices em `timestamp` e `level`. Ver
+`docs/OBSERVABILITY.md` para o handler que grava nela.
+
 Os demais domínios de dados (memória, conhecimento, fontes, histórico de fontes,
-blacklist, conversas, resumos, execuções, fila, logs, auditoria, cotas,
-atualizações, backups) ainda não têm schema — cada um ganha o seu na TASK do bloco
-funcional correspondente, conforme `docs/BACKLOG.md`.
+blacklist, conversas, resumos, execuções, fila, auditoria, cotas, atualizações,
+backups) ainda não têm schema — cada um ganha o seu na TASK do bloco funcional
+correspondente, conforme `docs/BACKLOG.md`.
 
 ## TASKs relacionadas
 
