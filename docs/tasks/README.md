@@ -31,10 +31,14 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
 - **TASK-004** — concluída (schema inicial aplicado: `users`, `applications`,
   `settings`, `schema_migrations` — ver `docs/tasks/TASK-004.md` e
   `docs/DATABASE.md`).
+- **TASK-005** — concluída (linguagem do backend decidida: Python —
+  `docs/DECISION_LOG.md`, DEC-005; logging local rotativo em
+  `backend/app/observability/logging_config.py`, 7 testes aprovados — ver
+  `docs/tasks/TASK-005.md`).
 
-As demais 143 TASKs permanecem com status **Pendente**.
+As demais 142 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-005 — Criar sistema de logging local**.
+Próxima TASK executável: **TASK-006 — Criar logging estruturado no PostgreSQL**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

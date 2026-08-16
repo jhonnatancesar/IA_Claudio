@@ -8,6 +8,16 @@ Fonte: seções 35 e 44 da especificação mestre.
 - Logs são gravados em **arquivo local e PostgreSQL**. Arquivos usam rotação
   automática; banco usa retenção cíclica.
 
+### Logging local em arquivo (TASK-005)
+
+Implementado em `backend/app/observability/logging_config.py`:
+`configure_logging()` configura o logger raiz `claudiao` (nível via
+`CLAUDIAO_LOG_LEVEL`, padrão `INFO` — `DEBUG` só se definido explicitamente);
+`get_logger(nome)` retorna um logger filho. Rotação por tamanho: 10 MB por arquivo,
+5 backups (`RotatingFileHandler`), diretório configurável via `CLAUDIAO_LOG_DIR`
+(padrão `logs/`, criado automaticamente se não existir). Sem escrita no PostgreSQL
+ainda — isso fica para a TASK-006.
+
 ## Execution Trace
 
 Cada execução tem um Execution Trace com: `execution_id`, origem, usuário/aplicação,
