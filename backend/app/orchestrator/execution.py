@@ -1,10 +1,11 @@
-"""Modelo de `Execution` (TASK-020).
+"""Modelo de `Execution` (TASK-020), com geração de `execution_id` (TASK-021).
 
 Representa o ciclo de vida de uma execução do orquestrador (docs/ARCHITECTURE.md,
-seção "Orquestrador"). Só o modelo de dados e as transições de estado válidas —
-não gera `execution_id` (isso é TASK-021), não decide política (TASK-022), não
-executa nada de verdade (`ExecutionOrchestrator` é TASK-023), não implementa
-`max_steps`/detecção de loop/cancelamento (TASK-028/TASK-029/TASK-030).
+seção "Orquestrador"). O modelo de dados, as transições de estado válidas e a
+fábrica `Execution.new()` que gera um `execution_id` novo — não decide
+política (TASK-022), não executa nada de verdade (`ExecutionOrchestrator` é
+TASK-023), não implementa `max_steps`/detecção de loop/cancelamento
+(TASK-028/TASK-029/TASK-030).
 
 Estados mínimos por ora: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED` — o mesmo
 conjunto usado pela fila (`docs/QUEUE.md`). Um estado `CANCELLED` pode ser
@@ -19,6 +20,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 
 from app.llm.protocol import ModelStep
+from app.orchestrator.execution_id import generate_execution_id
 
 
 class ExecutionStatus(StrEnum):
@@ -54,6 +56,16 @@ class Execution:
             raise ValueError("execution_id não pode ser vazio")
         if not self.origin or not self.origin.strip():
             raise ValueError("origin não pode ser vazio")
+
+    @classmethod
+    def new(cls, origin: str) -> "Execution":
+        """Cria uma `Execution` com `execution_id` novo, gerado
+        automaticamente (TASK-021). Use isto em vez do construtor direto
+        quando não houver um `execution_id` externo já definido — inclusive
+        em reenvios/retries, que sempre geram um novo (seção 25 da
+        especificação mestre), nunca reaproveitando o de uma tentativa
+        anterior."""
+        return cls(execution_id=generate_execution_id(), origin=origin)
 
     def start(self) -> None:
         """`PENDING` → `RUNNING`."""

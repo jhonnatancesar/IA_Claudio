@@ -63,8 +63,7 @@ orquestrador (mesmas regras do plano inicial).
 ## Modelo de `Execution` (TASK-020)
 
 Implementado em `backend/app/orchestrator/execution.py`: `Execution`
-(dataclass) representa uma execução em andamento — `execution_id` (recebido
-pronto; gerar/garantir unicidade é TASK-021), `origin`, `status`
+(dataclass) representa uma execução em andamento — `execution_id`, `origin`, `status`
 (`ExecutionStatus`: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, mesmo conjunto
 usado pela fila — `docs/QUEUE.md`), `steps` (lista de `ModelStep`, TASK-016),
 `result`/`error`, `created_at`/`finished_at`.
@@ -77,3 +76,14 @@ Sem `CANCELLED` ainda — isso é escopo da TASK-030. Sem lógica de política
 (TASK-022), execução de verdade (`ExecutionOrchestrator`, TASK-023),
 `max_steps` (TASK-028) ou detecção de loop (TASK-029) — só o modelo de dados
 e suas transições de estado.
+
+## `execution_id` (TASK-021)
+
+`backend/app/orchestrator/execution_id.py`: `generate_execution_id()` gera um
+UUID4 novo a cada chamada (seção 25 da especificação: "Cada requisição recebe
+um `execution_id` único"; "Reenvios e retries manuais sempre geram novo
+`execution_id`"). `Execution.new(origin)` (fábrica em `execution.py`) cria uma
+`Execution` já com esse `execution_id` gerado — usar isso em vez do construtor
+direto quando não houver um `execution_id` externo definido, inclusive em
+retries. O formato UUID gerado aqui é compatível com a checagem de
+`validate_step` (TASK-017).
