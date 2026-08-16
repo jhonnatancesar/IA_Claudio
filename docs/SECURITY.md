@@ -22,6 +22,18 @@ Fonte: seções 20 e 32 da especificação mestre.
 - A **chave mestra** fica fora do PostgreSQL, em variável de ambiente ou arquivo
   protegido na máquina — nunca versionada (ver `.gitignore`).
 
+### Criptografia de segredos (TASK-012)
+
+Implementado em `backend/app/auth/crypto.py`, usando `Fernet`
+(`cryptography.fernet` — DEC-007): `generate_key()`, `encrypt_secret(plaintext,
+key)` (levanta `ValueError` para texto vazio; token inclui timestamp e
+autenticação, nunca determinístico) e `decrypt_secret(token, key)` (levanta
+`InvalidSecretError` para chave errada ou token adulterado/inválido). Recebe a
+chave já pronta — **não decide de onde ela vem**; isso é escopo da TASK-013
+(chave mestra externa ao banco), que ainda vai definir como `generate_key()` é
+persistida e carregada na prática (arquivo protegido vs. variável de
+ambiente).
+
 ## TASKs relacionadas
 
 TASK-012 e TASK-013: criptografia de segredos, chave mestra externa ao banco.

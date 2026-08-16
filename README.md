@@ -11,10 +11,11 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-011** concluídas — bloco "Fundação" completo, autenticação
-de usuários, autorização por papel (ADMIN/USER) e autenticação de aplicações
-via API key funcionando. Nenhuma outra funcionalidade foi implementada ainda.
-Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
+**TASK-001** a **TASK-012** concluídas — bloco "Fundação" completo,
+autenticação de usuários, autorização por papel, autenticação de aplicações
+via API key e criptografia de segredos funcionando. Nenhuma outra
+funcionalidade foi implementada ainda. Ver [docs/HANDOFF.md](docs/HANDOFF.md)
+para o estado detalhado do projeto.
 
 ## Documentação
 
@@ -37,5 +38,5 @@ Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Próxima TASK
 
-**TASK-012 — Implementar criptografia de segredos**
-([docs/tasks/TASK-012.md](docs/tasks/TASK-012.md)).
+**TASK-013 — Implementar chave mestra externa ao banco**
+([docs/tasks/TASK-013.md](docs/tasks/TASK-013.md)).

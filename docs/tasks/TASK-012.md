@@ -1,6 +1,6 @@
 # TASK-012 — Implementar criptografia de segredos
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,16 @@ Testes unitários de autenticação/autorização (criação de usuário, papéi
 
 ## Documentação afetada
 
-`docs/SECURITY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/SECURITY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (DEC-007),
+`backend/app/auth/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Nova dependência: `cryptography` (DEC-007). Criado
+`backend/app/auth/crypto.py`: `generate_key()`, `encrypt_secret(plaintext,
+key)` (token autenticado, nunca determinístico), `decrypt_secret(token, key)`
+(levanta `InvalidSecretError` para chave errada ou token adulterado). Recebe a
+chave já pronta — de onde ela vem (arquivo protegido, fora do PostgreSQL) é
+escopo da TASK-013, não implementado aqui. 8 testes unitários novos (roundtrip,
+plaintext vazio, não-determinismo, chave errada, token adulterado/inválido).
+Suíte completa: 77/77 testes aprovados.

@@ -84,3 +84,17 @@ PostgreSQL (`docs/DATABASE.md`) — registrada aqui por transparência, sem paus
 para confirmação prévia. Não é uma escolha de ORM (isso continua em aberto,
 `docs/OPEN_QUESTIONS.md`, item 1) — psycopg é usado aqui só como driver raw (SQL
 direto), como já vinha sendo feito nas migrations (TASK-003/TASK-004).
+
+## DEC-007 — Biblioteca de criptografia: `cryptography` (Fernet)
+
+**Data:** 2026-08-16
+
+A TASK-012 (criptografia de segredos em repouso) exigiu escolher uma biblioteca
+de criptografia simétrica. Escolhido o pacote `cryptography` — padrão de fato
+do ecossistema Python para isso, mantido pela Python Cryptographic Authority —
+usando sua abstração de alto nível `Fernet` (AES-128-CBC + HMAC-SHA256
+autenticado). Mesma categoria de decisão que DEC-006: técnica, de baixo risco,
+sem alternativa razoável (reimplementar AEAD na mão seria pior, não melhor, e
+não há motivo para preferir outra lib) — registrada aqui por transparência, sem
+pausar para confirmação prévia. Não decide de onde vem a chave mestra (isso é
+TASK-013).
