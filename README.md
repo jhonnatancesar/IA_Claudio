@@ -12,9 +12,10 @@ são **ferramentas** — nunca fallback de inteligência.
 
 ## Status atual
 
-Repositório em **fase de organização** (estrutura, documentação e planejamento de
-TASKs). Nenhuma funcionalidade do agente foi implementada ainda. Consulte
-[docs/tasks/README.md](docs/tasks/README.md) para o estado exato de cada TASK.
+Repositório organizado (estrutura, documentação e planejamento de TASKs).
+**TASK-001** está concluída; nenhuma outra funcionalidade do agente foi implementada
+ainda. Consulte [docs/tasks/README.md](docs/tasks/README.md) para o estado exato de
+cada TASK.
 
 ## Fonte de verdade
 
@@ -111,5 +112,6 @@ config/         configuração central e exemplos de variáveis de ambiente
 
 ## Próxima TASK executável
 
-**TASK-001 — Inicializar estrutura do projeto Claudião**
-(ver [docs/tasks/TASK-001.md](docs/tasks/TASK-001.md)).
+**TASK-002 — Criar configuração central**
+(ver [docs/tasks/TASK-002.md](docs/tasks/TASK-002.md)). TASK-001 já foi concluída
+nesta sessão de organização (ver [docs/tasks/TASK-001.md](docs/tasks/TASK-001.md)).

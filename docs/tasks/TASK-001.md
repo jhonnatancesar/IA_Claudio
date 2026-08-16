@@ -1,6 +1,6 @@
 # TASK-001 — Inicializar estrutura do projeto Claudião
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -50,3 +50,12 @@ inicializado com o commit esperado.
 
 `README.md`, `docs/ARCHITECTURE.md`, `docs/DECISION_LOG.md` (DEC-002/DEC-003),
 `docs/tasks/README.md`.
+
+## Encerramento
+
+Concluída em 2026-08-16: estrutura de diretórios criada (`backend/app/*`,
+`frontend/`, `docs/`, `tests/{unit,integration,scenarios}`, `config/`, `scripts/`,
+`adr/`, `rfc/`), `.gitignore` versionado, repositório Git inicializado e primeiro
+commit da organização registrado (`chore: organizar estrutura inicial do
+repositório Claudião`). Nenhuma stack de implementação foi escolhida (ver
+`docs/OPEN_QUESTIONS.md`); TASK-002 é a próxima TASK executável.

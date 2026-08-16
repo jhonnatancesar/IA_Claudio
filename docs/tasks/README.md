@@ -20,10 +20,13 @@ para as fases e marcos.
 
 ## Estado atual
 
-Todas as 147 TASKs foram cadastradas nesta organização inicial, com status
-**Pendente**. Nenhuma TASK funcional foi executada ainda.
+Todas as 147 TASKs foram cadastradas nesta organização inicial. **TASK-001** está
+**concluída** (estrutura de diretórios, `.gitignore`, `git init` e primeiro commit —
+ver `docs/tasks/TASK-001.md` e `docs/DECISION_LOG.md`, DEC-003). As demais 146 TASKs
+permanecem com status **Pendente**; nenhuma funcionalidade do agente foi
+implementada.
 
-Próxima TASK executável: **TASK-001 — Inicializar estrutura do projeto Claudião**.
+Próxima TASK executável: **TASK-002 — Criar configuração central**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
