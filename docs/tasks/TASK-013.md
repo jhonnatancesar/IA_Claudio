@@ -1,6 +1,6 @@
 # TASK-013 — Implementar chave mestra externa ao banco
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,23 @@ Testes unitários de autenticação/autorização (criação de usuário, papéi
 
 ## Documentação afetada
 
-`docs/SECURITY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/SECURITY.md`, `docs/tasks/README.md`, `backend/app/auth/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/auth/master_key.py`:
+`load_or_create_master_key(path=None)` — carrega a chave de um arquivo local
+fora do PostgreSQL (nunca versionado); gera uma chave nova
+(`app.auth.crypto.generate_key()`) se o arquivo não existir, e a persiste.
+Caminho vem de `CLAUDIAO_MASTER_KEY_PATH` quando `path` não é informado;
+`MasterKeyPathNotConfiguredError` se nenhum dos dois estiver disponível.
+Permissão do arquivo restringida por melhor esforço (`os.chmod`) — no Windows
+isso só alcança a flag somente-leitura, não uma ACL real; registrado como
+lacuna conhecida em `docs/SECURITY.md`, sem justificar uma dependência nova
+(`pywin32`) só para isso nesta TASK. 7 testes unitários novos (cria quando
+ausente, reusa quando existe, cria diretórios pai, erro sem configuração,
+variável de ambiente, prioridade de `path` explícito, integração com o módulo
+de criptografia da TASK-012). Suíte completa: 84/84 testes aprovados.
+
+**Com esta TASK, o bloco "Segurança e identidade" (TASK-009 a TASK-013) está
+completo.**

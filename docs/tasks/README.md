@@ -59,12 +59,16 @@ continue o trabalho.
 - **TASK-011** — concluída (autenticação de aplicações via API key,
   `backend/app/auth/api_keys.py` — ver `docs/tasks/TASK-011.md`).
 - **TASK-012** — concluída (criptografia de segredos, `backend/app/auth/crypto.py`,
-  `Fernet`/`cryptography` — DEC-007 — ver `docs/tasks/TASK-012.md`). Suíte
-  completa: 77/77 testes aprovados.
+  `Fernet`/`cryptography` — DEC-007 — ver `docs/tasks/TASK-012.md`).
+- **TASK-013** — concluída (chave mestra externa ao banco,
+  `backend/app/auth/master_key.py` — ver `docs/tasks/TASK-013.md`). Suíte
+  completa: 84/84 testes aprovados. **Com esta TASK, o bloco "Segurança e
+  identidade" (TASK-009 a TASK-013) está completo.**
 
-As demais 135 TASKs permanecem com status **Pendente**.
+As demais 134 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-013 — Implementar chave mestra externa ao banco**.
+Próxima TASK executável: **TASK-014 — Criar interface LocalLLMProvider**
+(início do bloco "LLM").
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
