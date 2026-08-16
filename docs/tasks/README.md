@@ -72,11 +72,14 @@ continue o trabalho.
   localmente; nenhum modelo baixado.
 - **TASK-016** — concluída (protocolo JSON modelo ↔ orquestrador,
   `backend/app/llm/protocol.py`, `ModelStep`/`Action`/`Confidence` — ver
-  `docs/tasks/TASK-016.md`). Suíte completa: 116/116 testes aprovados.
+  `docs/tasks/TASK-016.md`).
+- **TASK-017** — concluída (validação semântica,
+  `backend/app/llm/protocol_validator.py`, novo código de erro 4001 — ver
+  `docs/tasks/TASK-017.md`). Suíte completa: 126/126 testes aprovados.
 
-As demais 131 TASKs permanecem com status **Pendente**.
+As demais 130 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-017 — Criar validação dos JSONs internos**.
+Próxima TASK executável: **TASK-018 — Criar prompt-base do Claudião**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

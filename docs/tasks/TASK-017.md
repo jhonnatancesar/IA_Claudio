@@ -1,6 +1,6 @@
 # TASK-017 — Criar validação dos JSONs internos
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,17 @@ Testes unitários do provider e do protocolo JSON (parser/validator contra JSON 
 
 ## Documentação afetada
 
-`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ARCHITECTURE.md`, `docs/ERROR_CATALOG.md`, `docs/tasks/README.md`,
+`backend/app/llm/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/llm/protocol_validator.py`:
+`validate_step(raw) -> ModelStep` decodifica via `ModelStep.from_json`
+(TASK-016) e adiciona checagens semânticas (`execution_id` em formato UUID,
+`reason` não-vazio); qualquer falha vira `ClaudiaoError` com o novo código
+`4001` (`INVALID_MODEL_STEP`, HTTP 502, faixa `MODEL_ORCHESTRATOR`). Corrigido
+também um bug de regressão em `protocol.py` (TASK-016): `parameters`
+não-objeto (lista, string) escapava como `ValueError`/`TypeError` genérico em
+vez de `ProtocolDecodeError`. 2 testes de regressão para o fix + 8 testes
+novos do validador. Suíte completa: 126/126 testes aprovados.

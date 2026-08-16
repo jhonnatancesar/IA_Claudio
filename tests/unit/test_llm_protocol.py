@@ -118,3 +118,19 @@ def test_from_json_rejects_malformed_json():
 def test_from_json_rejects_json_array_at_top_level():
     with pytest.raises(ProtocolDecodeError):
         ModelStep.from_json("[1, 2, 3]")
+
+
+def test_from_dict_rejects_non_dict_parameters():
+    """Regressão (TASK-017): antes do fix, `parameters` não-dict escapava
+    como ValueError/TypeError genérico em vez de ProtocolDecodeError."""
+    payload = dict(_SPEC_EXAMPLE, parameters="isso não é um objeto")
+
+    with pytest.raises(ProtocolDecodeError):
+        ModelStep.from_dict(payload)
+
+
+def test_from_dict_rejects_list_as_parameters():
+    payload = dict(_SPEC_EXAMPLE, parameters=["a", "b"])
+
+    with pytest.raises(ProtocolDecodeError):
+        ModelStep.from_dict(payload)

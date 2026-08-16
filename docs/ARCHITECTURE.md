@@ -180,8 +180,20 @@ volta a gerar etapas neste mesmo protocolo), `confidence` (`Confidence`:
 `reason`, `tool` (obrigatório quando `action` é `USE_TOOL`) e `parameters`.
 `to_dict()`/`to_json()`/`from_dict()`/`from_json()` fazem a
 serialização/decodificação básica, com `ProtocolDecodeError` para JSON
-malformado, campo obrigatório ausente ou valor fora do enum. Validação mais
-profunda contra entrada adversarial é escopo da TASK-017.
+malformado, campo obrigatório ausente ou valor fora do enum.
+
+### Validação semântica (TASK-017)
+
+`backend/app/llm/protocol_validator.py`: `validate_step(raw) -> ModelStep`
+decodifica via `ModelStep.from_json` e adiciona checagens que o parser
+estrutural não faz — `execution_id` precisa ter formato de UUID, `reason` não
+pode ser vazio/só espaços. Qualquer falha (JSON malformado, campo ausente,
+enum inválido, ou uma dessas checagens semânticas) vira `ClaudiaoError` com o
+novo código `4001` (`INVALID_MODEL_STEP`, HTTP 502, faixa
+`MODEL_ORCHESTRATOR` do catálogo — TASK-007), com o motivo específico em
+`details["reason"]`. Corrigido também um bug do parser da TASK-016: um
+`parameters` que não fosse objeto JSON (lista, string) escapava como
+`ValueError`/`TypeError` genérico em vez de `ProtocolDecodeError`.
 
 ## Hierarquia interna de prioridade
 
