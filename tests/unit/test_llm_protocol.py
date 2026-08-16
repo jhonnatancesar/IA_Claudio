@@ -134,3 +134,14 @@ def test_from_dict_rejects_list_as_parameters():
 
     with pytest.raises(ProtocolDecodeError):
         ModelStep.from_dict(payload)
+
+
+def test_to_json_does_not_escape_non_ascii_characters():
+    """Regressão (TASK-019): sem ensure_ascii=False, acentos em `reason`
+    viravam \\uXXXX — o protocolo é PT-BR, então o JSON deve ficar legível."""
+    step = ModelStep.from_dict(_SPEC_EXAMPLE)
+
+    raw = step.to_json()
+
+    assert "Informação atual necessária" in raw
+    assert "\\u" not in raw

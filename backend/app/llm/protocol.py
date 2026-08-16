@@ -75,7 +75,10 @@ class ModelStep:
         return data
 
     def to_json(self) -> str:
-        return json.dumps(self.to_dict())
+        # ensure_ascii=False (fix, TASK-019): sem isso, acentos em `reason`
+        # viram escapes \uXXXX — o protocolo é PT-BR (docs/AGENTS.md), então o
+        # JSON deve ficar legível em UTF-8 nativo, não escapado.
+        return json.dumps(self.to_dict(), ensure_ascii=False)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ModelStep":

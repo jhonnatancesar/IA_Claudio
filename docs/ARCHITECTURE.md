@@ -203,9 +203,22 @@ externa, princípios (offline-first, inteligência local, orquestração
 controlada), a hierarquia de prioridade abaixo, regras de confiança
 (LOW/MEDIUM/HIGH) e o contrato do protocolo JSON por etapa (TASK-016).
 `PROMPT_VERSION` identifica a versão do texto — usado depois pelo Execution
-Trace (TASK-078, `docs/OBSERVABILITY.md`: "versão do prompt"). Composição
-dinâmica com contexto/memória/conhecimento por requisição é escopo da
-TASK-019, não implementada aqui.
+Trace (TASK-078, `docs/OBSERVABILITY.md`: "versão do prompt").
+
+### Composição dinâmica de prompt/contexto (TASK-019)
+
+`backend/app/llm/prompt_composer.py`: `compose_prompt(execution_id,
+objective, history=None)` monta o prompt completo — prompt-base (TASK-018) +
+o pedido atual (item 3 da hierarquia) + o histórico de etapas já executadas
+nesta execução (`StepRecord`: a decisão do modelo e o resultado observado,
+ex.: saída de uma ferramenta), em ordem cronológica. Memória persistente,
+conhecimento e o Context Manager entre conversas (itens 4-8 da hierarquia,
+TASK-037/TASK-044/TASK-052 em diante) ainda não existem — não incluídos aqui.
+
+Corrigido também um bug de regressão em `protocol.py` (TASK-016):
+`ModelStep.to_json()` não usava `ensure_ascii=False`, então acentos em
+`reason` viravam escapes `\uXXXX` em vez de UTF-8 legível — perceptível ao
+compor o histórico de etapas em PT-BR no prompt.
 
 ## Hierarquia interna de prioridade
 
