@@ -1,6 +1,6 @@
 # TASK-007 — Criar catálogo interno de erros
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -30,4 +30,17 @@ Testes unitários do componente correspondente (config, schema, logging ou catá
 
 ## Documentação afetada
 
-`docs/ERROR_CATALOG.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ERROR_CATALOG.md`, `docs/tasks/README.md`, `backend/app/errors/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/errors/catalog.py`: `ErrorDomain`
+(9 faixas de 1000 em 1000, seção 36 da especificação), `ErrorDefinition`,
+`register_error()` (valida faixa e unicidade), `get_error()`, `domain_for_code()`.
+Catálogo seed com 3 erros da fundação (`MISSING_REQUIRED_FIELD` 1001,
+`INVALID_FIELD_VALUE` 1002, `UNKNOWN_INTERNAL_ERROR` 9000) — nenhum código de
+domínios de TASKs futuras foi inventado antecipadamente. 12 testes unitários
+novos em `tests/unit/test_error_catalog.py` (resolução de domínio por faixa,
+rejeição de código fora da faixa, rejeição de duplicata, consulta, erros seed).
+Suíte completa: 31/31 testes aprovados. Formato de resposta JSON padrão que usa
+esse catálogo é escopo da TASK-008, não implementado aqui.

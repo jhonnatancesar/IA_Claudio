@@ -38,10 +38,13 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
 - **TASK-006** — concluída (logging estruturado no PostgreSQL, tabela `logs`,
   `postgres_log_handler.py`, driver psycopg — DEC-006; 13/13 testes aprovados,
   incluindo integração real com o banco — ver `docs/tasks/TASK-006.md`).
+- **TASK-007** — concluída (catálogo interno de erros,
+  `backend/app/errors/catalog.py`, 9 faixas de domínio, 3 erros seed da fundação
+  — ver `docs/tasks/TASK-007.md`). Suíte completa: 31/31 testes aprovados.
 
-As demais 141 TASKs permanecem com status **Pendente**.
+As demais 140 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-007 — Criar catálogo interno de erros**.
+Próxima TASK executável: **TASK-008 — Implementar resposta padrão de erro JSON**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
