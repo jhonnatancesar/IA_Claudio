@@ -12,10 +12,15 @@ Interface LocalLLMProvider, protocolo JSON modelo ↔ orquestrador, validação 
   máquina; nenhum modelo baixado ainda (`docs/OPEN_QUESTIONS.md`, item 3).
 - `protocol.py` (TASK-016) — `ModelStep`, `Action`, `Confidence`,
   `ProtocolDecodeError`. Um JSON por etapa (seção 7 da especificação);
-  decodificação básica (campos obrigatórios, valores dentro do enum).
-  Validação mais profunda é TASK-017.
+  decodificação básica (campos obrigatórios, valores dentro do enum,
+  `parameters` precisa ser objeto — fix da TASK-017).
+- `protocol_validator.py` (TASK-017) — `validate_step(raw) -> ModelStep`.
+  Checagens semânticas extras (`execution_id` em formato UUID, `reason`
+  não-vazio) e tradução de qualquer falha para `ClaudiaoError` (código 4001,
+  faixa `MODEL_ORCHESTRATOR`).
 
 Testes em `tests/unit/test_llm_provider.py`, `tests/unit/test_ollama_provider.py`,
-`tests/unit/test_llm_protocol.py` (unitários, com mock do client onde precisa)
-e `tests/integration/test_ollama_provider_integration.py` (integração real
+`tests/unit/test_llm_protocol.py`, `tests/unit/test_llm_protocol_validator.py`
+(unitários, com mock do client onde precisa) e
+`tests/integration/test_ollama_provider_integration.py` (integração real
 contra o Ollama local; pula automaticamente se indisponível).

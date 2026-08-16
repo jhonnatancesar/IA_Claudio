@@ -30,6 +30,7 @@ nasce pequeno — só os erros que a própria fundação já precisa:
 | 1001 | 400 | Campo obrigatório ausente |
 | 1002 | 400 | Valor de campo inválido |
 | 2001 | 403 | Ação restrita a administradores |
+| 4001 | 502 | JSON do modelo fora do protocolo esperado |
 | 9000 | 500 | Erro interno desconhecido |
 
 Cada TASK futura registra os códigos específicos que precisar quando chegar sua

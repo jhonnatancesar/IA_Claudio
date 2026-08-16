@@ -104,13 +104,21 @@ class ModelStep:
         if action == Action.USE_TOOL and not tool:
             raise ProtocolDecodeError("action USE_TOOL exige o campo 'tool'")
 
+        parameters_raw = data.get("parameters") or {}
+        if not isinstance(parameters_raw, dict):
+            # Fix (TASK-017): sem isso, `dict(parameters_raw)` para um valor
+            # que não é dict/lista-de-pares levanta ValueError/TypeError não
+            # capturado aqui, escapando como um erro não relacionado ao
+            # protocolo em vez de um ProtocolDecodeError claro.
+            raise ProtocolDecodeError("parameters deve ser um objeto JSON")
+
         return cls(
             execution_id=str(data["execution_id"]),
             action=action,
             confidence=confidence,
             reason=str(data["reason"]),
             tool=tool,
-            parameters=dict(data.get("parameters") or {}),
+            parameters=dict(parameters_raw),
         )
 
     @classmethod
