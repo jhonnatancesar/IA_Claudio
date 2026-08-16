@@ -40,11 +40,15 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
   incluindo integração real com o banco — ver `docs/tasks/TASK-006.md`).
 - **TASK-007** — concluída (catálogo interno de erros,
   `backend/app/errors/catalog.py`, 9 faixas de domínio, 3 erros seed da fundação
-  — ver `docs/tasks/TASK-007.md`). Suíte completa: 31/31 testes aprovados.
+  — ver `docs/tasks/TASK-007.md`).
+- **TASK-008** — concluída (formato JSON padrão de erro,
+  `backend/app/errors/response.py`, `ClaudiaoError` — ver
+  `docs/tasks/TASK-008.md`). Suíte completa: 38/38 testes aprovados. **Com esta
+  TASK, o bloco "Fundação" (TASK-001 a TASK-008) está completo.**
 
-As demais 140 TASKs permanecem com status **Pendente**.
+As demais 139 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-008 — Implementar resposta padrão de erro JSON**.
+Próxima TASK executável: **TASK-009 — Criar autenticação de usuários**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

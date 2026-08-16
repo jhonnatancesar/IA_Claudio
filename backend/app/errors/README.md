@@ -13,5 +13,10 @@ de um lugar para o código do catálogo.
   precisa (`MISSING_REQUIRED_FIELD`, `INVALID_FIELD_VALUE`,
   `UNKNOWN_INTERNAL_ERROR`) — cada TASK futura registra os códigos que precisar
   quando chegar sua vez.
+- `response.py` (TASK-008) — formato JSON padrão de erro
+  (`{"success": false, "error": {...}}`, seção 36 da especificação):
+  `build_error_response(definition, details=None)`, `ClaudiaoError` (exceção que
+  carrega a definição + details) e `error_response_from_exception()`. Só o
+  formato de erro — resposta de sucesso é escopo de outra TASK (TASK-072).
 
-Testes em `tests/unit/test_error_catalog.py`.
+Testes em `tests/unit/test_error_catalog.py` e `tests/unit/test_error_response.py`.

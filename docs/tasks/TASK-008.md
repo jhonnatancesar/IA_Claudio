@@ -1,6 +1,6 @@
 # TASK-008 — Implementar resposta padrão de erro JSON
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -30,4 +30,20 @@ Testes unitários do componente correspondente (config, schema, logging ou catá
 
 ## Documentação afetada
 
-`docs/ERROR_CATALOG.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ERROR_CATALOG.md`, `docs/tasks/README.md`, `backend/app/errors/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/errors/response.py`:
+`build_error_response(definition, details=None)` monta exatamente o formato
+`{"success": false, "error": {...}}` da seção 36 da especificação a partir de uma
+`ErrorDefinition` do catálogo (TASK-007), com `details` presente só quando
+fornecido e não vazio; `ClaudiaoError` (exceção que carrega definição + details)
+e `error_response_from_exception()` como atalho. 8 testes unitários novos em
+`tests/unit/test_error_response.py` (estrutura exata contra o exemplo da
+especificação, omissão de `details`, serializável em JSON, exceção e atalho).
+Suíte completa: 38/38 testes aprovados. Nada conectado a um framework
+web/handler HTTP ainda — isso é escopo de TASK-067 em diante (API local, cuja
+stack específica continua em aberto — `docs/OPEN_QUESTIONS.md`, item 1).
+
+Com esta TASK, o bloco funcional "Fundação" (TASK-001 a TASK-008) está completo.
