@@ -16,6 +16,21 @@ inicialmente exista apenas um.
 Cada aplicação tem sua própria API key/token (ver `API.md` para o payload completo
 enviado pela aplicação). A gestão de API keys pelo `ADMIN` é coberta em `PANEL.md`.
 
+### Implementação (TASK-011)
+
+`backend/app/auth/api_keys.py`:
+
+- `generate_api_key()` — 256 bits de entropia (`secrets.token_urlsafe`), prefixo
+  `cldk_` para reconhecimento visual.
+- `create_application(name)` — grava na tabela `applications` (schema da
+  TASK-004) só o **hash** da key (SHA-256 simples — diferente da senha de
+  usuário, TASK-009: a key já nasce com alta entropia, gerada por máquina, não
+  escolhida por humano, então não precisa de PBKDF2 lento nem salt). Retorna a
+  key em texto plano **uma única vez**, no momento da criação — depois disso,
+  não há como recuperá-la, só gerar uma nova.
+- `authenticate_application(api_key)` — recalcula o hash e busca por
+  igualdade; retorna `None` para key vazia ou desconhecida.
+
 ## Autenticação de usuários (TASK-009)
 
 Implementado em `backend/app/auth/`:

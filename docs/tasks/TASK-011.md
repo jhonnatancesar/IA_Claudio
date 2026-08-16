@@ -1,6 +1,6 @@
 # TASK-011 — Criar autenticação de aplicações via API key
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,15 @@ Testes unitários de autenticação/autorização (criação de usuário, papéi
 
 ## Documentação afetada
 
-`docs/AUTHENTICATION.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/AUTHENTICATION.md`, `docs/tasks/README.md`, `backend/app/auth/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/auth/api_keys.py`:
+`generate_api_key()` (256 bits de entropia via `secrets.token_urlsafe`, prefixo
+`cldk_`), `create_application(name)` (grava só o hash SHA-256 — sem PBKDF2, já
+que a key nasce com alta entropia, diferente de senha de usuário; retorna o
+texto plano uma única vez, na criação) e `authenticate_application(api_key)`.
+3 testes unitários (geração) + 6 de integração real com o banco (criação,
+nunca armazena texto plano, nome duplicado, autenticação correta/incorreta/
+vazia). Suíte completa: 69/69 testes aprovados.
