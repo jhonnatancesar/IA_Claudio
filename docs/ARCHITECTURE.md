@@ -69,6 +69,18 @@ bloco funcional correspondente.
 - O modelo definitivo será escolhido por testes, não por chute — nenhuma escolha foi
   feita ainda (ver `OPEN_QUESTIONS.md`).
 
+### Interface `LocalLLMProvider` (TASK-014)
+
+Implementada em `backend/app/llm/provider.py`: `LocalLLMProvider` (classe
+abstrata) com `complete(request: CompletionRequest) -> CompletionResponse` e
+`is_available() -> bool`. `CompletionRequest` carrega o prompt já composto
+(composição de prompt/contexto é TASK-018/TASK-019) e parâmetros básicos de
+geração; `CompletionResponse` carrega o texto bruto, ainda não validado contra
+o protocolo JSON do orquestrador (TASK-016/TASK-017).
+`LocalLLMProviderError` cobre falhas de comunicação com o runtime (timeout,
+indisponibilidade). Nenhuma implementação concreta ainda — `OllamaProvider` é
+TASK-015.
+
 ## Arquitetura de alto nível
 
 ```

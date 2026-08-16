@@ -61,14 +61,16 @@ continue o trabalho.
 - **TASK-012** — concluída (criptografia de segredos, `backend/app/auth/crypto.py`,
   `Fernet`/`cryptography` — DEC-007 — ver `docs/tasks/TASK-012.md`).
 - **TASK-013** — concluída (chave mestra externa ao banco,
-  `backend/app/auth/master_key.py` — ver `docs/tasks/TASK-013.md`). Suíte
-  completa: 84/84 testes aprovados. **Com esta TASK, o bloco "Segurança e
-  identidade" (TASK-009 a TASK-013) está completo.**
+  `backend/app/auth/master_key.py` — ver `docs/tasks/TASK-013.md`). **Com esta
+  TASK, o bloco "Segurança e identidade" (TASK-009 a TASK-013) está
+  completo.**
+- **TASK-014** — concluída (interface `LocalLLMProvider`,
+  `backend/app/llm/provider.py` — ver `docs/tasks/TASK-014.md`). Suíte
+  completa: 91/91 testes aprovados.
 
-As demais 134 TASKs permanecem com status **Pendente**.
+As demais 133 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-014 — Criar interface LocalLLMProvider**
-(início do bloco "LLM").
+Próxima TASK executável: **TASK-015 — Implementar OllamaProvider**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
