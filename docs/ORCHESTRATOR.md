@@ -51,7 +51,8 @@ orçamento mais restrito que aplicações.
 - `max_steps` inicial sugerido: **10**, configurável conforme aplicação/contexto.
   **Aplicado (TASK-028)** — ver seção `ExecutionOrchestrator` abaixo.
 - Detecção de loop. **Implementada (TASK-029)** — ver seção própria abaixo.
-- Cancelamento externo/interno — ainda não implementado (TASK-030).
+- Cancelamento externo/interno. **Implementado (TASK-030)** — ver seção própria
+  abaixo.
 - Erro irrecuperável.
 - No chat não há timeout fixo (timeout é definido pela aplicação — ver `API.md`).
 
@@ -79,18 +80,20 @@ marcado como encerrado — fica disponível para auditoria/debug.
 
 Implementado em `backend/app/orchestrator/execution.py`: `Execution`
 (dataclass) representa uma execução em andamento — `execution_id`, `origin`, `status`
-(`ExecutionStatus`: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, mesmo conjunto
-usado pela fila — `docs/QUEUE.md`), `steps` (lista de `ModelStep`, TASK-016),
-`result`/`error`, `created_at`/`finished_at`.
+(`ExecutionStatus`: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED`/`CANCELLED`
+— os quatro primeiros no mesmo conjunto usado pela fila, `docs/QUEUE.md`;
+`CANCELLED` adicionado na TASK-030), `steps` (lista de `ModelStep`,
+TASK-016), `result`/`error`, `created_at`/`finished_at`.
 
 Transições válidas: `start()` (`PENDING`→`RUNNING`), `add_step()` (só com
 `RUNNING`), `complete(result)` (`RUNNING`→`COMPLETED`), `fail(error)`
-(qualquer estado não-terminal→`FAILED`, inclusive direto de `PENDING`).
-Qualquer transição fora dessas regras levanta `InvalidExecutionStateError`.
-Sem `CANCELLED` ainda — isso é escopo da TASK-030. Sem lógica de política
-(TASK-022), execução de verdade (`ExecutionOrchestrator`, TASK-023),
-`max_steps` (TASK-028) ou detecção de loop (TASK-029) — só o modelo de dados
-e suas transições de estado.
+(qualquer estado não-terminal→`FAILED`, inclusive direto de `PENDING`),
+`cancel(reason)` (qualquer estado não-terminal→`CANCELLED`, TASK-030, mesmo
+padrão de `fail()`). Qualquer transição fora dessas regras levanta
+`InvalidExecutionStateError`. Sem lógica de política (TASK-022) — só o
+modelo de dados e suas transições de estado; `max_steps`/detecção de
+loop/cancelamento de fato são aplicados pelo `ExecutionOrchestrator`
+(TASK-028/TASK-029/TASK-030).
 
 ## `execution_id` (TASK-021)
 
@@ -224,3 +227,30 @@ conta como loop. `ExecutionOrchestrator` ganhou o parâmetro
 Repetir a mesma ferramenta com **parâmetros diferentes** a cada chamada não
 é loop — é progresso real (ex.: buscas sucessivas com termos diferentes).
 Só a repetição exata das últimas `threshold` decisões conta.
+
+## Cancelamento (TASK-030)
+
+Implementado em `backend/app/orchestrator/cancellation.py`:
+`CancellationToken` — sinalizador de cancelamento cooperativo, sem threads/
+async (a V1 é síncrona): `cancel(reason="cancelado")` marca o token;
+`is_cancelled` é checado pelo orquestrador. `ExecutionCancelledError` é a
+exceção levantada (não é `ClaudiaoError` — cancelamento é uma parada
+deliberada, não uma falha de domínio; o erro JSON específico de timeout de
+aplicação continua sendo TASK-071, não implementado aqui).
+
+`Execution` ganhou o estado `CANCELLED` (previsto desde a TASK-020) e o
+método `cancel(reason)` — mesmo padrão de `fail()`, qualquer estado
+não-terminal pode ser cancelado. `ExecutionOrchestrator.run_step` e
+`run_until_response` aceitam um `cancellation_token` opcional; se já
+cancelado ao entrar em `run_step`, cancela `execution` e levanta
+`ExecutionCancelledError` **antes** de checar `max_steps` ou chamar o
+modelo — nenhuma chamada desperdiçada ao provider. `plan_initial_step`
+(TASK-024) e `replan` (TASK-027) repassam o token adiante.
+
+Cobre tanto cancelamento **externo** (quem chama guarda o token e cancela
+de fora, ex.: usuário desiste, timeout da aplicação) quanto **interno** (o
+próprio código do orquestrador, ou um `tool_executor`, pode chamar
+`token.cancel(...)` antes de retornar — o mesmo mecanismo serve aos dois
+casos). `CANCELLED`, já sendo um estado terminal, também bloqueia
+replanejamento (`CannotReplanFinishedExecutionError`), consistente com
+`COMPLETED`/`FAILED`.

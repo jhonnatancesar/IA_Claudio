@@ -1,16 +1,15 @@
-"""Modelo de `Execution` (TASK-020), com geração de `execution_id` (TASK-021)
-e observações por etapa (TASK-026).
+"""Modelo de `Execution` (TASK-020), com geração de `execution_id` (TASK-021),
+observações por etapa (TASK-026) e cancelamento (TASK-030).
 
 Representa o ciclo de vida de uma execução do orquestrador (docs/ARCHITECTURE.md,
 seção "Orquestrador"). O modelo de dados, as transições de estado válidas e a
 fábrica `Execution.new()` que gera um `execution_id` novo — não decide
-política (TASK-022), não implementa `max_steps`/detecção de loop/cancelamento
-(TASK-028/TASK-029/TASK-030).
+política (TASK-022), não implementa `max_steps`/detecção de loop
+(TASK-028/TASK-029, esses sim aplicados pelo `ExecutionOrchestrator`).
 
-Estados mínimos por ora: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED` — o mesmo
-conjunto usado pela fila (`docs/QUEUE.md`). Um estado `CANCELLED` pode ser
-adicionado quando a TASK-030 (cancelamento) for implementada; não incluído
-aqui para não adiantar essa TASK.
+Estados: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED` — mesmo conjunto usado pela
+fila (`docs/QUEUE.md`) — mais `CANCELLED` (TASK-030), previsto desde a
+TASK-020 e adicionado agora que o cancelamento tem uma TASK própria.
 """
 
 from __future__ import annotations
@@ -28,6 +27,7 @@ class ExecutionStatus(StrEnum):
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
 
 
 class InvalidExecutionStateError(RuntimeError):
@@ -35,7 +35,9 @@ class InvalidExecutionStateError(RuntimeError):
     etapa a uma execução que ainda não começou ou já terminou)."""
 
 
-_TERMINAL_STATUSES = frozenset({ExecutionStatus.COMPLETED, ExecutionStatus.FAILED})
+_TERMINAL_STATUSES = frozenset(
+    {ExecutionStatus.COMPLETED, ExecutionStatus.FAILED, ExecutionStatus.CANCELLED}
+)
 
 
 @dataclass
@@ -118,6 +120,19 @@ class Execution:
             )
         self.status = ExecutionStatus.FAILED
         self.error = error
+        self.finished_at = datetime.now(timezone.utc)
+
+    def cancel(self, reason: str) -> None:
+        """Qualquer estado não-terminal → `CANCELLED` (TASK-030), registrando
+        o motivo. Cobre tanto cancelamento externo (ex.: timeout da
+        aplicação — o código de erro específico é TASK-071, não aqui) quanto
+        interno (o próprio orquestrador decide parar)."""
+        if self.status in _TERMINAL_STATUSES:
+            raise InvalidExecutionStateError(
+                f"não é possível cancelar uma execução em estado {self.status}"
+            )
+        self.status = ExecutionStatus.CANCELLED
+        self.error = reason
         self.finished_at = datetime.now(timezone.utc)
 
     @property

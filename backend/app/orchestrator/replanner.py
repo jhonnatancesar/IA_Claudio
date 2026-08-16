@@ -21,6 +21,7 @@ dentro de `run_step`.
 from __future__ import annotations
 
 from app.llm.protocol import ModelStep
+from app.orchestrator.cancellation import CancellationToken
 from app.orchestrator.execution import Execution
 from app.orchestrator.orchestrator import ExecutionOrchestrator
 from app.orchestrator.planner import plan_initial_step
@@ -38,13 +39,15 @@ def replan(
     old_execution: Execution,
     objective: str,
     model: str,
+    cancellation_token: CancellationToken | None = None,
 ) -> tuple[Execution, ModelStep]:
     """Descarta `old_execution` e gera um plano completo novo numa execução
     nova, com o mesmo `origin`.
 
     Levanta `CannotReplanFinishedExecutionError` se `old_execution` já
-    estiver em estado terminal — não há plano "restante" para descartar
-    numa execução que já acabou.
+    estiver em estado terminal (incluindo `CANCELLED`, TASK-030) — não há
+    plano "restante" para descartar numa execução que já acabou.
+    `cancellation_token` é repassado para o plano da execução nova.
     """
     if old_execution.is_terminal:
         raise CannotReplanFinishedExecutionError(
@@ -54,5 +57,5 @@ def replan(
     old_execution.fail(_REPLAN_DISCARD_MESSAGE)
 
     new_execution = Execution.new(origin=old_execution.origin)
-    step = plan_initial_step(orchestrator, new_execution, objective, model)
+    step = plan_initial_step(orchestrator, new_execution, objective, model, cancellation_token)
     return new_execution, step

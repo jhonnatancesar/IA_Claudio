@@ -113,12 +113,20 @@ usuário.
   de erro 4004 — ver `docs/tasks/TASK-028.md`).
 - **TASK-029** — concluída (detecção de loop,
   `backend/app/orchestrator/loop_detector.py`, novo código de erro 4005 —
-  ver `docs/tasks/TASK-029.md`). Suíte completa: 233/233 testes aprovados.
+  ver `docs/tasks/TASK-029.md`).
+- **TASK-030** — concluída (cancelamento, `ExecutionStatus.CANCELLED`,
+  `backend/app/orchestrator/cancellation.py` — ver
+  `docs/tasks/TASK-030.md`). Suíte completa: 247/247 testes aprovados.
+  **Com esta TASK, o bloco "Orquestração" (TASK-020 a TASK-030) está
+  completo.**
 
-As demais 118 TASKs permanecem com status **Pendente**.
+**Checkpoint de 10 TASKs (AGENTS.md):** próximo checkpoint automático de
+push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 
-Próxima TASK executável: **TASK-030 — Implementar cancelamento** (fecha o
-bloco "Orquestração").
+As demais 117 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-031 — Implementar confiança LOW/MEDIUM/HIGH
+do modelo** (início do bloco "Confiança e guardrails").
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
