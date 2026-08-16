@@ -1,6 +1,6 @@
 # TASK-002 — Criar configuração central
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -34,4 +34,16 @@ Testes unitários do componente correspondente (config, schema, logging ou catá
 
 ## Documentação afetada
 
-`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ARCHITECTURE.md`, `docs/tasks/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16: `config/.env.example` expandido para cobrir todos os
+parâmetros de configuração já previstos na especificação mestre (PostgreSQL, chave
+mestra, runtime/modelo LLM, log level, janela de contexto, `max_steps`, limite de
+memória por escopo, ciclo/limiares de cota, timeout de sessão administrativa, janela
+de atualização), todos como placeholders — nenhum valor definitivo atribuído. Seção
+"Configuração central" adicionada a `docs/ARCHITECTURE.md` explicando os campos e
+remetendo a cada documento/TASK responsável pelo valor final. Formato definitivo e
+mecanismo de carregamento continuam dependentes da escolha de stack
+(`docs/OPEN_QUESTIONS.md`, item 1), que não foi feita nesta TASK.

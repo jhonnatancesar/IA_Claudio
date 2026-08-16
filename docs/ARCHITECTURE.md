@@ -35,6 +35,29 @@ confiança, persistência, cancelamento e erros.
   sobre o **acesso de clientes à API do Claudião**; não confundir com a exigência de
   HTTPS para chamadas do Claudião a destinos externos (`SECURITY.md`).
 
+## Configuração central
+
+A configuração do agente vive em um arquivo central de variáveis de ambiente —
+exemplo em [`config/.env.example`](../config/.env.example) (TASK-002). Cobre, com
+placeholders (sem valores reais versionados — ver `.gitignore`):
+
+- conexão com o PostgreSQL local (`docs/DATABASE.md`);
+- caminho da chave mestra de criptografia (`docs/SECURITY.md`);
+- runtime de LLM ativo e modelo ativo (`docs/OPEN_QUESTIONS.md`, itens 1 e 3);
+- nível de log (`docs/OBSERVABILITY.md`);
+- tamanho da janela de contexto e limiar de aviso (`docs/ORCHESTRATOR.md`);
+- `max_steps` (`docs/ORCHESTRATOR.md`);
+- limite de memória por escopo (`docs/MEMORY.md`);
+- ciclo e limiares de cota (`docs/QUOTAS.md`);
+- timeout de sessão administrativa (`docs/PANEL.md`);
+- janela de atualização noturna (`docs/UPDATER.md`).
+
+O formato exato (variáveis de ambiente vs. arquivo estruturado) e o mecanismo de
+carregamento dependem da stack de implementação, ainda não escolhida — ver
+`docs/OPEN_QUESTIONS.md`, item 1. Nenhum valor definitivo (modelo ativo, limite de
+memória, timeout de sessão) foi atribuído nesta TASK; cada um é decidido na TASK do
+bloco funcional correspondente.
+
 ## Runtime e modelo local
 
 - Runtime inicial: **Ollama**.

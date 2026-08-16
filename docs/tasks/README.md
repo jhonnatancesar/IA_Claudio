@@ -20,13 +20,16 @@ para as fases e marcos.
 
 ## Estado atual
 
-Todas as 147 TASKs foram cadastradas nesta organização inicial. **TASK-001** está
-**concluída** (estrutura de diretórios, `.gitignore`, `git init` e primeiro commit —
-ver `docs/tasks/TASK-001.md` e `docs/DECISION_LOG.md`, DEC-003). As demais 146 TASKs
-permanecem com status **Pendente**; nenhuma funcionalidade do agente foi
-implementada.
+Todas as 147 TASKs foram cadastradas nesta organização inicial.
 
-Próxima TASK executável: **TASK-002 — Criar configuração central**.
+- **TASK-001** — concluída (estrutura de diretórios, `.gitignore`, `git init` e
+  primeiro commit — ver `docs/tasks/TASK-001.md` e `docs/DECISION_LOG.md`, DEC-003).
+- **TASK-002** — concluída (`config/.env.example` expandido com os parâmetros
+  previstos na especificação, todos como placeholder — ver `docs/tasks/TASK-002.md`).
+
+As demais 145 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-003 — Configurar PostgreSQL local**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
