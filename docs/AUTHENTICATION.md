@@ -29,6 +29,24 @@ Implementado em `backend/app/auth/`:
   errada" na resposta). `role` aqui é só o valor gravado — **regras de
   autorização por papel são escopo da TASK-010**, não implementadas aqui.
 
+## Autorização por papel (TASK-010)
+
+Implementado em `backend/app/auth/roles.py`:
+
+- `Role` — `Enum` com `ADMIN`/`USER`, fonte única de verdade (o
+  `VALID_ROLES` de `app.auth.users`, TASK-009, agora deriva dele).
+- `is_admin(role)` — `True` só para `Role.ADMIN`; qualquer outro valor
+  (incluindo papéis desconhecidos) é tratado como não-admin.
+- `require_admin(role, details=None)` — levanta `ClaudiaoError` com o novo
+  código `2001` (`FORBIDDEN_ADMIN_ONLY`, HTTP 403, faixa `AUTH` do catálogo de
+  erros — TASK-007) se `role` não for `ADMIN`.
+
+Opera sobre a string `role`, não sobre a classe `User` (TASK-009), para não
+criar dependência circular entre os dois módulos. Ainda sem nenhum chamador
+real (painel administrativo é TASK-115 em diante) — só a primitiva de
+autorização, pronta para ser usada quando houver uma rota/ação que precise
+dela.
+
 ## TASKs relacionadas
 
 TASK-009 a TASK-011: autenticação de usuários, roles `ADMIN`/`USER`, autenticação de

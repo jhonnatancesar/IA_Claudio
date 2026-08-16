@@ -11,9 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-009** concluídas — bloco "Fundação" completo e
-autenticação de usuários (hash de senha, criação e login) funcionando. Nenhuma
-outra funcionalidade foi implementada ainda.
+**TASK-001** a **TASK-010** concluídas — bloco "Fundação" completo, autenticação
+de usuários e autorização por papel (ADMIN/USER) funcionando. Nenhuma outra
+funcionalidade foi implementada ainda. Ver [docs/HANDOFF.md](docs/HANDOFF.md)
+para o estado detalhado do projeto.
 
 ## Documentação
 
@@ -34,5 +35,5 @@ outra funcionalidade foi implementada ainda.
 
 ## Próxima TASK
 
-**TASK-010 — Criar roles ADMIN e USER**
-([docs/tasks/TASK-010.md](docs/tasks/TASK-010.md)).
+**TASK-011 — Criar autenticação de aplicações via API key**
+([docs/tasks/TASK-011.md](docs/tasks/TASK-011.md)).

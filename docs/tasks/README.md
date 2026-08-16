@@ -47,11 +47,18 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
   TASK-008) está completo.**
 - **TASK-009** — concluída (autenticação de usuários,
   `backend/app/auth/password.py` + `users.py`, PBKDF2 sem dependência nova — ver
-  `docs/tasks/TASK-009.md`). Suíte completa: 52/52 testes aprovados.
+  `docs/tasks/TASK-009.md`).
+- **TASK-010** — concluída (autorização por papel, `backend/app/auth/roles.py`,
+  `Role`/`is_admin`/`require_admin`, novo código de erro 2001 — ver
+  `docs/tasks/TASK-010.md`). Suíte completa: 60/60 testes aprovados.
 
-As demais 138 TASKs permanecem com status **Pendente**.
+**Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-010, a `main` local é
+enviada ao GitHub e `docs/HANDOFF.md` é criado/atualizado para permitir que
+outra IA continue o trabalho.
 
-Próxima TASK executável: **TASK-010 — Criar roles ADMIN e USER**.
+As demais 137 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-011 — Criar autenticação de aplicações via API key**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
