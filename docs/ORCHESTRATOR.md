@@ -104,3 +104,26 @@ vez, não declarada de antemão); `for_application(timeout_seconds=...)` —
 exige `timeout_seconds` (seção 26: "O timeout é definido pela própria
 aplicação"). Só o modelo — quem aplica a política de fato é o
 `ExecutionOrchestrator` (TASK-023).
+
+## `ExecutionOrchestrator` (TASK-023)
+
+Implementado em `backend/app/orchestrator/orchestrator.py`: liga
+`LocalLLMProvider` (TASK-014/015), composição de prompt (TASK-019), o
+protocolo e sua validação (TASK-016/017) e `Execution` (TASK-020) num passo
+real. `ExecutionOrchestrator(provider, policy)` guarda o provider e a
+`ExecutionPolicy` (TASK-022) — a política ainda **não é aplicada**, só
+guardada, para as TASKs futuras de limite.
+
+`run_step(execution, objective, model)`: inicia a execução se `PENDING`;
+compõe o prompt com o histórico atual (`compose_prompt`); chama
+`provider.complete()`; valida a resposta (`validate_step`); registra a etapa
+em `execution`. Se a etapa for `RESPOND`, conclui a execução usando `reason`
+como resultado (o protocolo não define um campo de resposta final separado).
+Qualquer falha — `LocalLLMProviderError` do runtime ou `ClaudiaoError` do
+protocolo — marca a execução como `FAILED` antes de propagar a exceção.
+
+**O que ainda não existe aqui** (TASKs futuras constroem em cima): planejamento
+inicial (TASK-024), validação de plano multi-etapa (TASK-025), execução de
+ferramentas de verdade (TASK-026 — hoje `USE_TOOL` só é registrado, nenhuma
+ferramenta roda), replanejamento (TASK-027), aplicação de `max_steps`
+(TASK-028), detecção de loop (TASK-029), cancelamento (TASK-030).
