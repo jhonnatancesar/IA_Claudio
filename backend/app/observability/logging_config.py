@@ -1,8 +1,10 @@
-"""Logging local rotativo do Claudião (TASK-005).
+"""Logging local rotativo do Claudião (TASK-005), com logging estruturado no
+PostgreSQL como complemento opcional (TASK-006, `postgres_log_handler.py`).
 
-Cobre somente o log em arquivo local, com rotação automática, conforme
-docs/OBSERVABILITY.md. O logging estruturado no PostgreSQL é escopo da TASK-006,
-não implementado aqui.
+O arquivo local com rotação é sempre configurado. O handler do PostgreSQL só é
+anexado quando `CLAUDIAO_POSTGRES_*` estiver disponível no ambiente; sem essas
+variáveis, o logging continua funcionando normalmente, só em arquivo — conforme
+docs/OBSERVABILITY.md.
 """
 
 from __future__ import annotations
@@ -11,6 +13,8 @@ import logging
 import logging.handlers
 import os
 from pathlib import Path
+
+from app.observability.postgres_log_handler import attach_postgres_handler
 
 DEFAULT_LOG_DIR = "logs"
 DEFAULT_LOG_FILE = "claudiao.log"
@@ -66,6 +70,8 @@ def configure_logging(*, force: bool = False) -> logging.Logger:
     root.handlers.clear()
     root.addHandler(handler)
     root.propagate = False
+
+    attach_postgres_handler(root)
 
     _configured = True
     return root

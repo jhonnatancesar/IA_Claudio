@@ -15,8 +15,24 @@ Implementado em `backend/app/observability/logging_config.py`:
 `CLAUDIAO_LOG_LEVEL`, padrão `INFO` — `DEBUG` só se definido explicitamente);
 `get_logger(nome)` retorna um logger filho. Rotação por tamanho: 10 MB por arquivo,
 5 backups (`RotatingFileHandler`), diretório configurável via `CLAUDIAO_LOG_DIR`
-(padrão `logs/`, criado automaticamente se não existir). Sem escrita no PostgreSQL
-ainda — isso fica para a TASK-006.
+(padrão `logs/`, criado automaticamente se não existir).
+
+### Logging estruturado no PostgreSQL (TASK-006)
+
+Implementado em `backend/app/observability/postgres_log_handler.py`
+(`PostgresLogHandler`) e gravado na tabela `logs`
+(`backend/app/db/migrations/0002_logs.sql`: `timestamp`, `level`, `logger`,
+`message`, `context jsonb`). `configure_logging()` anexa esse handler
+automaticamente quando `CLAUDIAO_POSTGRES_*` está disponível no ambiente
+(`build_dsn_from_env()`); sem essas variáveis, o logging segue normalmente só em
+arquivo — nunca é um requisito rígido. Uma conexão nova é aberta por mensagem
+(sem pool — otimização futura, se o volume exigir); falhas de escrita no banco não
+derrubam a aplicação nem o arquivo local.
+
+**Lacuna conhecida:** a especificação (seção 35) descreve retenção cíclica para os
+logs em banco, mas não há TASK numerada dedicada a essa limpeza no backlog — não
+implementada ainda. Registrado aqui para não ser esquecida quando uma TASK futura
+tratar de retenção/limpeza de dados operacionais.
 
 ## Execution Trace
 

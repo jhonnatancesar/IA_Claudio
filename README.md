@@ -11,8 +11,9 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-005** concluídas (linguagem do backend: Python). Nenhuma
-outra funcionalidade foi implementada ainda.
+**TASK-001** a **TASK-006** concluídas (linguagem do backend: Python; logging
+local e no PostgreSQL funcionando). Nenhuma outra funcionalidade foi implementada
+ainda.
 
 ## Documentação
 
@@ -33,5 +34,5 @@ outra funcionalidade foi implementada ainda.
 
 ## Próxima TASK
 
-**TASK-006 — Criar logging estruturado no PostgreSQL**
-([docs/tasks/TASK-006.md](docs/tasks/TASK-006.md)).
+**TASK-007 — Criar catálogo interno de erros**
+([docs/tasks/TASK-007.md](docs/tasks/TASK-007.md)).
