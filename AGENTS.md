@@ -74,6 +74,12 @@ TASK → Branch própria → Implementação → Validação/Testes → Atualiza
 - A `main` **remota** (`origin/main` no GitHub) só é atualizada quando o usuário
   pedir explicitamente — nunca fazer `git push` para `main` por conta própria, mesmo
   depois de concluir e mergear uma TASK localmente.
+- As branches `task-XXX` **também são enviadas ao GitHub** (`git push origin
+  task-XXX`) — desde 2026-08-16, a pedido do usuário, para ter registro
+  individual de cada TASK no remoto, não só o resultado final na `main`. Enviar
+  a branch da TASK corrente junto com o push da `main` (checkpoint de 10 TASKs
+  ou pedido explícito); branches antigas sem push (`task-003` a `task-020`) já
+  foram sincronizadas retroativamente.
 - Commits seguem as regras normais de Git do agente/ferramenta em uso — nunca sem
   confirmação explícita do usuário para ações que afetam o repositório remoto.
 
@@ -84,7 +90,8 @@ Exceção à regra acima de "push só quando pedido" — a cada 10 TASKs conclu�
 
 1. **Push automático** — enviar a `main` local para `origin/main` no GitHub, sem
    precisar de pedido explícito nesse ponto específico (o usuário já pediu isso
-   como prática permanente).
+   como prática permanente). Enviar junto qualquer branch `task-XXX` ainda sem
+   push desde o checkpoint anterior.
 2. **Atualizar `docs/HANDOFF.md`** — documento de estado vivo do projeto, escrito
    para que **outra IA/agente, numa sessão nova e sem este histórico de
    conversa, consiga continuar o trabalho** só lendo esse arquivo (mais o resto
