@@ -16,9 +16,12 @@ Autenticação humana (usuário/senha, perfis ADMIN/USER) e autenticação de ap
   `create_application(name)` (retorna a key em texto plano só uma vez; grava
   hash SHA-256 simples — sem PBKDF2, a key já nasce com alta entropia),
   `authenticate_application(api_key)`.
+- `crypto.py` (TASK-012) — `generate_key()`/`encrypt_secret()`/
+  `decrypt_secret()`, usando `Fernet` (`cryptography`, DEC-007). Recebe a
+  chave pronta; de onde ela vem é a TASK-013.
 
 Testes em `tests/unit/test_password.py`, `tests/unit/test_roles.py`,
-`tests/unit/test_api_keys.py` (unitários, sem banco) e
-`tests/integration/test_users_integration.py`,
+`tests/unit/test_api_keys.py`, `tests/unit/test_crypto.py` (unitários, sem
+banco) e `tests/integration/test_users_integration.py`,
 `tests/integration/test_api_keys_integration.py` (integração real com o
 PostgreSQL local; pulam automaticamente se o banco não estiver disponível).

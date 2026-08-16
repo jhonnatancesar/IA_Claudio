@@ -57,12 +57,14 @@ enviada ao GitHub e `docs/HANDOFF.md` criado para permitir que outra IA
 continue o trabalho.
 
 - **TASK-011** — concluída (autenticação de aplicações via API key,
-  `backend/app/auth/api_keys.py` — ver `docs/tasks/TASK-011.md`). Suíte
-  completa: 69/69 testes aprovados.
+  `backend/app/auth/api_keys.py` — ver `docs/tasks/TASK-011.md`).
+- **TASK-012** — concluída (criptografia de segredos, `backend/app/auth/crypto.py`,
+  `Fernet`/`cryptography` — DEC-007 — ver `docs/tasks/TASK-012.md`). Suíte
+  completa: 77/77 testes aprovados.
 
-As demais 136 TASKs permanecem com status **Pendente**.
+As demais 135 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-012 — Implementar criptografia de segredos**.
+Próxima TASK executável: **TASK-013 — Implementar chave mestra externa ao banco**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
