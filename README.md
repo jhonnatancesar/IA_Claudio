@@ -11,9 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-007** concluídas (linguagem do backend: Python; logging
-local e no PostgreSQL funcionando; catálogo interno de erros criado). Nenhuma
-outra funcionalidade foi implementada ainda.
+**TASK-001** a **TASK-008** concluídas — bloco "Fundação" completo (estrutura,
+config, PostgreSQL, schema inicial, logging local e no PostgreSQL, catálogo de
+erros e formato JSON padrão de erro). Nenhuma outra funcionalidade foi
+implementada ainda.
 
 ## Documentação
 
@@ -34,5 +35,5 @@ outra funcionalidade foi implementada ainda.
 
 ## Próxima TASK
 
-**TASK-008 — Implementar resposta padrão de erro JSON**
-([docs/tasks/TASK-008.md](docs/tasks/TASK-008.md)).
+**TASK-009 — Criar autenticação de usuários**
+([docs/tasks/TASK-009.md](docs/tasks/TASK-009.md)).

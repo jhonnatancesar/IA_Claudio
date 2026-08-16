@@ -33,8 +33,17 @@ nasce pequeno — só os erros que a própria fundação já precisa:
 
 Cada TASK futura registra os códigos específicos que precisar quando chegar sua
 vez (ex.: TASK-011 pode registrar códigos 2xxx para API key inválida) — não
-inventados antecipadamente aqui. O formato de resposta JSON que usa esse
-catálogo é escopo da TASK-008, não implementado nesta TASK.
+inventados antecipadamente aqui.
+
+## Formato de resposta (TASK-008)
+
+Implementado em `backend/app/errors/response.py`:
+`build_error_response(definition, details=None)` monta exatamente o JSON acima a
+partir de uma `ErrorDefinition` do catálogo (`details` só aparece quando
+fornecido e não vazio); `ClaudiaoError` é uma exceção que carrega a definição e
+os `details` da ocorrência, com `error_response_from_exception()` como atalho.
+Ainda não conectado a nenhum framework web/handler HTTP — isso é escopo de
+TASK-067 em diante (API local).
 
 ## Formato padrão de erro
 
