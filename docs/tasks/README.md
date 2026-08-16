@@ -79,14 +79,15 @@ continue o trabalho.
 - **TASK-018** — concluída (prompt-base, `backend/app/llm/prompt.py` — ver
   `docs/tasks/TASK-018.md`).
 - **TASK-019** — concluída (composição dinâmica de prompt/contexto,
-  `backend/app/llm/prompt_composer.py` — ver `docs/tasks/TASK-019.md`). Suíte
-  completa: 146/146 testes aprovados. **Com esta TASK, o bloco "LLM"
-  (TASK-014 a TASK-019) está completo.**
+  `backend/app/llm/prompt_composer.py` — ver `docs/tasks/TASK-019.md`). **Com
+  esta TASK, o bloco "LLM" (TASK-014 a TASK-019) está completo.**
+- **TASK-020** — concluída (modelo de `Execution`,
+  `backend/app/orchestrator/execution.py` — ver `docs/tasks/TASK-020.md`).
+  Suíte completa: 161/161 testes aprovados.
 
-As demais 128 TASKs permanecem com status **Pendente**.
+As demais 127 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-020 — Criar modelo de Execution**
-(início do bloco "Orquestração").
+Próxima TASK executável: **TASK-021 — Implementar execution_id**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

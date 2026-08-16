@@ -59,3 +59,21 @@ orçamento mais restrito que aplicações.
 Quando é necessário replanejar, o agente pode descartar o restante do plano anterior e
 gerar um plano completo novo. O novo plano volta a passar pela validação do
 orquestrador (mesmas regras do plano inicial).
+
+## Modelo de `Execution` (TASK-020)
+
+Implementado em `backend/app/orchestrator/execution.py`: `Execution`
+(dataclass) representa uma execução em andamento — `execution_id` (recebido
+pronto; gerar/garantir unicidade é TASK-021), `origin`, `status`
+(`ExecutionStatus`: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, mesmo conjunto
+usado pela fila — `docs/QUEUE.md`), `steps` (lista de `ModelStep`, TASK-016),
+`result`/`error`, `created_at`/`finished_at`.
+
+Transições válidas: `start()` (`PENDING`→`RUNNING`), `add_step()` (só com
+`RUNNING`), `complete(result)` (`RUNNING`→`COMPLETED`), `fail(error)`
+(qualquer estado não-terminal→`FAILED`, inclusive direto de `PENDING`).
+Qualquer transição fora dessas regras levanta `InvalidExecutionStateError`.
+Sem `CANCELLED` ainda — isso é escopo da TASK-030. Sem lógica de política
+(TASK-022), execução de verdade (`ExecutionOrchestrator`, TASK-023),
+`max_steps` (TASK-028) ou detecção de loop (TASK-029) — só o modelo de dados
+e suas transições de estado.
