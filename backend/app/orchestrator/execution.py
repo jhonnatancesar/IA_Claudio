@@ -1,10 +1,10 @@
-"""Modelo de `Execution` (TASK-020), com geração de `execution_id` (TASK-021).
+"""Modelo de `Execution` (TASK-020), com geração de `execution_id` (TASK-021)
+e observações por etapa (TASK-026).
 
 Representa o ciclo de vida de uma execução do orquestrador (docs/ARCHITECTURE.md,
 seção "Orquestrador"). O modelo de dados, as transições de estado válidas e a
 fábrica `Execution.new()` que gera um `execution_id` novo — não decide
-política (TASK-022), não executa nada de verdade (`ExecutionOrchestrator` é
-TASK-023), não implementa `max_steps`/detecção de loop/cancelamento
+política (TASK-022), não implementa `max_steps`/detecção de loop/cancelamento
 (TASK-028/TASK-029/TASK-030).
 
 Estados mínimos por ora: `PENDING`/`RUNNING`/`COMPLETED`/`FAILED` — o mesmo
@@ -46,6 +46,7 @@ class Execution:
     origin: str
     status: ExecutionStatus = ExecutionStatus.PENDING
     steps: list[ModelStep] = field(default_factory=list)
+    observations: list[str | None] = field(default_factory=list)
     result: str | None = None
     error: str | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -76,13 +77,28 @@ class Execution:
         self.status = ExecutionStatus.RUNNING
 
     def add_step(self, step: ModelStep) -> None:
-        """Registra uma etapa do protocolo (TASK-016). Só permitido com a
-        execução `RUNNING`."""
+        """Registra uma etapa do protocolo (TASK-016), sem observação ainda —
+        ver `set_last_observation`. Só permitido com a execução `RUNNING`."""
         if self.status != ExecutionStatus.RUNNING:
             raise InvalidExecutionStateError(
                 f"não é possível adicionar etapa a uma execução em estado {self.status}"
             )
         self.steps.append(step)
+        self.observations.append(None)
+
+    def set_last_observation(self, observation: str) -> None:
+        """Anexa o resultado (observação) da ferramenta executada na última
+        etapa registrada (TASK-026) — "resultado volta para o modelo" (seção
+        6 da especificação mestre). Levanta `InvalidExecutionStateError` se
+        não houver etapa registrada, ou se a última etapa já tiver uma
+        observação."""
+        if not self.steps:
+            raise InvalidExecutionStateError("nenhuma etapa registrada ainda")
+        if self.observations[-1] is not None:
+            raise InvalidExecutionStateError(
+                "a última etapa já tem uma observação registrada"
+            )
+        self.observations[-1] = observation
 
     def complete(self, result: str) -> None:
         """`RUNNING` → `COMPLETED`, registrando o resultado final."""
