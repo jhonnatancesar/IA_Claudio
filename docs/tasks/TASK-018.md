@@ -1,6 +1,6 @@
 # TASK-018 — Criar prompt-base do Claudião
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,18 @@ Testes unitários do provider e do protocolo JSON (parser/validator contra JSON 
 
 ## Documentação afetada
 
-`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ARCHITECTURE.md`, `docs/tasks/README.md`, `backend/app/llm/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/llm/prompt.py`: `BASE_PROMPT`
+(texto fixo), `get_base_prompt()`, `PROMPT_VERSION`. Cobre identidade do
+Claudião, independência de IA externa, princípios (offline-first,
+inteligência local, orquestração controlada), hierarquia de prioridade na
+ordem correta, regras de confiança (LOW/MEDIUM/HIGH) e o contrato do
+protocolo JSON por etapa (TASK-016), incluindo a exigência de responder
+sempre em português do Brasil. 10 testes unitários novos verificando a
+presença e a ordem desses elementos no texto (não testa qualidade de
+linguagem natural — isso não é determinístico). Suíte completa: 136/136
+testes aprovados. Composição dinâmica com contexto/memória/conhecimento por
+requisição é escopo da TASK-019, não implementada aqui.
