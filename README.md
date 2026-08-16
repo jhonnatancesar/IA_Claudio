@@ -11,10 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-019** concluídas — blocos "Fundação", "Segurança e
-identidade" e "LLM" completos (provider, protocolo JSON, prompt-base e
-composição dinâmica). Nenhum orquestrador ainda (bloco seguinte). Ver
-[docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
+**TASK-001** a **TASK-020** concluídas — blocos "Fundação", "Segurança e
+identidade" e "LLM" completos; bloco "Orquestração" iniciado (modelo de
+`Execution`). Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado
+do projeto.
 
 ## Documentação
 
@@ -37,5 +37,5 @@ composição dinâmica). Nenhum orquestrador ainda (bloco seguinte). Ver
 
 ## Próxima TASK
 
-**TASK-020 — Criar modelo de Execution**
-([docs/tasks/TASK-020.md](docs/tasks/TASK-020.md)).
+**TASK-021 — Implementar execution_id**
+([docs/tasks/TASK-021.md](docs/tasks/TASK-021.md)).

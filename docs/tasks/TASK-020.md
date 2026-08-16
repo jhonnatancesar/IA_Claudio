@@ -1,6 +1,6 @@
 # TASK-020 — Criar modelo de Execution
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,17 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/orchestrator/execution.py`:
+`Execution` (dataclass), `ExecutionStatus`
+(`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, mesmo conjunto da fila —
+`docs/QUEUE.md`), `InvalidExecutionStateError`. Transições válidas:
+`start()`, `add_step()` (só `RUNNING`), `complete(result)`, `fail(error)`
+(qualquer estado não-terminal, inclusive direto de `PENDING`). Sem
+`CANCELLED` (TASK-030), sem política (TASK-022), sem execução real
+(`ExecutionOrchestrator`, TASK-023). 15 testes unitários novos, incluindo um
+cobrindo o ciclo completo (criar → iniciar → etapas → concluir). Suíte
+completa: 161/161 testes aprovados.
