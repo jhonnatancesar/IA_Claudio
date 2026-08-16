@@ -43,12 +43,15 @@ Todas as 147 TASKs foram cadastradas nesta organização inicial.
   — ver `docs/tasks/TASK-007.md`).
 - **TASK-008** — concluída (formato JSON padrão de erro,
   `backend/app/errors/response.py`, `ClaudiaoError` — ver
-  `docs/tasks/TASK-008.md`). Suíte completa: 38/38 testes aprovados. **Com esta
-  TASK, o bloco "Fundação" (TASK-001 a TASK-008) está completo.**
+  `docs/tasks/TASK-008.md`). **Com esta TASK, o bloco "Fundação" (TASK-001 a
+  TASK-008) está completo.**
+- **TASK-009** — concluída (autenticação de usuários,
+  `backend/app/auth/password.py` + `users.py`, PBKDF2 sem dependência nova — ver
+  `docs/tasks/TASK-009.md`). Suíte completa: 52/52 testes aprovados.
 
-As demais 139 TASKs permanecem com status **Pendente**.
+As demais 138 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-009 — Criar autenticação de usuários**.
+Próxima TASK executável: **TASK-010 — Criar roles ADMIN e USER**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

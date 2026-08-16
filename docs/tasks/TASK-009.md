@@ -1,6 +1,6 @@
 # TASK-009 — Criar autenticação de usuários
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,27 @@ Testes unitários de autenticação/autorização (criação de usuário, papéi
 
 ## Documentação afetada
 
-`docs/AUTHENTICATION.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/AUTHENTICATION.md`, `docs/tasks/README.md`, `backend/app/auth/README.md`,
+`backend/app/db/README.md`, `backend/app/observability/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/auth/password.py`
+(`hash_password()`/`verify_password()`, PBKDF2-HMAC-SHA256 via `hashlib`, sem
+dependência nova, 600.000 iterações, salt aleatório) e `backend/app/auth/users.py`
+(`create_user()`/`authenticate_user()` contra a tabela `users` da TASK-004;
+`role` só como valor armazenado, autorização por papel fica para TASK-010).
+
+Refactor colateral: a montagem de DSN do PostgreSQL (`build_dsn_from_env`), que
+só existia em `app.observability.postgres_log_handler` por ter sido o primeiro
+consumidor (TASK-006), foi movida para `backend/app/db/connection.py`
+(`build_dsn_from_env()` + `connect()`) para não duplicar quando a autenticação
+também precisou dela — sem mudança de comportamento, reexportada no módulo
+antigo para compatibilidade. Extraída também a fixture de teste de integração
+com o banco (`postgres_dsn`) para `tests/integration/conftest.py`, reaproveitada
+pelo teste da TASK-006 e pelo novo da TASK-009.
+
+8 testes unitários novos (`tests/unit/test_password.py`) e 6 de integração real
+contra o PostgreSQL local (`tests/integration/test_users_integration.py`:
+criação com hash, papel inválido, username duplicado, autenticação correta/
+incorreta/usuário inexistente). Suíte completa: 52/52 testes aprovados.

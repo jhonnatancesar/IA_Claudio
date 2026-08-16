@@ -12,7 +12,9 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   `LogRecord` na tabela `logs` (`backend/app/db/migrations/0002_logs.sql`).
   `configure_logging()` anexa esse handler automaticamente quando
   `CLAUDIAO_POSTGRES_*` está disponível; sem isso, segue só com arquivo. Driver:
-  `psycopg` (DEC-006).
+  `psycopg` (DEC-006). A montagem de DSN (`build_dsn_from_env()`) foi movida
+  para `app.db.connection` na TASK-009, quando um segundo consumidor
+  (autenticação) precisou dela — reexportada aqui para compatibilidade.
 
 Testes em `tests/unit/test_observability_logging.py`,
 `tests/unit/test_postgres_log_handler.py` e
