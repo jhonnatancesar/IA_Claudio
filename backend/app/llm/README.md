@@ -18,9 +18,13 @@ Interface LocalLLMProvider, protocolo JSON modelo ↔ orquestrador, validação 
   Checagens semânticas extras (`execution_id` em formato UUID, `reason`
   não-vazio) e tradução de qualquer falha para `ClaudiaoError` (código 4001,
   faixa `MODEL_ORCHESTRATOR`).
+- `prompt.py` (TASK-018) — `BASE_PROMPT`/`get_base_prompt()`/`PROMPT_VERSION`.
+  Texto fixo: identidade, princípios, hierarquia de prioridade, regras de
+  confiança, contrato do protocolo JSON. Composição dinâmica com contexto é
+  TASK-019.
 
 Testes em `tests/unit/test_llm_provider.py`, `tests/unit/test_ollama_provider.py`,
-`tests/unit/test_llm_protocol.py`, `tests/unit/test_llm_protocol_validator.py`
-(unitários, com mock do client onde precisa) e
+`tests/unit/test_llm_protocol.py`, `tests/unit/test_llm_protocol_validator.py`,
+`tests/unit/test_llm_prompt.py` (unitários, com mock do client onde precisa) e
 `tests/integration/test_ollama_provider_integration.py` (integração real
 contra o Ollama local; pula automaticamente se indisponível).

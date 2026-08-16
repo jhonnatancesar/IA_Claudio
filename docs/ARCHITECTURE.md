@@ -195,6 +195,18 @@ novo código `4001` (`INVALID_MODEL_STEP`, HTTP 502, faixa
 `parameters` que não fosse objeto JSON (lista, string) escapava como
 `ValueError`/`TypeError` genérico em vez de `ProtocolDecodeError`.
 
+### Prompt-base (TASK-018)
+
+`backend/app/llm/prompt.py`: `BASE_PROMPT` (texto fixo) e
+`get_base_prompt()`. Cobre identidade do Claudião, independência de IA
+externa, princípios (offline-first, inteligência local, orquestração
+controlada), a hierarquia de prioridade abaixo, regras de confiança
+(LOW/MEDIUM/HIGH) e o contrato do protocolo JSON por etapa (TASK-016).
+`PROMPT_VERSION` identifica a versão do texto — usado depois pelo Execution
+Trace (TASK-078, `docs/OBSERVABILITY.md`: "versão do prompt"). Composição
+dinâmica com contexto/memória/conhecimento por requisição é escopo da
+TASK-019, não implementada aqui.
+
 ## Hierarquia interna de prioridade
 
 1. Segurança e guardrails.
