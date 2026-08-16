@@ -49,8 +49,9 @@ orçamento mais restrito que aplicações.
 ## Limites de execução
 
 - `max_steps` inicial sugerido: **10**, configurável conforme aplicação/contexto.
-- Detecção de loop.
-- Cancelamento externo/interno.
+  **Aplicado (TASK-028)** — ver seção `ExecutionOrchestrator` abaixo.
+- Detecção de loop — ainda não implementada (TASK-029).
+- Cancelamento externo/interno — ainda não implementado (TASK-030).
 - Erro irrecuperável.
 - No chat não há timeout fixo (timeout é definido pela aplicação — ver `API.md`).
 
@@ -124,18 +125,24 @@ aplicação"). Só o modelo — quem aplica a política de fato é o
 Implementado em `backend/app/orchestrator/orchestrator.py`: liga
 `LocalLLMProvider` (TASK-014/015), composição de prompt (TASK-019), o
 protocolo e sua validação (TASK-016/017) e `Execution` (TASK-020) num passo
-real. `ExecutionOrchestrator(provider, policy)` guarda o provider e a
-`ExecutionPolicy` (TASK-022) — a política ainda **não é aplicada**, só
-guardada, para as TASKs futuras de limite.
+real. `ExecutionOrchestrator(provider, policy, tool_executor=None)` guarda o
+provider, a `ExecutionPolicy` (TASK-022) e o executor de ferramentas
+(TASK-026).
 
 `run_step(execution, objective, model)`: inicia a execução se `PENDING`;
-compõe o prompt com o histórico atual (`compose_prompt`); chama
-`provider.complete()`; valida a resposta (`validate_step`); valida o plano
-contra a execução e a política (`validate_plan`, TASK-025); registra a etapa
-em `execution`. Se a etapa for `RESPOND`, conclui a execução usando `reason`
-como resultado (o protocolo não define um campo de resposta final separado).
-Qualquer falha — `LocalLLMProviderError` do runtime ou `ClaudiaoError` do
-protocolo/plano — marca a execução como `FAILED` antes de propagar a exceção.
+**verifica o limite de `max_steps` da política antes de chamar o modelo**
+(código `4004`, `MAX_STEPS_EXCEEDED`, TASK-028 — se `execution.step_count`
+já atingiu `policy.max_steps`, marca `FAILED` e levanta `ClaudiaoError` sem
+gastar uma chamada ao provider); compõe o prompt com o histórico atual
+(`compose_prompt`); chama `provider.complete()`; valida a resposta
+(`validate_step`); valida o plano contra a execução e a política
+(`validate_plan`, TASK-025); registra a etapa em `execution`. Se a etapa for
+`RESPOND`, conclui a execução usando `reason` como resultado (o protocolo
+não define um campo de resposta final separado). Qualquer falha —
+`LocalLLMProviderError` do runtime, `ClaudiaoError` do protocolo/plano/
+`max_steps` — marca a execução como `FAILED` antes de propagar a exceção.
+`run_until_response` (TASK-026) herda esse limite automaticamente, já que
+chama `run_step` em loop.
 
 **O que ainda não existia aqui** (TASKs futuras constroem em cima):
 replanejamento (TASK-027), aplicação de `max_steps` (TASK-028), detecção de
