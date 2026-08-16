@@ -84,7 +84,14 @@ TASK → Branch própria → Implementação → Validação/Testes → Atualiza
 ## Regra de checkpoint: a cada 10 TASKs concluídas
 
 Exceção à regra acima de "push da main só quando pedido" — a cada 10 TASKs
-concluídas (TASK-010, TASK-020, TASK-030, ...):
+concluídas (TASK-010, TASK-020, TASK-030, TASK-040, ...).
+
+**Executar isso imediatamente ao terminar a TASK que fecha o múltiplo de 10**
+— na mesma resposta que encerra a TASK, antes de esperar a próxima mensagem
+do usuário. Não adiar nem arredondar para o próximo múltiplo de 10 "redondo":
+a contagem é sempre 10 TASKs a partir do checkpoint anterior (ex.: se o
+último checkpoint foi na TASK-020, o próximo é exatamente na TASK-030 — já
+aconteceu uma falha real de contar errado e achar que seria só na TASK-040).
 
 1. **Push automático da `main`** — enviar a `main` local para `origin/main` no
    GitHub, sem precisar de pedido explícito nesse ponto específico (o usuário

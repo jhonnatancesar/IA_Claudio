@@ -7,38 +7,44 @@ projeto está e continuar o trabalho lendo só este arquivo + o resto de `docs/`
 
 Se você é essa IA: leia isto primeiro, depois `README.md` → `AGENTS.md` →
 `docs/tasks/README.md` → `docs/tasks/TASK-XXX.md` da próxima TASK. Não pule a
-leitura de `AGENTS.md` — ele tem regras de governança (branch por TASK, push só
-quando pedido, PT-BR em tudo) que não estão resumidas aqui.
+leitura de `AGENTS.md` — ele tem regras de governança (branch por TASK, push da
+branch sempre, push da main só no checkpoint/pedido, PT-BR em tudo) que não
+estão resumidas aqui.
 
 ## Checkpoint atual
 
-**Data:** 2026-08-16 · **TASK:** TASK-020 · **TASKs concluídas:** 20 de 147
-(TASK-001 a TASK-020) · **Próxima TASK executável:** TASK-021 — Implementar
-execution_id.
+**Data:** 2026-08-16 · **TASK:** TASK-030 · **TASKs concluídas:** 30 de 147
+(TASK-001 a TASK-030) · **Próxima TASK executável:** TASK-031 — Implementar
+confiança LOW/MEDIUM/HIGH do modelo.
 
 ## O que já existe (resumo, não repete `docs/tasks/`)
 
 - **Estrutura do repositório** organizada por completo (`docs/`, `backend/app/`
   com módulos, `tests/{unit,integration,scenarios}`, `config/`, `scripts/`,
   `adr/`, `rfc/`) — TASK-001.
-- **Bloco "Fundação" completo (TASK-001 a TASK-008):** configuração central
-  (`config/.env.example`), PostgreSQL local instalado e banco `claudiao`
-  criado, schema inicial (`users`, `applications`, `settings`,
-  `schema_migrations`, `logs`), logging local rotativo + estruturado no
-  PostgreSQL, catálogo interno de erros e formato JSON padrão de erro.
+- **Bloco "Fundação" completo (TASK-001 a TASK-008):** configuração central,
+  PostgreSQL local instalado e banco `claudiao` criado, schema inicial
+  (`users`, `applications`, `settings`, `schema_migrations`, `logs`), logging
+  local rotativo + estruturado no PostgreSQL, catálogo interno de erros e
+  formato JSON padrão de erro.
 - **Bloco "Segurança e identidade" completo (TASK-009 a TASK-013):**
   autenticação de usuários (hash PBKDF2), autorização por papel
-  (`Role.ADMIN`/`Role.USER`), autenticação de aplicações via API key, criptografia
-  de segredos (Fernet) e chave mestra externa ao banco.
+  (`Role.ADMIN`/`Role.USER`), autenticação de aplicações via API key,
+  criptografia de segredos (Fernet) e chave mestra externa ao banco.
 - **Bloco "LLM" completo (TASK-014 a TASK-019):** interface `LocalLLMProvider`,
   `OllamaProvider` (SDK oficial, Ollama instalado e rodando localmente, sem
   modelo baixado), protocolo JSON modelo↔orquestrador (`ModelStep`), sua
   validação semântica (`validate_step`, código de erro 4001) e o prompt-base +
   composição dinâmica de prompt/contexto.
-- **Bloco "Orquestração" iniciado (TASK-020 feita; TASK-021 a TASK-030
-  pendentes):** modelo de dados `Execution` com transições de estado
-  (`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`).
-- **Testes:** 161/161 aprovados (unitários + integração real contra PostgreSQL
+- **Bloco "Orquestração" completo (TASK-020 a TASK-030):** `Execution`
+  (estados `PENDING`/`RUNNING`/`COMPLETED`/`FAILED`/`CANCELLED`),
+  `execution_id` (UUID4), `ExecutionPolicy`, `ExecutionOrchestrator`
+  (`run_step`/`run_until_response` — liga provider, prompt, protocolo,
+  validação de plano e execução de ferramentas via `tool_executor`),
+  planejamento inicial, validação de plano, execução por etapas com
+  observações realimentadas ao modelo, replanejamento completo, `max_steps`,
+  detecção de loop e cancelamento (`CancellationToken`).
+- **Testes:** 247/247 aprovados (unitários + integração real contra PostgreSQL
   e Ollama locais). Rodar com:
   ```
   python -m pytest tests/ -v --basetemp=".pytest_tmp"
@@ -51,11 +57,12 @@ execution_id.
 |---|---|---|
 | `errors/` | Implementado (TASK-007/008) | `catalog.py`, `response.py` |
 | `observability/` | Implementado (TASK-005/006) | `logging_config.py`, `postgres_log_handler.py` |
-| `db/` | Implementado (TASK-003/004/009) | `connection.py`, `migrations/0001_initial_schema.sql`, `migrations/0002_logs.sql` |
+| `db/` | Implementado (TASK-003/004/009) | `connection.py`, `migrations/000N_*.sql` |
 | `auth/` | Completo (TASK-009 a TASK-013) | `password.py`, `users.py`, `roles.py`, `api_keys.py`, `crypto.py`, `master_key.py` |
 | `llm/` | Completo (TASK-014 a TASK-019) | `provider.py`, `providers/ollama_provider.py`, `protocol.py`, `protocol_validator.py`, `prompt.py`, `prompt_composer.py` |
-| `orchestrator/` | Em andamento (TASK-020) | `execution.py` |
-| Demais módulos (`api/`, `memory/`, `knowledge/`, `panel/`, ...) | Só README.md, sem código | — |
+| `policies/` | Implementado (TASK-022) | `execution_policy.py` |
+| `orchestrator/` | Completo (TASK-020 a TASK-030) | `execution.py`, `execution_id.py`, `orchestrator.py`, `planner.py`, `plan_validator.py`, `replanner.py`, `loop_detector.py`, `cancellation.py` |
+| Demais módulos (`api/`, `memory/`, `knowledge/`, `panel/`, `tools/`, ...) | Só README.md, sem código | — |
 
 ## Decisões técnicas já tomadas (ver `docs/DECISION_LOG.md` para o texto completo)
 
@@ -133,34 +140,54 @@ execution_id.
    from_dict` agora valida `isinstance(parameters_raw, dict)` antes de
    `dict(...)` (bug de regressão corrigido na TASK-017). Ao decodificar JSON
    externo, prefira checar o tipo antes de converter.
+9. **Ao escrever testes com providers fake que repetem `USE_TOOL`**, cuidado
+   com parâmetros idênticos entre chamadas — a detecção de loop (TASK-029,
+   threshold 3) dispara antes de `max_steps` se os parâmetros não mudarem.
+   Testes que quiserem isolar `max_steps` (ou qualquer outro comportamento)
+   de propósito precisam variar os parâmetros a cada chamada do provider
+   fake (ver `_InfiniteToolProvider`/`_ProgressingToolProvider` em
+   `tests/unit/test_max_steps.py`/`test_orchestrator_loop_detection.py`).
+10. **Checkpoint de 10 em 10 é contado a partir do checkpoint anterior, não
+    arredondado** — o segundo checkpoint foi na TASK-020, então o terceiro é
+    exatamente na TASK-030 (não 040). Simples soma, sem lógica escondida.
 
 ## Workflow que está sendo seguido
 
 ```
 TASK → branch task-XXX → implementação → testes → docs → commit
-     → merge na main local → (push só quando pedido, exceto a cada 10 TASKs)
+     → merge na main local → push da branch (sempre)
+     → (push da main + HANDOFF.md: a cada 10 TASKs ou pedido explícito)
 ```
 
-Detalhes completos em `AGENTS.md`. Branches `task-001` a `task-020` existem
-localmente (histórico); não foram deletadas, mas também não precisam ser —
-`AGENTS.md` não pede limpeza delas.
+Detalhes completos em `AGENTS.md`. Todas as branches `task-XXX` desde
+`task-003` foram enviadas ao GitHub (regra: toda branch sobe assim que a TASK
+termina, sem precisar pedir); não são deletadas depois do merge.
 
 ## Próximos passos imediatos
 
-**TASK-021 — Implementar execution_id** (dependência: TASK-020 concluída).
-Provavelmente só formaliza a geração de `execution_id` (ex.: `uuid4()`) que
-hoje `Execution`/`ModelStep` recebem prontos de fora. Segue o bloco
-"Orquestração": TASK-022 (`ExecutionPolicy`), TASK-023 (`ExecutionOrchestrator`
-— primeira peça que efetivamente liga `OllamaProvider` + `prompt_composer` +
-`protocol_validator` + `Execution` num ciclo real), TASK-024 a TASK-030
-(planejamento, validação de plano, execução por etapas, replanejamento,
-`max_steps`, detecção de loop, cancelamento).
+**TASK-031 — Implementar confiança LOW/MEDIUM/HIGH do modelo** (dependência:
+TASK-030 concluída). Início do bloco "Confiança e guardrails" (TASK-031 a
+TASK-036). O protocolo (TASK-016) já tem `Confidence` (`LOW`/`MEDIUM`/`HIGH`)
+como enum do campo `confidence` de cada `ModelStep` — TASK-031 provavelmente
+formaliza essa leitura/uso pelo orquestrador (hoje o campo existe e é
+validado, mas nada consome seu valor para tomar decisão). TASK-032
+(volatilidade), TASK-033 (confidence engine — cálculo da confiança final
+combinando confiança do modelo + evidências + reputação de fontes), TASK-034
+(bloqueio de resposta em LOW), TASK-035 (revalidação obrigatória de
+informação volátil), TASK-036 (tratamento de ambiguidade) — ver
+`docs/TRUST_GUARDRAILS.md`.
 
 ## Histórico de checkpoints
 
 - **2026-08-16 — TASK-010:** primeiro checkpoint de 10 TASKs. Fundação
   completa + autenticação/autorização básicas. 60/60 testes.
-- **2026-08-16 — TASK-020 (este checkpoint):** segundo checkpoint. Blocos
-  "Segurança e identidade" e "LLM" completos; bloco "Orquestração" iniciado
-  (modelo de `Execution`). Ollama instalado e rodando localmente (sem modelo
-  baixado). 161/161 testes.
+- **2026-08-16 — TASK-020:** segundo checkpoint. Blocos "Segurança e
+  identidade" e "LLM" completos; bloco "Orquestração" iniciado (modelo de
+  `Execution`). Ollama instalado e rodando localmente (sem modelo baixado).
+  161/161 testes.
+- **2026-08-16 — TASK-030 (este checkpoint):** terceiro checkpoint — feito
+  com atraso (deveria ter sido automático ao concluir a TASK-030, só rodou
+  quando o usuário perguntou pelo status). Bloco "Orquestração" completo:
+  ciclo inteiro de execução (planejamento, validação, execução por etapas,
+  replanejamento, `max_steps`, detecção de loop, cancelamento). 247/247
+  testes.
