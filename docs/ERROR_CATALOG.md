@@ -31,6 +31,8 @@ nasce pequeno — só os erros que a própria fundação já precisa:
 | 1002 | 400 | Valor de campo inválido |
 | 2001 | 403 | Ação restrita a administradores |
 | 4001 | 502 | JSON do modelo fora do protocolo esperado |
+| 4002 | 502 | execution_id da etapa não corresponde à execução em andamento |
+| 4003 | 403 | Ferramenta solicitada não autorizada pela política de execução |
 | 9000 | 500 | Erro interno desconhecido |
 
 Cada TASK futura registra os códigos específicos que precisar quando chegar sua

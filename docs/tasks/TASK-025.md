@@ -1,6 +1,6 @@
 # TASK-025 — Implementar validação de plano
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,19 @@ Testes unitários do orquestrador para este passo do ciclo de execução, inclui
 
 ## Documentação afetada
 
-`docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/ORCHESTRATOR.md`, `docs/ERROR_CATALOG.md`, `docs/tasks/README.md`,
+`backend/app/orchestrator/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/orchestrator/plan_validator.py`:
+`validate_plan(step, execution, policy)` — checa `execution_id` da etapa
+contra a execução (código `4002`) e `WEB_SEARCH` contra
+`ExecutionPolicy.web_search_allowed` (código `4003`). Integrado em
+`ExecutionOrchestrator.run_step` (TASK-023), logo depois da validação
+sintática do protocolo. 5 testes unitários novos do validador + 2 de
+regressão no orquestrador (rejeita/aceita `WEB_SEARCH` conforme a política).
+Ajustados os testes antigos da TASK-023 que usavam `WEB_SEARCH` sem
+autorização explícita na política (passaram a falhar corretamente com a
+nova validação — não é regressão, é o comportamento certo). Suíte completa:
+201/201 testes aprovados.

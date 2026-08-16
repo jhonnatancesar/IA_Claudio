@@ -19,9 +19,13 @@ Núcleo determinístico: Execution, ExecutionPolicy, ExecutionOrchestrator, plan
 - `planner.py` (TASK-024) — `plan_initial_step(orchestrator, execution,
   objective, model)`/`ExecutionAlreadyPlannedError`. Casca fina sobre
   `run_step`, só para a primeira etapa de uma execução nova.
+- `plan_validator.py` (TASK-025) — `validate_plan(step, execution, policy)`.
+  Checa `execution_id` da etapa contra a execução e `WEB_SEARCH` contra
+  `ExecutionPolicy.web_search_allowed`; chamado dentro de `run_step`.
 
 Testes em `tests/unit/test_execution.py`, `tests/unit/test_execution_id.py`,
-`tests/unit/test_execution_orchestrator.py`, `tests/unit/test_planner.py`
-(provider fake) e `tests/integration/test_execution_orchestrator_integration.py`,
+`tests/unit/test_execution_orchestrator.py`, `tests/unit/test_planner.py`,
+`tests/unit/test_plan_validator.py` (provider fake) e
+`tests/integration/test_execution_orchestrator_integration.py`,
 `tests/integration/test_planner_integration.py` (Ollama real; pulam
 automaticamente se indisponível).

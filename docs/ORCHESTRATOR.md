@@ -116,11 +116,12 @@ guardada, para as TASKs futuras de limite.
 
 `run_step(execution, objective, model)`: inicia a execução se `PENDING`;
 compõe o prompt com o histórico atual (`compose_prompt`); chama
-`provider.complete()`; valida a resposta (`validate_step`); registra a etapa
+`provider.complete()`; valida a resposta (`validate_step`); valida o plano
+contra a execução e a política (`validate_plan`, TASK-025); registra a etapa
 em `execution`. Se a etapa for `RESPOND`, conclui a execução usando `reason`
 como resultado (o protocolo não define um campo de resposta final separado).
 Qualquer falha — `LocalLLMProviderError` do runtime ou `ClaudiaoError` do
-protocolo — marca a execução como `FAILED` antes de propagar a exceção.
+protocolo/plano — marca a execução como `FAILED` antes de propagar a exceção.
 
 **O que ainda não existia aqui** (TASKs futuras constroem em cima): execução de
 ferramentas de verdade (TASK-026 — hoje `USE_TOOL` só é registrado, nenhuma
@@ -143,3 +144,21 @@ chamada antes de qualquer etapa existir na execução — levanta
 (`orchestrator.run_step()` diretamente). Validação de que essa primeira
 etapa é um plano aceitável é TASK-025; descartar e gerar um plano novo
 (replanejar) é TASK-027.
+
+## Validação de plano (TASK-025)
+
+Implementado em `backend/app/orchestrator/plan_validator.py`:
+`validate_plan(step, execution, policy)` — chamado dentro de
+`ExecutionOrchestrator.run_step`, depois da validação sintática do protocolo
+(`validate_step`, TASK-017). Duas checagens:
+
+- `step.execution_id` precisa bater com `execution.execution_id` (código
+  `4002`, `PLAN_EXECUTION_ID_MISMATCH`) — o modelo não pode "vazar" uma
+  etapa para outra execução;
+- se a etapa pede `WEB_SEARCH`, a `ExecutionPolicy.web_search_allowed`
+  (TASK-022) precisa autorizar (código `4003`, `PLAN_TOOL_NOT_AUTHORIZED`) —
+  ver `docs/TOOLS.md`, política de pesquisa.
+
+Só essas duas regras por ora — validar se a ferramenta pedida existe de fato
+é escopo de TASKs futuras (o Tool Registry ainda não existe, TASK-046 em
+diante).
