@@ -77,9 +77,21 @@ TASK-045), mais recente primeiro. Exposta na Memory Tool como
 (mais usos + uso mais recente → maior pontuação) — critério mais simples e
 defensável, já que a especificação não detalha uma fórmula de relevância.
 Nenhuma das duas funções é acionada automaticamente ao ler/buscar memórias
-ainda (isso ficaria a critério de quem chama); decidir o que fazer com a
-pontuação (o que remover, em que limiar) é política de retenção,
-TASK-049.
+ainda (isso ficaria a critério de quem chama).
+
+**Implementação (TASK-049):** `backend/app/memory/retention_policy.py` —
+`is_eligible_for_retention_removal(memory, now, max_age_days=180,
+min_relevance=0.05)` (função pura): elegível quando **ambos** valem —
+idade desde `created_at` além de `max_age_days` **e** `relevance_score`
+abaixo de `min_relevance` (combina "baixa relevância" e "pouco uso" num só
+sinal, TASK-048; "idade" é critério separado). `apply_retention_policy
+(owner_type, owner_id, now, ...)` remove de fato as memórias elegíveis
+desse dono (`delete_memory`, novo em `memory_model.py`) e retorna os `id`s
+removidos. Os limiares padrão (180 dias, 0.05) são a escolha mais simples e
+defensável, já que a especificação não define números exatos —
+configuráveis por parâmetro. Limite máximo por dono (TASK-050) e auditoria
+da remoção (TASK-051, "guardar que existiu, quando e por qual regra") não
+são desta TASK — a remoção aqui não deixa rastro.
 
 ## TASKs relacionadas
 
