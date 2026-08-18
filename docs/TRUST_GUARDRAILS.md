@@ -87,6 +87,16 @@ Tipos de fonte: `PRIMARY / SECONDARY / UNKNOWN`. Confiabilidade: `LOW / MEDIUM /
 - Ambiguidade real gera pergunta ao usuário/aplicação em vez de suposição (TASK-036,
   ver também `ORCHESTRATOR.md`).
 
+**Implementação (TASK-035):**
+`backend/app/confidence/revalidation_guardrail.py` —
+`ensure_volatile_information_revalidated(volatility, was_revalidated)`, novo
+código de erro `4007` (`VOLATILE_INFORMATION_NOT_REVALIDATED`). Usa
+`requires_revalidation` (TASK-032) para decidir se a revalidação é exigida;
+bloqueia com `ClaudiaoError` quando for `VOLATILE` e `was_revalidated` for
+`False`. `NON_VOLATILE` e `VOLATILE` já revalidada passam livres. Executar a
+revalidação de fato (reconsultar Knowledge Tool, TASK-052+) e acionar esta
+guarda no fluxo real do orquestrador não são desta TASK.
+
 **Implementação (TASK-034):** `backend/app/confidence/response_guardrail.py`
 — `ensure_conclusive_response_allowed(final_confidence)`, novo código de erro
 `4006` (`LOW_CONFIDENCE_BLOCKED`). Recebe a confiança final já calculada

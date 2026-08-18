@@ -1,6 +1,6 @@
 # TASK-035 — Implementar regra obrigatória para informação volátil
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -29,3 +29,18 @@ Testes unitários de confiança/guardrails, incluindo casos de bloqueio (LOW), r
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado
+`backend/app/confidence/revalidation_guardrail.py`:
+`ensure_volatile_information_revalidated(volatility, was_revalidated)`, que
+levanta `ClaudiaoError` (novo código `4007`,
+`VOLATILE_INFORMATION_NOT_REVALIDATED`) quando `requires_revalidation`
+(TASK-032) exige revalidação e ela não aconteceu. `NON_VOLATILE` e
+`VOLATILE` já revalidada passam livres — segue o mesmo padrão de guarda
+isolada de `response_guardrail.py` (TASK-034). Executar a revalidação de
+fato (Knowledge Tool, TASK-052+) e acionar esta guarda no fluxo real do
+orquestrador não são desta TASK.
+
+3 testes unitários novos. Suíte completa: 282/282 testes aprovados.

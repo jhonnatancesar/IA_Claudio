@@ -1,6 +1,6 @@
 # Confidence Engine
 
-Documentação: docs/TRUST_GUARDRAILS.md. TASKs: TASK-031 a TASK-034.
+Documentação: docs/TRUST_GUARDRAILS.md. TASKs: TASK-031 a TASK-035.
 
 Confiança do modelo (LOW/MEDIUM/HIGH), volatilidade (VOLATILE/NON_VOLATILE) e cálculo da confiança final combinando evidências, reputação de fontes e contradições.
 
@@ -23,6 +23,12 @@ Confiança do modelo (LOW/MEDIUM/HIGH), volatilidade (VOLATILE/NON_VOLATILE) e c
   (final_confidence)`, código de erro `4006`. Bloqueia resposta conclusiva
   quando a confiança final é `LOW`. Onde essa guarda é acionada no fluxo real
   do orquestrador não é desta TASK.
+- `revalidation_guardrail.py` (TASK-035) —
+  `ensure_volatile_information_revalidated(volatility, was_revalidated)`,
+  código de erro `4007`. Bloqueia uso de informação `VOLATILE` que não foi
+  revalidada. Executar a revalidação de fato (Knowledge Tool, TASK-052+) não
+  é desta TASK.
 
 Testes em `tests/unit/test_model_confidence.py`, `tests/unit/test_volatility.py`,
-`tests/unit/test_confidence_engine.py`, `tests/unit/test_response_guardrail.py`.
+`tests/unit/test_confidence_engine.py`, `tests/unit/test_response_guardrail.py`,
+`tests/unit/test_revalidation_guardrail.py`.
