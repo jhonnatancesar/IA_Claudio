@@ -6,8 +6,10 @@ import pytest
 
 from app.llm.protocol import Action, Confidence, ModelStep
 from app.tools.knowledge_tool import (
+    InvalidConfidenceParameterError,
     InvalidKnowledgeScopeParameterError,
     InvalidKnowledgeStatusParameterError,
+    InvalidVolatilityParameterError,
     MissingToolParameterError,
     UnknownKnowledgeOperationError,
     execute_knowledge_tool,
@@ -105,6 +107,76 @@ def test_list_scope_missing_scope_type_raises():
 def test_list_scope_invalid_scope_type_raises():
     with pytest.raises(InvalidKnowledgeScopeParameterError):
         execute_knowledge_tool(_step({"operation": "LIST_SCOPE", "scope_type": "TEAM"}))
+
+
+def test_set_confidence_missing_knowledge_id_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(_step({"operation": "SET_CONFIDENCE", "confidence": "HIGH"}))
+
+
+def test_set_confidence_missing_confidence_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "SET_CONFIDENCE",
+                    "knowledge_id": "11111111-1111-1111-1111-111111111111",
+                }
+            )
+        )
+
+
+def test_set_confidence_invalid_confidence_raises():
+    with pytest.raises(InvalidConfidenceParameterError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "SET_CONFIDENCE",
+                    "knowledge_id": "11111111-1111-1111-1111-111111111111",
+                    "confidence": "MAXIMUM",
+                }
+            )
+        )
+
+
+def test_set_volatility_missing_knowledge_id_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(_step({"operation": "SET_VOLATILITY", "volatility": "VOLATILE"}))
+
+
+def test_set_volatility_invalid_volatility_raises():
+    with pytest.raises(InvalidVolatilityParameterError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "SET_VOLATILITY",
+                    "knowledge_id": "11111111-1111-1111-1111-111111111111",
+                    "volatility": "SOMETIMES",
+                }
+            )
+        )
+
+
+def test_add_evidence_missing_knowledge_id_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(_step({"operation": "ADD_EVIDENCE", "description": "x"}))
+
+
+def test_add_evidence_missing_description_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "ADD_EVIDENCE",
+                    "knowledge_id": "11111111-1111-1111-1111-111111111111",
+                }
+            )
+        )
+
+
+def test_list_evidence_missing_knowledge_id_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(_step({"operation": "LIST_EVIDENCE"}))
 
 
 def test_new_version_missing_reason_raises():

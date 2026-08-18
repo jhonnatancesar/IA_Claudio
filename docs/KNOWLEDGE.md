@@ -92,6 +92,19 @@ Conhecimento provisório/confirmado se apoia em evidências e fontes (ver
 `TRUST_GUARDRAILS.md`) e carrega os mesmos níveis de confiança (LOW/MEDIUM/HIGH) e a
 marca de volatilidade quando aplicável.
 
+**Implementação (TASK-056):** `confidence`/`volatility` opcionais
+(`None` por padrão — um fato `RAW` recém-capturado pode não ter nenhum
+avaliado ainda) em `Knowledge`, reaproveitando `Confidence`
+(`app.llm.protocol`, TASK-016) e `Volatility` (`app.confidence.volatility`,
+TASK-032) — vocabulário já existente, não duplicado.
+`set_knowledge_confidence`/`set_knowledge_volatility` definem cada um.
+`Evidence`/`add_evidence`/`list_evidence` guardam evidências como texto
+livre associado a uma versão — o cadastro real de fontes (reputação, tipo
+`PRIMARY`/`SECONDARY`/`UNKNOWN`) é TASK-059 em diante; vincular evidências
+a uma fonte cadastrada de verdade fica para quando esse sistema existir.
+Exposto na Knowledge Tool: `"SET_CONFIDENCE"`, `"SET_VOLATILITY"`,
+`"ADD_EVIDENCE"`, `"LIST_EVIDENCE"`.
+
 ## TASKs relacionadas
 
 TASK-052 a TASK-058 (ver `docs/BACKLOG.md`): modelo RAW/PROVISIONAL/CONFIRMED,

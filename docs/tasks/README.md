@@ -218,10 +218,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-055** — concluída (escopo GLOBAL/APPLICATION,
   `KnowledgeScope`/`list_knowledge_for_scope` — ver
   `docs/tasks/TASK-055.md`). Suíte completa: 434/434 testes aprovados.
+- **TASK-056** — concluída (evidências/confiança/volatilidade,
+  `set_knowledge_confidence`/`set_knowledge_volatility`/`add_evidence` —
+  ver `docs/tasks/TASK-056.md`). Suíte completa: 456/456 testes
+  aprovados.
 
-As demais 92 TASKs permanecem com status **Pendente**.
+As demais 91 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-056 — Implementar evidências/fontes**.
+Próxima TASK executável: **TASK-057 — Implementar regra de promoção
+para CONFIRMED**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

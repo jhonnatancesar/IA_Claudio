@@ -70,7 +70,7 @@ Aplicado em `backend/app/db/migrations/0001_initial_schema.sql` (SQL puro via
 Ver `docs/MEMORY.md` para o módulo (`app.memory.memory_model`) que
 lê/grava nelas.
 
-## Conhecimento (TASK-052, TASK-054, TASK-055)
+## Conhecimento (TASK-052, TASK-054, TASK-055, TASK-056)
 
 `backend/app/db/migrations/0006_knowledge.sql` — tabela `knowledge`
 (`id`, `status` — `RAW`/`PROVISIONAL`/`CONFIRMED` —, `content`,
@@ -81,8 +81,12 @@ lê/grava nelas.
 (`root_id`), TASK-054.
 `backend/app/db/migrations/0008_knowledge_scope.sql` — colunas
 `scope_type`/`scope_id`, `CHECK` garantindo `scope_id` presente só quando
-`scope_type = 'APPLICATION'`, TASK-055. Ver `docs/KNOWLEDGE.md` para o
-módulo (`app.knowledge.knowledge_model`) que lê/grava nela.
+`scope_type = 'APPLICATION'`, TASK-055.
+`backend/app/db/migrations/0009_knowledge_evidence.sql` — colunas
+`confidence`/`volatility` (nulas por padrão) em `knowledge` e tabela
+`knowledge_evidence` (`knowledge_id` com `ON DELETE CASCADE`,
+`description`, `created_at`), TASK-056. Ver `docs/KNOWLEDGE.md` para o
+módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 
 Os demais domínios de dados (fontes, histórico de fontes, blacklist,
 conversas, resumos, execuções, fila, auditoria, cotas, atualizações,

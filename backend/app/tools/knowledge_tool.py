@@ -22,29 +22,41 @@ TASK-054 acrescenta `"NEW_VERSION"`, expondo `create_new_version`: cria
 uma versão nova de um fato sem apagar a anterior.
 
 TASK-055 acrescenta `scope_type`/`scope_id` opcionais em `"SAVE"` e a
-operação `"LIST_SCOPE"`, expondo `list_knowledge_for_scope`. Evidências
-(TASK-056) não são desta TASK.
+operação `"LIST_SCOPE"`, expondo `list_knowledge_for_scope`.
+
+TASK-056 acrescenta `"SET_CONFIDENCE"`/`"SET_VOLATILITY"` (expondo
+`set_knowledge_confidence`/`set_knowledge_volatility`) e
+`"ADD_EVIDENCE"`/`"LIST_EVIDENCE"` (expondo `add_evidence`/
+`list_evidence`) — evidências como texto livre; vincular a uma fonte
+cadastrada de verdade é TASK-059 em diante.
 """
 
 from __future__ import annotations
 
+from app.confidence.volatility import Volatility
 from app.knowledge.knowledge_model import (
     KnowledgeScope,
     KnowledgeStatus,
+    add_evidence,
     advance_knowledge_status,
     create_new_version,
     get_knowledge,
+    list_evidence,
     list_knowledge_for_scope,
     save_knowledge,
+    set_knowledge_confidence,
+    set_knowledge_volatility,
 )
-from app.llm.protocol import ModelStep
+from app.llm.protocol import Confidence, ModelStep
 
 KNOWLEDGE_TOOL_NAME = "KNOWLEDGE"
 
 
 class UnknownKnowledgeOperationError(ValueError):
-    """Levantado quando `parameters["operation"]` não é `SAVE`, `GET`,
-    `ADVANCE`, `NEW_VERSION` nem `LIST_SCOPE`."""
+    """Levantado quando `parameters["operation"]` não é uma das operações
+    conhecidas (`SAVE`, `GET`, `ADVANCE`, `NEW_VERSION`, `LIST_SCOPE`,
+    `SET_CONFIDENCE`, `SET_VOLATILITY`, `ADD_EVIDENCE`,
+    `LIST_EVIDENCE`)."""
 
 
 class MissingToolParameterError(ValueError):
@@ -60,6 +72,16 @@ class InvalidKnowledgeStatusParameterError(ValueError):
 class InvalidKnowledgeScopeParameterError(ValueError):
     """Levantado quando `parameters["scope_type"]` não é um valor válido de
     `KnowledgeScope`."""
+
+
+class InvalidConfidenceParameterError(ValueError):
+    """Levantado quando `parameters["confidence"]` não é um valor válido
+    de `Confidence`."""
+
+
+class InvalidVolatilityParameterError(ValueError):
+    """Levantado quando `parameters["volatility"]` não é um valor válido
+    de `Volatility`."""
 
 
 def _require(parameters: dict, key: str) -> str:
@@ -87,12 +109,23 @@ def execute_knowledge_tool(step: ModelStep) -> str:
     - `"LIST_SCOPE"`: exige `scope_type` (`GLOBAL` ou `APPLICATION`;
       `APPLICATION` exige também `scope_id`); devolve os conhecimentos
       atuais desse escopo (`list_knowledge_for_scope`), um por linha.
+    - `"SET_CONFIDENCE"`: exige `knowledge_id`, `confidence`
+      (`LOW`/`MEDIUM`/`HIGH`); define a confiança
+      (`set_knowledge_confidence`) e devolve confirmação.
+    - `"SET_VOLATILITY"`: exige `knowledge_id`, `volatility`
+      (`VOLATILE`/`NON_VOLATILE`); define a volatilidade
+      (`set_knowledge_volatility`) e devolve confirmação.
+    - `"ADD_EVIDENCE"`: exige `knowledge_id`, `description`; registra uma
+      evidência (`add_evidence`) e devolve confirmação com o `id` gerado.
+    - `"LIST_EVIDENCE"`: exige `knowledge_id`; devolve as evidências
+      registradas (`list_evidence`), uma por linha.
 
     Levanta `MissingToolParameterError` para parâmetro obrigatório
     ausente, `InvalidKnowledgeStatusParameterError`/
-    `InvalidKnowledgeScopeParameterError` para `new_status`/`scope_type`
-    desconhecidos e `UnknownKnowledgeOperationError` para `operation`
-    diferente de `SAVE`/`GET`/`ADVANCE`/`NEW_VERSION`/`LIST_SCOPE`.
+    `InvalidKnowledgeScopeParameterError`/`InvalidConfidenceParameterError`/
+    `InvalidVolatilityParameterError` para valores desconhecidos de
+    `new_status`/`scope_type`/`confidence`/`volatility`, e
+    `UnknownKnowledgeOperationError` para `operation` desconhecida.
     """
     operation = _require(step.parameters, "operation")
 
@@ -150,6 +183,43 @@ def execute_knowledge_tool(step: ModelStep) -> str:
         if not knowledge_list:
             return "Nenhum conhecimento encontrado para este escopo."
         return "\n".join(f"- [{k.status.value}] {k.content}" for k in knowledge_list)
+
+    if operation == "SET_CONFIDENCE":
+        knowledge_id = _require(step.parameters, "knowledge_id")
+        confidence_raw = _require(step.parameters, "confidence")
+        try:
+            confidence = Confidence(confidence_raw)
+        except ValueError as exc:
+            raise InvalidConfidenceParameterError(
+                f"confidence inválida: {confidence_raw!r}"
+            ) from exc
+        knowledge = set_knowledge_confidence(knowledge_id, confidence)
+        return f"Confiança definida como {knowledge.confidence.value} (id={knowledge.id})."
+
+    if operation == "SET_VOLATILITY":
+        knowledge_id = _require(step.parameters, "knowledge_id")
+        volatility_raw = _require(step.parameters, "volatility")
+        try:
+            volatility = Volatility(volatility_raw)
+        except ValueError as exc:
+            raise InvalidVolatilityParameterError(
+                f"volatility inválida: {volatility_raw!r}"
+            ) from exc
+        knowledge = set_knowledge_volatility(knowledge_id, volatility)
+        return f"Volatilidade definida como {knowledge.volatility.value} (id={knowledge.id})."
+
+    if operation == "ADD_EVIDENCE":
+        knowledge_id = _require(step.parameters, "knowledge_id")
+        description = _require(step.parameters, "description")
+        evidence = add_evidence(knowledge_id, description)
+        return f"Evidência registrada (id={evidence.id})."
+
+    if operation == "LIST_EVIDENCE":
+        knowledge_id = _require(step.parameters, "knowledge_id")
+        evidence_list = list_evidence(knowledge_id)
+        if not evidence_list:
+            return "Nenhuma evidência encontrada para este conhecimento."
+        return "\n".join(f"- {evidence.description}" for evidence in evidence_list)
 
     raise UnknownKnowledgeOperationError(
         f"operação de conhecimento desconhecida: {operation!r}"
