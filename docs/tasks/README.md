@@ -185,10 +185,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-045** — concluída (separação de memória por usuário/aplicação,
   `list_memories_for_owner` — ver `docs/tasks/TASK-045.md`). Suíte
   completa: 331/331 testes aprovados.
+- **TASK-046** — concluída (Memory Tool,
+  `backend/app/tools/memory_tool.py`, `execute_memory_tool` — ver
+  `docs/tasks/TASK-046.md`). Suíte completa: 341/341 testes aprovados.
 
-As demais 102 TASKs permanecem com status **Pendente**.
+As demais 101 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-046 — Implementar Memory Tool**.
+Próxima TASK executável: **TASK-047 — Implementar busca estruturada de
+memória**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

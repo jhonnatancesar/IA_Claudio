@@ -11,10 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-045** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-046** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails" e "Contexto"
 completos; bloco "Memória" em andamento (modelo de memória persistente,
-separação por usuário/aplicação). Ver
+separação por usuário/aplicação, Memory Tool). Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
@@ -38,5 +38,5 @@ separação por usuário/aplicação). Ver
 
 ## Próxima TASK
 
-**TASK-046 — Implementar Memory Tool**
-([docs/tasks/TASK-046.md](docs/tasks/TASK-046.md)).
+**TASK-047 — Implementar busca estruturada de memória**
+([docs/tasks/TASK-047.md](docs/tasks/TASK-047.md)).
