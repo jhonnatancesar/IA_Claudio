@@ -1,6 +1,6 @@
 # TASK-040 — Implementar correção de contexto
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,14 @@ Testes unitários do ContextManager para este comportamento (rastreamento, corre
 ## Documentação afetada
 
 `docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Acrescentado `ContextManager.record_correction
+(correction)` em `backend/app/context/context_manager.py`: registra uma
+correção feita pelo usuário em `corrections`, em ordem cronológica — só o
+histórico bruto; reinterpretar `active_topic`/`current_objective` a partir
+do conteúdo da correção exigiria entendê-lo, fora do escopo desta TASK.
+Levanta `ValueError` para correção vazia.
+
+3 testes unitários novos. Suíte completa: 306/306 testes aprovados.

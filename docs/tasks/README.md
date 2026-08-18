@@ -161,10 +161,17 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
   `ContextManager.track_entity`/`set_implicit_reference`/
   `resolve_reference` — ver `docs/tasks/TASK-039.md`). Suíte completa:
   303/303 testes aprovados.
+- **TASK-040** — concluída (correção de contexto,
+  `ContextManager.record_correction` — ver `docs/tasks/TASK-040.md`). Suíte
+  completa: 306/306 testes aprovados.
 
-As demais 108 TASKs permanecem com status **Pendente**.
+**Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-040, a `main` local foi
+enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 
-Próxima TASK executável: **TASK-040 — Implementar correção de contexto**.
+As demais 107 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-041 — Implementar detecção de troca de
+assunto**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -53,6 +53,11 @@ entidade que uma palavra de referência ("esse", "ele", "o outro") resolve
 neste momento — `implicit_references`, um dicionário simples de referência
 → entidade, sem histórico de associações anteriores.
 
+**Implementação (TASK-040):** `record_correction(correction)` registra uma
+correção feita pelo usuário em `corrections`, em ordem cronológica — só o
+histórico bruto; reinterpretar `active_topic`/`current_objective` a partir
+do conteúdo de uma correção exigiria entendê-lo, fora do escopo desta TASK.
+
 ## Janela de contexto
 
 - Configurável pelo painel; mudança exige reinicialização.
