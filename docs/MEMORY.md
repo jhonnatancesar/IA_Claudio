@@ -21,6 +21,17 @@ informações necessárias à continuidade.
   automaticamente — persistência é uma decisão do agente, não um efeito colateral
   automático de receber contexto.
 
+**Implementação (TASK-044):** schema em
+`backend/app/db/migrations/0003_memory.sql` — tabela `memories`
+(`id`, `owner_type` — `USER`/`APPLICATION` —, `owner_id`, `content`,
+`created_at`, `updated_at`). `backend/app/memory/memory_model.py`:
+`Memory` (dataclass), `save_memory(owner_type, owner_id, content)` e
+`get_memory(memory_id)`, persistência real via `psycopg`, mesmo padrão de
+`app.auth.users` (TASK-009). `owner_type`/`owner_id` já existem no schema,
+mas garantir que uma consulta só devolve memórias do próprio dono
+(separação de fato) é TASK-045, não implementado aqui — `get_memory` busca
+só pelo `id`, sem filtrar por dono.
+
 ## Limpeza
 
 - A memória pode ser removida automaticamente por idade, baixa relevância, pouco uso e
