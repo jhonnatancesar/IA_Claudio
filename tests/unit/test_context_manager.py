@@ -35,3 +35,28 @@ def test_two_contexts_do_not_share_mutable_defaults():
 
     assert context_a.recent_entities == ["entidade-x"]
     assert context_b.recent_entities == []
+
+
+def test_set_active_topic_defines_topic():
+    context = ContextManager.new("conv-1")
+
+    context.set_active_topic("previsão do tempo")
+
+    assert context.active_topic == "previsão do tempo"
+
+
+def test_set_active_topic_replaces_previous_topic():
+    context = ContextManager.new("conv-1")
+    context.set_active_topic("assunto antigo")
+
+    context.set_active_topic("assunto novo")
+
+    assert context.active_topic == "assunto novo"
+
+
+@pytest.mark.parametrize("topic", ["", "   "])
+def test_set_active_topic_rejects_empty_topic(topic):
+    context = ContextManager.new("conv-1")
+
+    with pytest.raises(ValueError):
+        context.set_active_topic(topic)

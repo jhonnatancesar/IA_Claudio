@@ -1,6 +1,6 @@
 # TASK-038 — Criar active topic
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -29,3 +29,15 @@ Testes unitários do ContextManager para este comportamento (rastreamento, corre
 ## Documentação afetada
 
 `docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-16. Acrescentado `ContextManager.set_active_topic(topic)`
+em `backend/app/context/context_manager.py`: define o assunto principal da
+conversa, substituindo qualquer assunto anterior — "a V1 mantém um assunto
+principal por vez" (seção 9 da especificação), não uma lista/histórico.
+Levanta `ValueError` para `topic` vazio. Decidir *quando* uma troca de
+assunto real aconteceu (e então chamar este método, limpando referências
+antigas) é TASK-041, não implementado aqui.
+
+4 testes unitários novos. Suíte completa: 294/294 testes aprovados.

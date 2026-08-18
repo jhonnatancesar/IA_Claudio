@@ -154,10 +154,14 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 - **TASK-037** — concluída (`ContextManager`,
   `backend/app/context/context_manager.py` — ver `docs/tasks/TASK-037.md`).
   Suíte completa: 290/290 testes aprovados.
+- **TASK-038** — concluída (assunto principal,
+  `ContextManager.set_active_topic` — ver `docs/tasks/TASK-038.md`). Suíte
+  completa: 294/294 testes aprovados.
 
-As demais 110 TASKs permanecem com status **Pendente**.
+As demais 109 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-038 — Criar active topic**.
+Próxima TASK executável: **TASK-039 — Criar rastreamento de
+entidades/referências**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

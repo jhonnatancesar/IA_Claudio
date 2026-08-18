@@ -36,6 +36,14 @@ fato são TASK-038/TASK-041, rastreamento de entidades/referências é
 TASK-039, correção é TASK-040, monitor de janela de contexto e aviso em 80%
 são TASK-042/TASK-043 — nenhum desses comportamentos implementado ainda.
 
+**Implementação (TASK-038):** `ContextManager.set_active_topic(topic)`
+define o assunto principal, substituindo o anterior — "a V1 mantém um
+assunto principal por vez" (só um valor, não uma lista/histórico).
+Levanta `ValueError` para `topic` vazio. Decidir *quando* uma troca de
+assunto real aconteceu (para então chamar este método e limpar
+referências antigas) é TASK-041 — aqui só a troca do valor, assumindo que
+quem chama já decidiu trocar.
+
 ## Janela de contexto
 
 - Configurável pelo painel; mudança exige reinicialização.
