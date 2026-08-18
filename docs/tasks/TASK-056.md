@@ -1,6 +1,6 @@
 # TASK-056 — Implementar evidências/fontes
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,24 @@ Testes unitários de conhecimento (modelo RAW/PROVISIONAL/CONFIRMED, versionamen
 ## Documentação afetada
 
 `docs/KNOWLEDGE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado schema
+`backend/app/db/migrations/0009_knowledge_evidence.sql` (colunas
+`confidence`/`volatility` em `knowledge`, tabela `knowledge_evidence` com
+`ON DELETE CASCADE`), aplicado no PostgreSQL local real. Em
+`backend/app/knowledge/knowledge_model.py`: `confidence`/`volatility`
+opcionais em `Knowledge`, reaproveitando `Confidence`
+(`app.llm.protocol`) e `Volatility` (`app.confidence.volatility`) —
+vocabulário já existente, não duplicado.
+`set_knowledge_confidence`/`set_knowledge_volatility` definem cada um.
+`Evidence`/`add_evidence`/`list_evidence` guardam evidências como texto
+livre associado a uma versão — cadastro real de fontes é TASK-059 em
+diante.
+
+Exposto na Knowledge Tool: `"SET_CONFIDENCE"`, `"SET_VOLATILITY"`,
+`"ADD_EVIDENCE"`, `"LIST_EVIDENCE"`.
+
+22 testes novos (10 unitários de validação + 12 de integração real, entre
+modelo e Knowledge Tool). Suíte completa: 456/456 testes aprovados.

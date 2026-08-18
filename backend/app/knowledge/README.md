@@ -4,27 +4,32 @@ Documentação: docs/KNOWLEDGE.md. TASKs: TASK-052 a TASK-058.
 
 Modelo RAW/PROVISIONAL/CONFIRMED, Knowledge Tool, versionamento, escopo GLOBAL/APPLICATION, evidências/fontes, promoção para CONFIRMED, avaliação de utilidade.
 
-- `knowledge_model.py` (TASK-052, TASK-054, TASK-055) — `KnowledgeStatus`
-  (`RAW`/`PROVISIONAL`/`CONFIRMED`), `Knowledge` (dataclass),
-  `save_knowledge(content, scope_type=GLOBAL, scope_id=None)`,
+- `knowledge_model.py` (TASK-052, TASK-054, TASK-055, TASK-056) —
+  `KnowledgeStatus` (`RAW`/`PROVISIONAL`/`CONFIRMED`), `Knowledge`
+  (dataclass), `save_knowledge(content, scope_type=GLOBAL, scope_id=None)`,
   `get_knowledge(knowledge_id)`, `advance_knowledge_status(knowledge_id,
   new_status)` — transição mecânica entre estágios, sem decidir quando
   promover (regra de promoção real é TASK-057). Persistência real no
   PostgreSQL local (`backend/app/db/migrations/0006_knowledge.sql` +
-  `0007_knowledge_versioning.sql` + `0008_knowledge_scope.sql`). Sem
-  remoção — conhecimento nunca é apagado automaticamente.
-  `create_new_version(knowledge_id, new_content,
+  `0007_knowledge_versioning.sql` + `0008_knowledge_scope.sql` +
+  `0009_knowledge_evidence.sql`). Sem remoção — conhecimento nunca é
+  apagado automaticamente. `create_new_version(knowledge_id, new_content,
   reason)`/`get_current_version(root_id)`/`list_version_history(root_id)`
   (TASK-054) — versionamento: nunca sobrescreve `content`, sempre insere
   linha nova; nova versão sempre começa em `RAW` e herda o escopo da
   anterior. `KnowledgeScope` (`GLOBAL`/`APPLICATION`)/`list_knowledge_for_scope
   (scope_type, scope_id=None)` (TASK-055) — escopo `GLOBAL`/
-  `APPLICATION:<id>`, nunca misturando escopos na listagem. Evidências/
-  fontes (TASK-056) não são desta TASK.
+  `APPLICATION:<id>`, nunca misturando escopos na listagem.
+  `set_knowledge_confidence`/`set_knowledge_volatility` (reaproveitando
+  `Confidence`/`Volatility` já existentes) e
+  `Evidence`/`add_evidence`/`list_evidence` (texto livre; fonte cadastrada
+  de verdade é TASK-059+) (TASK-056).
 
 Testes em `tests/integration/test_knowledge_model_integration.py`,
 `tests/integration/test_knowledge_versioning_integration.py`,
-`tests/integration/test_knowledge_scope_integration.py` (persistência/
-transições/versionamento/escopo reais) e
+`tests/integration/test_knowledge_scope_integration.py`,
+`tests/integration/test_knowledge_evidence_integration.py`
+(persistência/transições/versionamento/escopo/evidências reais) e
 `tests/unit/test_knowledge_model.py`/`tests/unit/test_knowledge_versioning.py`/
-`tests/unit/test_knowledge_scope.py` (validação de campos vazios/escopo).
+`tests/unit/test_knowledge_scope.py`/`tests/unit/test_knowledge_evidence.py`
+(validação de campos vazios/escopo).

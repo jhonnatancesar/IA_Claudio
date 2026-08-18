@@ -170,3 +170,57 @@ def test_new_version_operation_rejects_stale_knowledge_id(postgres_dsn, created_
                 }
             )
         )
+
+
+def test_set_confidence_operation_updates_knowledge(postgres_dsn, created_knowledge_id):
+    result = execute_knowledge_tool(
+        _step(
+            {
+                "operation": "SET_CONFIDENCE",
+                "knowledge_id": created_knowledge_id,
+                "confidence": "HIGH",
+            }
+        )
+    )
+
+    assert "HIGH" in result
+
+
+def test_set_volatility_operation_updates_knowledge(postgres_dsn, created_knowledge_id):
+    result = execute_knowledge_tool(
+        _step(
+            {
+                "operation": "SET_VOLATILITY",
+                "knowledge_id": created_knowledge_id,
+                "volatility": "VOLATILE",
+            }
+        )
+    )
+
+    assert "VOLATILE" in result
+
+
+def test_add_and_list_evidence_operations(postgres_dsn, created_knowledge_id):
+    execute_knowledge_tool(
+        _step(
+            {
+                "operation": "ADD_EVIDENCE",
+                "knowledge_id": created_knowledge_id,
+                "description": "fonte oficial confirmando o fato",
+            }
+        )
+    )
+
+    result = execute_knowledge_tool(
+        _step({"operation": "LIST_EVIDENCE", "knowledge_id": created_knowledge_id})
+    )
+
+    assert "fonte oficial confirmando o fato" in result
+
+
+def test_list_evidence_operation_returns_message_when_empty(postgres_dsn, created_knowledge_id):
+    result = execute_knowledge_tool(
+        _step({"operation": "LIST_EVIDENCE", "knowledge_id": created_knowledge_id})
+    )
+
+    assert result == "Nenhuma evidência encontrada para este conhecimento."

@@ -43,8 +43,20 @@ de um conhecimento existente, muito menos automaticamente: "conhecimento
 específico de uma aplicação não pode ser promovido automaticamente para
 global" já é satisfeito por omissão, já que nada aqui altera escopo.
 
-Preservar fontes (TASK-056) e avaliação de utilidade pelo orquestrador
-(TASK-058) não são desta TASK.
+Esta TASK (TASK-056) acrescenta evidências e confiança/volatilidade:
+"conhecimento provisório/confirmado se apoia em evidências e fontes... e
+carrega os mesmos níveis de confiança (LOW/MEDIUM/HIGH) e a marca de
+volatilidade quando aplicável" (seção 12). `confidence`/`volatility`
+reaproveitam `Confidence` (`app.llm.protocol`, TASK-016) e `Volatility`
+(`app.confidence.volatility`, TASK-032) — vocabulário já existente, não
+duplicado — e são opcionais (`None`): um fato `RAW` recém-capturado pode
+não ter nenhum dos dois avaliado ainda. `Evidence`/`add_evidence`/
+`list_evidence` guardam evidências como texto livre — o cadastro real de
+fontes, com reputação e tipo `PRIMARY`/`SECONDARY`/`UNKNOWN`, é TASK-059
+em diante; vincular evidências a uma fonte cadastrada de verdade fica
+para quando esse sistema existir.
+
+Avaliação de utilidade pelo orquestrador (TASK-058) não é desta TASK.
 """
 
 from __future__ import annotations
@@ -55,11 +67,14 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
+from app.confidence.volatility import Volatility
 from app.db.connection import connect
+from app.llm.protocol import Confidence
 
 _SELECT_COLUMNS = (
     "id, status, content, created_at, root_id, version, is_current, "
-    "previous_version_id, change_reason, scope_type, scope_id"
+    "previous_version_id, change_reason, scope_type, scope_id, "
+    "confidence, volatility"
 )
 
 
@@ -117,6 +132,8 @@ class Knowledge:
     change_reason: str | None
     scope_type: KnowledgeScope
     scope_id: str | None
+    confidence: Confidence | None
+    volatility: Volatility | None
 
 
 def _knowledge_from_row(row: tuple[Any, ...]) -> Knowledge:
@@ -132,6 +149,8 @@ def _knowledge_from_row(row: tuple[Any, ...]) -> Knowledge:
         change_reason,
         scope_type,
         scope_id,
+        confidence,
+        volatility,
     ) = row
     return Knowledge(
         id=knowledge_id,
@@ -145,6 +164,8 @@ def _knowledge_from_row(row: tuple[Any, ...]) -> Knowledge:
         change_reason=change_reason,
         scope_type=KnowledgeScope(scope_type),
         scope_id=scope_id,
+        confidence=Confidence(confidence) if confidence is not None else None,
+        volatility=Volatility(volatility) if volatility is not None else None,
     )
 
 
@@ -307,6 +328,91 @@ def list_version_history(root_id: UUID) -> list[Knowledge]:
         ).fetchall()
 
     return [_knowledge_from_row(row) for row in rows]
+
+
+def set_knowledge_confidence(knowledge_id: UUID, confidence: Confidence) -> Knowledge:
+    """Define a confiança (`LOW`/`MEDIUM`/`HIGH`, `app.llm.protocol.Confidence`)
+    associada a esta versão do conhecimento (TASK-056). Levanta
+    `KnowledgeNotFoundError` se `knowledge_id` não existir."""
+    if get_knowledge(knowledge_id) is None:
+        raise KnowledgeNotFoundError(f"conhecimento não encontrado: {knowledge_id!r}")
+
+    with connect() as conn:
+        row = conn.execute(
+            "UPDATE knowledge SET confidence = %s, updated_at = now() WHERE id = %s "
+            f"RETURNING {_SELECT_COLUMNS}",
+            (confidence.value, knowledge_id),
+        ).fetchone()
+
+    return _knowledge_from_row(row)
+
+
+def set_knowledge_volatility(knowledge_id: UUID, volatility: Volatility) -> Knowledge:
+    """Define a volatilidade (`app.confidence.volatility.Volatility`)
+    associada a esta versão do conhecimento (TASK-056). Levanta
+    `KnowledgeNotFoundError` se `knowledge_id` não existir."""
+    if get_knowledge(knowledge_id) is None:
+        raise KnowledgeNotFoundError(f"conhecimento não encontrado: {knowledge_id!r}")
+
+    with connect() as conn:
+        row = conn.execute(
+            "UPDATE knowledge SET volatility = %s, updated_at = now() WHERE id = %s "
+            f"RETURNING {_SELECT_COLUMNS}",
+            (volatility.value, knowledge_id),
+        ).fetchone()
+
+    return _knowledge_from_row(row)
+
+
+@dataclass(frozen=True)
+class Evidence:
+    id: UUID
+    knowledge_id: UUID
+    description: str
+    created_at: datetime
+
+
+def add_evidence(knowledge_id: UUID, description: str) -> Evidence:
+    """Registra uma evidência (texto livre) associada a uma versão de
+    conhecimento (TASK-056). Vincular a uma fonte cadastrada de verdade
+    (com reputação, tipo `PRIMARY`/`SECONDARY`/`UNKNOWN`) é TASK-059 em
+    diante, não implementado aqui. Levanta `KnowledgeNotFoundError` se
+    `knowledge_id` não existir e `ValueError` para `description` vazia."""
+    if not description or not description.strip():
+        raise ValueError("description não pode ser vazia")
+    if get_knowledge(knowledge_id) is None:
+        raise KnowledgeNotFoundError(f"conhecimento não encontrado: {knowledge_id!r}")
+
+    with connect() as conn:
+        row = conn.execute(
+            "INSERT INTO knowledge_evidence (knowledge_id, description) "
+            "VALUES (%s, %s) RETURNING id, knowledge_id, description, created_at",
+            (knowledge_id, description),
+        ).fetchone()
+
+    evidence_id, evidence_knowledge_id, evidence_description, created_at = row
+    return Evidence(
+        id=evidence_id,
+        knowledge_id=evidence_knowledge_id,
+        description=evidence_description,
+        created_at=created_at,
+    )
+
+
+def list_evidence(knowledge_id: UUID) -> list[Evidence]:
+    """Lista as evidências registradas para uma versão de conhecimento, da
+    mais antiga para a mais recente."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, knowledge_id, description, created_at "
+            "FROM knowledge_evidence WHERE knowledge_id = %s ORDER BY created_at ASC",
+            (knowledge_id,),
+        ).fetchall()
+
+    return [
+        Evidence(id=row[0], knowledge_id=row[1], description=row[2], created_at=row[3])
+        for row in rows
+    ]
 
 
 def list_knowledge_for_scope(
