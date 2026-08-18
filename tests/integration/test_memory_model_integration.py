@@ -10,8 +10,10 @@ import pytest
 
 from app.memory.memory_model import (
     InvalidOwnerTypeError,
+    MemoryNotFoundError,
     get_memory,
     list_memories_for_owner,
+    record_memory_usage,
     save_memory,
     search_memories,
 )
@@ -35,6 +37,13 @@ def test_save_memory_persists_and_is_readable_by_id(postgres_dsn, unique_owner_i
     assert fetched.owner_type == "USER"
     assert fetched.owner_id == unique_owner_id
     assert fetched.content == "prefere respostas curtas"
+
+
+def test_save_memory_starts_with_zero_usage(postgres_dsn, unique_owner_id):
+    memory = save_memory("USER", unique_owner_id, "conteúdo qualquer")
+
+    assert memory.use_count == 0
+    assert memory.last_used_at is None
 
 
 def test_save_memory_accepts_application_owner_type(postgres_dsn, unique_owner_id):
@@ -138,3 +147,26 @@ def test_search_memories_rejects_invalid_owner_type(postgres_dsn):
 def test_search_memories_rejects_empty_query(postgres_dsn, query):
     with pytest.raises(ValueError):
         search_memories("USER", "qualquer", query)
+
+
+def test_record_memory_usage_increments_use_count(postgres_dsn, unique_owner_id):
+    memory = save_memory("USER", unique_owner_id, "conteúdo qualquer")
+
+    updated = record_memory_usage(memory.id)
+    updated_again = record_memory_usage(memory.id)
+
+    assert updated.use_count == 1
+    assert updated_again.use_count == 2
+
+
+def test_record_memory_usage_sets_last_used_at(postgres_dsn, unique_owner_id):
+    memory = save_memory("USER", unique_owner_id, "conteúdo qualquer")
+
+    updated = record_memory_usage(memory.id)
+
+    assert updated.last_used_at is not None
+
+
+def test_record_memory_usage_raises_for_unknown_id(postgres_dsn):
+    with pytest.raises(MemoryNotFoundError):
+        record_memory_usage(uuid.uuid4())

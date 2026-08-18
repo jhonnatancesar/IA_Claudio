@@ -57,12 +57,14 @@ Aplicado em `backend/app/db/migrations/0001_initial_schema.sql` (SQL puro via
 `logger`, `message`, `context jsonb`), índices em `timestamp` e `level`. Ver
 `docs/OBSERVABILITY.md` para o handler que grava nela.
 
-## Memória (TASK-044)
+## Memória (TASK-044, TASK-048)
 
 `backend/app/db/migrations/0003_memory.sql` — tabela `memories` (`id`,
 `owner_type` — `USER`/`APPLICATION` —, `owner_id`, `content`, `created_at`,
-`updated_at`), índice em `(owner_type, owner_id)`. Ver `docs/MEMORY.md` para
-o módulo (`app.memory.memory_model`) que lê/grava nela.
+`updated_at`), índice em `(owner_type, owner_id)`.
+`backend/app/db/migrations/0004_memory_usage.sql` — colunas `use_count`
+(frequência) e `last_used_at` (last used), TASK-048. Ver `docs/MEMORY.md`
+para o módulo (`app.memory.memory_model`) que lê/grava nela.
 
 Os demais domínios de dados (conhecimento, fontes, histórico de fontes,
 blacklist, conversas, resumos, execuções, fila, auditoria, cotas, atualizações,

@@ -191,11 +191,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-047** — concluída (busca estruturada de memória,
   `search_memories`, operação `SEARCH` na Memory Tool — ver
   `docs/tasks/TASK-047.md`). Suíte completa: 353/353 testes aprovados.
+- **TASK-048** — concluída (relevância/frequência/last used,
+  `record_memory_usage`/`relevance_score` — ver `docs/tasks/TASK-048.md`).
+  Suíte completa: 361/361 testes aprovados.
 
-As demais 100 TASKs permanecem com status **Pendente**.
+As demais 99 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-048 — Implementar
-relevância/frequência/last used**.
+Próxima TASK executável: **TASK-049 — Implementar política de
+retenção**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
