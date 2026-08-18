@@ -1,6 +1,6 @@
 # Ferramentas (Tool Registry)
 
-Documentação: docs/TOOLS.md. TASKs: TASK-046, TASK-053, TASK-054, TASK-055, TASK-056, TASK-088 a TASK-100.
+Documentação: docs/TOOLS.md. TASKs: TASK-046, TASK-053, TASK-054, TASK-055, TASK-056, TASK-057, TASK-088 a TASK-100.
 
 Memory Tool, Knowledge Tool, Web Search Tool, File Tool, Database Tool, API Tool. Catálogo fixo, carregado na inicialização, execução sequencial na V1.
 
@@ -10,19 +10,22 @@ Memory Tool, Knowledge Tool, Web Search Tool, File Tool, Database Tool, API Tool
   `ExecutionOrchestrator.tool_executor`. `operation` `SAVE`/`LIST`/
   `SEARCH` em `step.parameters`. Cadastro no Tool Registry (catálogo fixo)
   é TASK-088 em diante — não implementado aqui.
-- `knowledge_tool.py` (TASK-053, TASK-054, TASK-055, TASK-056) —
-  `execute_knowledge_tool(step)`: expõe `app.knowledge.knowledge_model`
-  (TASK-052/054/055/056) como ferramenta executável pelo orquestrador,
-  mesmo padrão de `memory_tool.py`. `operation`
+- `knowledge_tool.py` (TASK-053, TASK-054, TASK-055, TASK-056, TASK-057) —
+  `execute_knowledge_tool(step)`: expõe `app.knowledge.knowledge_model`/
+  `app.knowledge.promotion_rule` (TASK-052/054/055/056/057) como
+  ferramenta executável pelo orquestrador, mesmo padrão de
+  `memory_tool.py`. `operation`
   `SAVE`/`GET`/`ADVANCE`/`NEW_VERSION`/`LIST_SCOPE`/`SET_CONFIDENCE`/
-  `SET_VOLATILITY`/`ADD_EVIDENCE`/`LIST_EVIDENCE` em `step.parameters`.
-  `ADVANCE` só aplica a transição mecânica de status — a regra de quando
-  promover é TASK-057. `NEW_VERSION` cria uma versão nova do fato
-  (`create_new_version`). `SAVE` aceita `scope_type`/`scope_id`
-  opcionais; `LIST_SCOPE` lista o conhecimento atual de um escopo
-  (`list_knowledge_for_scope`). `SET_CONFIDENCE`/`SET_VOLATILITY`
-  definem confiança/volatilidade; `ADD_EVIDENCE`/`LIST_EVIDENCE`
-  registram/listam evidências (texto livre).
+  `SET_VOLATILITY`/`ADD_EVIDENCE`/`LIST_EVIDENCE`/`PROMOTE_TO_CONFIRMED`
+  em `step.parameters`. `ADVANCE` só aplica a transição mecânica de
+  status, sem julgamento; `PROMOTE_TO_CONFIRMED` aplica a regra de
+  elegibilidade (`promote_to_confirmed`, TASK-057) antes de promover.
+  `NEW_VERSION` cria uma versão nova do fato (`create_new_version`).
+  `SAVE` aceita `scope_type`/`scope_id` opcionais; `LIST_SCOPE` lista o
+  conhecimento atual de um escopo (`list_knowledge_for_scope`).
+  `SET_CONFIDENCE`/`SET_VOLATILITY` definem confiança/volatilidade;
+  `ADD_EVIDENCE`/`LIST_EVIDENCE` registram/listam evidências (texto
+  livre).
 
 Testes em `tests/unit/test_memory_tool.py`/`tests/unit/test_knowledge_tool.py`
 (validação de parâmetros) e

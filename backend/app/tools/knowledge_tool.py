@@ -29,6 +29,12 @@ TASK-056 acrescenta `"SET_CONFIDENCE"`/`"SET_VOLATILITY"` (expondo
 `"ADD_EVIDENCE"`/`"LIST_EVIDENCE"` (expondo `add_evidence`/
 `list_evidence`) — evidências como texto livre; vincular a uma fonte
 cadastrada de verdade é TASK-059 em diante.
+
+TASK-057 acrescenta `"PROMOTE_TO_CONFIRMED"`, expondo
+`app.knowledge.promotion_rule.promote_to_confirmed`: diferente de
+`"ADVANCE"` (que aplica qualquer transição mecânica válida sem
+julgamento), esta operação só promove se o conhecimento atender à regra
+de elegibilidade (confiança `HIGH` + evidência suficiente).
 """
 
 from __future__ import annotations
@@ -47,6 +53,7 @@ from app.knowledge.knowledge_model import (
     set_knowledge_confidence,
     set_knowledge_volatility,
 )
+from app.knowledge.promotion_rule import promote_to_confirmed
 from app.llm.protocol import Confidence, ModelStep
 
 KNOWLEDGE_TOOL_NAME = "KNOWLEDGE"
@@ -55,8 +62,8 @@ KNOWLEDGE_TOOL_NAME = "KNOWLEDGE"
 class UnknownKnowledgeOperationError(ValueError):
     """Levantado quando `parameters["operation"]` não é uma das operações
     conhecidas (`SAVE`, `GET`, `ADVANCE`, `NEW_VERSION`, `LIST_SCOPE`,
-    `SET_CONFIDENCE`, `SET_VOLATILITY`, `ADD_EVIDENCE`,
-    `LIST_EVIDENCE`)."""
+    `SET_CONFIDENCE`, `SET_VOLATILITY`, `ADD_EVIDENCE`, `LIST_EVIDENCE`,
+    `PROMOTE_TO_CONFIRMED`)."""
 
 
 class MissingToolParameterError(ValueError):
@@ -119,6 +126,10 @@ def execute_knowledge_tool(step: ModelStep) -> str:
       evidência (`add_evidence`) e devolve confirmação com o `id` gerado.
     - `"LIST_EVIDENCE"`: exige `knowledge_id`; devolve as evidências
       registradas (`list_evidence`), uma por linha.
+    - `"PROMOTE_TO_CONFIRMED"`: exige `knowledge_id`; promove para
+      `CONFIRMED` (`promote_to_confirmed`) só se elegível (confiança
+      `HIGH` + evidência suficiente) — devolve confirmação, ou propaga
+      `KnowledgePromotionNotEligibleError` se não for elegível.
 
     Levanta `MissingToolParameterError` para parâmetro obrigatório
     ausente, `InvalidKnowledgeStatusParameterError`/
@@ -220,6 +231,11 @@ def execute_knowledge_tool(step: ModelStep) -> str:
         if not evidence_list:
             return "Nenhuma evidência encontrada para este conhecimento."
         return "\n".join(f"- {evidence.description}" for evidence in evidence_list)
+
+    if operation == "PROMOTE_TO_CONFIRMED":
+        knowledge_id = _require(step.parameters, "knowledge_id")
+        knowledge = promote_to_confirmed(knowledge_id)
+        return f"Conhecimento promovido para CONFIRMED (id={knowledge.id})."
 
     raise UnknownKnowledgeOperationError(
         f"operação de conhecimento desconhecida: {operation!r}"

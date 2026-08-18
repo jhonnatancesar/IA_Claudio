@@ -13,6 +13,23 @@ RAW → PROVISIONAL → CONFIRMED
 
 Fluxo desejado: **NÃO SEI → PESQUISO → VALIDO → CONFIRMO → AVALIO UTILIDADE → SALVO.**
 
+**Implementação (TASK-057):** `backend/app/knowledge/promotion_rule.py`
+— `advance_knowledge_status` (TASK-052) só aplica a transição mecânica;
+esta TASK acrescenta a regra de negócio para `PROVISIONAL → CONFIRMED`
+("CONFIRMO"): `is_eligible_for_confirmation(knowledge, evidence_count)`
+(função pura) exige confiança `HIGH` **e** pelo menos
+`MIN_EVIDENCE_COUNT_FOR_CONFIRMATION` (`1`) evidência registrada —
+critério mais simples e defensável, já que a especificação não detalha
+uma fórmula. `promote_to_confirmed(knowledge_id)` busca o conhecimento e
+suas evidências, verifica elegibilidade e só então chama
+`advance_knowledge_status`; levanta
+`KnowledgePromotionNotEligibleError` sem alterar nada quando não
+elegível. Reputação real de fontes (TASK-059+) pode refinar esse
+critério depois, sem mudar sua forma. Promoção `RAW → PROVISIONAL` não é
+desta TASK. Exposta na Knowledge Tool como `operation:
+"PROMOTE_TO_CONFIRMED"` (distinta de `"ADVANCE"`, que continua sem
+julgamento).
+
 ## Versionamento
 
 Se um fato confirmado mudar, o sistema:
