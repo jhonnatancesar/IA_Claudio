@@ -9,5 +9,9 @@ Confiança do modelo (LOW/MEDIUM/HIGH), volatilidade (VOLATILE/NON_VOLATILE) e c
   `app.llm.protocol` (TASK-016), não duplica. Cálculo da confiança final é
   TASK-033; guardrails que agem sobre a confiança (bloquear `LOW`, revalidar
   volátil, ambiguidade) são TASK-034/TASK-035/TASK-036.
+- `volatility.py` (TASK-032) — `Volatility` (`VOLATILE`/`NON_VOLATILE`),
+  `requires_revalidation(volatility)`. Só o enum e a regra — onde a
+  volatilidade é registrada (Knowledge Tool, TASK-052+) e onde é aplicada
+  como guardrail (TASK-035) não são desta TASK.
 
-Testes em `tests/unit/test_model_confidence.py`.
+Testes em `tests/unit/test_model_confidence.py`, `tests/unit/test_volatility.py`.
