@@ -85,6 +85,15 @@ existem — `capacity` é recebida como parâmetro explícito de quem cria o
 monitor, não lida de configuração salva. Emitir o aviso preventivo ao
 atingir 80% é TASK-043, não implementado aqui.
 
+**Implementação (TASK-043):** `requires_warning(tokens_used, threshold=
+DEFAULT_WARNING_THRESHOLD)` — `True` a partir de 80% de uso (`
+DEFAULT_WARNING_THRESHOLD = 0.8`), continuando `True` mesmo além de 100%
+(a condição só cresce a partir do limiar, nunca "desliga"). Só o sinal
+booleano — como o aviso é efetivamente mostrado ao usuário ("discreto",
+seção 9) é responsabilidade de quem consome esse sinal (painel/API), fora
+do escopo desta TASK. Com esta TASK, o bloco "Contexto" (TASK-037 a
+TASK-043) está completo.
+
 ## Complexidade e limitação do chat
 
 Antes de executar, o Claudião faz pré-avaliação de complexidade. O chat possui
