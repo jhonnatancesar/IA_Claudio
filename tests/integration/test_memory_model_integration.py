@@ -8,7 +8,12 @@ import uuid
 import psycopg
 import pytest
 
-from app.memory.memory_model import InvalidOwnerTypeError, get_memory, save_memory
+from app.memory.memory_model import (
+    InvalidOwnerTypeError,
+    get_memory,
+    list_memories_for_owner,
+    save_memory,
+)
 
 
 @pytest.fixture
@@ -44,3 +49,41 @@ def test_save_memory_rejects_invalid_owner_type(postgres_dsn, unique_owner_id):
 
 def test_get_memory_returns_none_for_unknown_id(postgres_dsn):
     assert get_memory(uuid.uuid4()) is None
+
+
+def test_list_memories_for_owner_returns_only_that_owner(postgres_dsn, unique_owner_id):
+    other_owner_id = f"{unique_owner_id}_outro"
+    save_memory("USER", unique_owner_id, "memória do dono A")
+    save_memory("USER", other_owner_id, "memória do dono B")
+
+    try:
+        memories = list_memories_for_owner("USER", unique_owner_id)
+
+        assert len(memories) == 1
+        assert memories[0].content == "memória do dono A"
+        assert memories[0].owner_id == unique_owner_id
+    finally:
+        with psycopg.connect(postgres_dsn) as conn:
+            conn.execute("DELETE FROM memories WHERE owner_id = %s", (other_owner_id,))
+
+
+def test_list_memories_for_owner_does_not_mix_owner_types(postgres_dsn, unique_owner_id):
+    save_memory("USER", unique_owner_id, "memória de usuário")
+    save_memory("APPLICATION", unique_owner_id, "memória de aplicação")
+
+    user_memories = list_memories_for_owner("USER", unique_owner_id)
+    app_memories = list_memories_for_owner("APPLICATION", unique_owner_id)
+
+    assert len(user_memories) == 1
+    assert user_memories[0].content == "memória de usuário"
+    assert len(app_memories) == 1
+    assert app_memories[0].content == "memória de aplicação"
+
+
+def test_list_memories_for_owner_empty_when_none_exist(postgres_dsn, unique_owner_id):
+    assert list_memories_for_owner("USER", unique_owner_id) == []
+
+
+def test_list_memories_for_owner_rejects_invalid_owner_type(postgres_dsn):
+    with pytest.raises(InvalidOwnerTypeError):
+        list_memories_for_owner("SUPERUSER", "qualquer")

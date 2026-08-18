@@ -1,6 +1,6 @@
 # TASK-045 — Separar memória por usuário/aplicação
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,16 @@ Testes unitários de memória (persistência, busca, relevância, retenção ou 
 ## Documentação afetada
 
 `docs/MEMORY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Acrescentado `list_memories_for_owner(owner_type,
+owner_id)` em `backend/app/memory/memory_model.py`: garante de fato que
+"usuários diferentes têm memórias separadas" (seção 11) — filtra por
+`owner_type`/`owner_id` exatos, nunca mistura memórias de outro dono nem de
+outro `owner_type` (uma aplicação e um usuário com o mesmo `owner_id` têm
+listas independentes). Ordem: mais recente primeiro (`created_at DESC`).
+Levanta `InvalidOwnerTypeError` para `owner_type` desconhecido.
+
+4 testes de integração novos (persistência real). Suíte completa:
+331/331 testes aprovados.

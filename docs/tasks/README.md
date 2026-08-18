@@ -182,11 +182,13 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/db/migrations/0003_memory.sql`,
   `backend/app/memory/memory_model.py` — ver `docs/tasks/TASK-044.md`).
   Suíte completa: 327/327 testes aprovados.
+- **TASK-045** — concluída (separação de memória por usuário/aplicação,
+  `list_memories_for_owner` — ver `docs/tasks/TASK-045.md`). Suíte
+  completa: 331/331 testes aprovados.
 
-As demais 103 TASKs permanecem com status **Pendente**.
+As demais 102 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-045 — Separar memória por
-usuário/aplicação**.
+Próxima TASK executável: **TASK-046 — Implementar Memory Tool**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
