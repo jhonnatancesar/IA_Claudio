@@ -27,10 +27,15 @@ informações necessárias à continuidade.
 `created_at`, `updated_at`). `backend/app/memory/memory_model.py`:
 `Memory` (dataclass), `save_memory(owner_type, owner_id, content)` e
 `get_memory(memory_id)`, persistência real via `psycopg`, mesmo padrão de
-`app.auth.users` (TASK-009). `owner_type`/`owner_id` já existem no schema,
-mas garantir que uma consulta só devolve memórias do próprio dono
-(separação de fato) é TASK-045, não implementado aqui — `get_memory` busca
-só pelo `id`, sem filtrar por dono.
+`app.auth.users` (TASK-009). `owner_type`/`owner_id` já existem no schema;
+`get_memory` busca só pelo `id`, sem filtrar por dono.
+
+**Implementação (TASK-045):** `list_memories_for_owner(owner_type,
+owner_id)` — garante de fato que "usuários diferentes têm memórias
+separadas": filtra por `owner_type`/`owner_id` exatos, nunca mistura
+memórias de outro dono nem de outro `owner_type` (uma aplicação e um
+usuário com o mesmo `owner_id` têm listas independentes). Ordem: mais
+recente primeiro.
 
 ## Limpeza
 
