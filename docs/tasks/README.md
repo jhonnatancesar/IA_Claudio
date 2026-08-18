@@ -137,11 +137,15 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
   `backend/app/confidence/response_guardrail.py`,
   `ensure_conclusive_response_allowed`, novo código de erro 4006 — ver
   `docs/tasks/TASK-034.md`). Suíte completa: 278/278 testes aprovados.
+- **TASK-035** — concluída (regra obrigatória para informação volátil,
+  `backend/app/confidence/revalidation_guardrail.py`,
+  `ensure_volatile_information_revalidated`, novo código de erro 4007 — ver
+  `docs/tasks/TASK-035.md`). Suíte completa: 282/282 testes aprovados.
 
-As demais 113 TASKs permanecem com status **Pendente**.
+As demais 112 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-035 — Implementar regra obrigatória para
-informação volátil**.
+Próxima TASK executável: **TASK-036 — Implementar tratamento de
+ambiguidade**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
