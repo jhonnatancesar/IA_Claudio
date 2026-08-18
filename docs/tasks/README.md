@@ -123,10 +123,14 @@ usuário.
 **Checkpoint de 10 TASKs (AGENTS.md):** próximo checkpoint automático de
 push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 
-As demais 117 TASKs permanecem com status **Pendente**.
+- **TASK-031** — concluída (confiança do modelo,
+  `backend/app/confidence/model_confidence.py` — ver
+  `docs/tasks/TASK-031.md`). Suíte completa: 258/258 testes aprovados.
 
-Próxima TASK executável: **TASK-031 — Implementar confiança LOW/MEDIUM/HIGH
-do modelo** (início do bloco "Confiança e guardrails").
+As demais 116 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-032 — Implementar volatilidade
+VOLATILE/NON_VOLATILE**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
