@@ -1,6 +1,6 @@
 # TASK-046 — Implementar Memory Tool
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,22 @@ Testes unitários de memória (persistência, busca, relevância, retenção ou 
 ## Documentação afetada
 
 `docs/MEMORY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado `backend/app/tools/memory_tool.py`:
+`execute_memory_tool(step)`, assinatura compatível com
+`ExecutionOrchestrator.tool_executor` (`Callable[[ModelStep], str]`,
+TASK-026). `step.parameters["operation"]` (`"SAVE"`/`"LIST"`) decide a
+chamada a `save_memory`/`list_memories_for_owner` (TASK-044/045).
+`MissingToolParameterError`/`UnknownMemoryOperationError` para parâmetro
+ausente/operação desconhecida.
+
+Cadastro no Tool Registry (catálogo fixo de ferramentas
+conhecidas/autorizadas) é TASK-088 em diante — esta TASK só cria a função
+executável. Busca estruturada por relevância (TASK-047) não é desta
+TASK — `LIST` devolve todas as memórias do dono, sem filtro de conteúdo.
+
+7 testes unitários (validação de parâmetros, sem tocar o banco) + 3 testes
+de integração novos (dispatch real contra o PostgreSQL local). Suíte
+completa: 341/341 testes aprovados.

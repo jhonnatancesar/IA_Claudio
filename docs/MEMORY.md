@@ -49,6 +49,20 @@ recente primeiro.
 - Ao atingir o limite, remove primeiro as memórias menos relevantes e menos usadas
   recentemente.
 
+**Implementação (TASK-046):** `backend/app/tools/memory_tool.py` —
+`execute_memory_tool(step)`, assinatura compatível com
+`ExecutionOrchestrator.tool_executor` (`Callable[[ModelStep], str]`,
+TASK-026). Traduz `step.parameters["operation"]` (`"SAVE"`/`"LIST"`) em
+chamadas a `save_memory`/`list_memories_for_owner`: `SAVE` exige
+`owner_type`/`owner_id`/`content` e devolve confirmação com o `id` gerado;
+`LIST` exige `owner_type`/`owner_id` e devolve as memórias desse dono, uma
+por linha. `MissingToolParameterError`/`UnknownMemoryOperationError` para
+parâmetro ausente/operação desconhecida. Cadastro no Tool Registry
+(catálogo fixo de ferramentas conhecidas/autorizadas) é TASK-088 em
+diante — esta TASK só cria a função executável, sem se registrar em lugar
+nenhum. Busca estruturada por relevância (TASK-047) não é desta TASK —
+`LIST` devolve tudo, sem filtro de conteúdo.
+
 ## TASKs relacionadas
 
 TASK-044 a TASK-051 (ver `docs/BACKLOG.md`): modelo de memória, separação por
