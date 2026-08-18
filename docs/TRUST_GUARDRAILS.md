@@ -41,6 +41,20 @@ confiança do modelo, evidências, reputação das fontes, contradições e vola
 - `LOW`: **não** apresenta conclusão como fato; entrega somente o que conseguiu
   verificar.
 
+**Implementação (TASK-033):** `backend/app/confidence/confidence_engine.py`
+— `EvidenceStrength` (`NONE`/`WEAK`/`STRONG`, resumo abstrato da qualidade da
+evidência), `calculate_final_confidence(model_confidence, evidence)`
+(`HIGH` + `WEAK`/`NONE` rebaixa para `MEDIUM`; `MEDIUM` + `STRONG` eleva para
+`HIGH`; `LOW` nunca é elevado; demais combinações mantêm a confiança do
+modelo) e `calculate_final_confidence_for_execution(execution, evidence)`,
+atalho que lê a confiança declarada via `get_model_confidence` (TASK-031).
+Reputação de fontes real (TASK-059 em diante) e evidências reais de pesquisa
+(Web Search Tool, TASK-088 em diante) ainda não existem — por isso o motor
+recebe `EvidenceStrength` já pronto de quem chama, em vez de calculá-lo.
+Contradições, citadas na especificação, dependem de conhecimento
+confirmado/provisório (TASK-052 em diante) e não têm representação aqui.
+Aplicar a confiança final como guardrail antes de responder é TASK-034.
+
 ## Fontes e reputação
 
 Tipos de fonte: `PRIMARY / SECONDARY / UNKNOWN`. Confiabilidade: `LOW / MEDIUM / HIGH`.

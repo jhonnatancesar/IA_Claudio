@@ -13,5 +13,12 @@ Confiança do modelo (LOW/MEDIUM/HIGH), volatilidade (VOLATILE/NON_VOLATILE) e c
   `requires_revalidation(volatility)`. Só o enum e a regra — onde a
   volatilidade é registrada (Knowledge Tool, TASK-052+) e onde é aplicada
   como guardrail (TASK-035) não são desta TASK.
+- `confidence_engine.py` (TASK-033) — `EvidenceStrength`
+  (`NONE`/`WEAK`/`STRONG`), `calculate_final_confidence(model_confidence,
+  evidence)` e `calculate_final_confidence_for_execution(execution,
+  evidence)`. Combina confiança do modelo com um resumo abstrato de
+  evidência (reputação de fontes real é TASK-059+, evidências reais de
+  pesquisa são TASK-088+). Bloquear resposta em `LOW` é TASK-034.
 
-Testes em `tests/unit/test_model_confidence.py`, `tests/unit/test_volatility.py`.
+Testes em `tests/unit/test_model_confidence.py`, `tests/unit/test_volatility.py`,
+`tests/unit/test_confidence_engine.py`.
