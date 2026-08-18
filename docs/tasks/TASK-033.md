@@ -1,6 +1,6 @@
 # TASK-033 — Implementar confidence engine do orquestrador
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -29,3 +29,20 @@ Testes unitários de confiança/guardrails, incluindo casos de bloqueio (LOW), r
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/confidence/confidence_engine.py`:
+`EvidenceStrength` (`NONE`/`WEAK`/`STRONG`, resumo abstrato de evidência
+externa), `calculate_final_confidence(model_confidence, evidence)`
+implementando a seção 13.3 (`HIGH` rebaixado para `MEDIUM` com evidência
+`WEAK`/`NONE`; `MEDIUM` elevado para `HIGH` com evidência `STRONG`; `LOW`
+nunca é elevado) e `calculate_final_confidence_for_execution(execution,
+evidence)`, atalho sobre `get_model_confidence` (TASK-031). Reputação real de
+fontes (TASK-059+) e evidências reais de pesquisa (TASK-088+) não existem
+ainda — o motor recebe `EvidenceStrength` já calculado por quem chama, sem
+acoplar a essas TASKs futuras. Contradições (dependem de conhecimento
+confirmado/provisório, TASK-052+) não têm representação nesta TASK. Aplicar
+a confiança final como guardrail de bloqueio de resposta é TASK-034.
+
+12 testes unitários novos. Suíte completa: 275/275 testes aprovados.
