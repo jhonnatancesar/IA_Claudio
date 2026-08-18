@@ -58,6 +58,17 @@ correção feita pelo usuário em `corrections`, em ordem cronológica — só o
 histórico bruto; reinterpretar `active_topic`/`current_objective` a partir
 do conteúdo de uma correção exigiria entendê-lo, fora do escopo desta TASK.
 
+**Implementação (TASK-041):** `detect_topic_switch(new_topic)` decide
+*quando* `set_active_topic` (TASK-038) deve trocar de fato o assunto —
+critério mais simples e defensável, já que a especificação não detalha um:
+`new_topic` diferente do `active_topic` atual (comparação de string) já
+conta como troca real. Quando detecta troca, aplica (`set_active_topic`) e
+limpa `recent_entities`/`implicit_references` — "limpa referências antigas
+quando houver mudança real de tópico" (seção 9). Retorna `True`/`False`
+conforme trocou ou não. Decidir se dois textos diferentes descrevem o
+"mesmo assunto" (paráfrase, sinônimo) exigiria interpretação semântica,
+fora do escopo desta TASK.
+
 ## Janela de contexto
 
 - Configurável pelo painel; mudança exige reinicialização.

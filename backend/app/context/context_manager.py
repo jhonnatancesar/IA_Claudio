@@ -28,6 +28,16 @@ feita pelo usuário ("correções feitas pelo usuário", seção 9) em
 reinterpretar `active_topic`/`current_objective` a partir da correção
 (isso exigiria entender o conteúdo da correção, fora do escopo desta TASK).
 
+Esta TASK (TASK-041) acrescenta `detect_topic_switch`: decide *quando*
+`set_active_topic` (TASK-038) deve trocar de fato o assunto — "a V1 mantém
+um assunto principal por vez e limpa referências antigas quando houver
+mudança real de tópico" (seção 9). O critério de "mudança real" usado é o
+mais simples e defensável possível, já que a especificação não detalha um
+critério: `new_topic` diferente do `active_topic` atual (comparação de
+igualdade de string) já conta como troca real — decidir se dois textos
+diferentes descrevem o "mesmo assunto" exigiria interpretação semântica,
+fora do escopo desta TASK.
+
 Monitor de janela de contexto e aviso em 80% são TASK-042/TASK-043.
 Nenhum desses comportamentos é implementado aqui.
 """
@@ -107,3 +117,20 @@ class ContextManager:
         if not correction or not correction.strip():
             raise ValueError("correction não pode ser vazia")
         self.corrections.append(correction)
+
+    def detect_topic_switch(self, new_topic: str) -> bool:
+        """Detecta se `new_topic` representa uma troca real de assunto
+        (TASK-041) e, se sim, aplica: troca `active_topic` (via
+        `set_active_topic`) e limpa `recent_entities`/`implicit_references`
+        — referências e entidades do assunto anterior não fazem sentido no
+        novo. Retorna `True` se trocou, `False` se `new_topic` já era o
+        assunto ativo (nada muda). Levanta `ValueError` se `new_topic` for
+        vazio."""
+        if not new_topic or not new_topic.strip():
+            raise ValueError("new_topic não pode ser vazio")
+        if new_topic == self.active_topic:
+            return False
+        self.set_active_topic(new_topic)
+        self.recent_entities.clear()
+        self.implicit_references.clear()
+        return True
