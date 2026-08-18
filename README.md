@@ -11,10 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-033** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-034** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM" e "Orquestração" completos; bloco "Confiança e
 guardrails" em andamento (confiança do modelo, volatilidade, confidence
-engine). Ver
+engine, bloqueio de resposta em LOW). Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
@@ -38,5 +38,5 @@ engine). Ver
 
 ## Próxima TASK
 
-**TASK-034 — Implementar bloqueio de resposta conclusiva em LOW**
-([docs/tasks/TASK-034.md](docs/tasks/TASK-034.md)).
+**TASK-035 — Implementar regra obrigatória para informação volátil**
+([docs/tasks/TASK-035.md](docs/tasks/TASK-035.md)).

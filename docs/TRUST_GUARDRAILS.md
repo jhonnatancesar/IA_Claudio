@@ -87,6 +87,15 @@ Tipos de fonte: `PRIMARY / SECONDARY / UNKNOWN`. Confiabilidade: `LOW / MEDIUM /
 - Ambiguidade real gera pergunta ao usuário/aplicação em vez de suposição (TASK-036,
   ver também `ORCHESTRATOR.md`).
 
+**Implementação (TASK-034):** `backend/app/confidence/response_guardrail.py`
+— `ensure_conclusive_response_allowed(final_confidence)`, novo código de erro
+`4006` (`LOW_CONFIDENCE_BLOCKED`). Recebe a confiança final já calculada
+(Confidence Engine, TASK-033) e levanta `ClaudiaoError` quando for `LOW`;
+`MEDIUM` e `HIGH` passam livres. Sinalizar incerteza em `MEDIUM` e o ponto do
+fluxo do orquestrador onde essa guarda é efetivamente acionada antes de uma
+resposta real (depende de onde a resposta final é montada) não são desta
+TASK — só a guarda isolada.
+
 ## TASKs relacionadas
 
 - Confiança/guardrails: TASK-031 a TASK-036.

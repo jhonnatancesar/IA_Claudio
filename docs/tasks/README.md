@@ -133,11 +133,15 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
   `backend/app/confidence/confidence_engine.py`,
   `EvidenceStrength`/`calculate_final_confidence` — ver
   `docs/tasks/TASK-033.md`). Suíte completa: 275/275 testes aprovados.
+- **TASK-034** — concluída (bloqueio de resposta conclusiva em LOW,
+  `backend/app/confidence/response_guardrail.py`,
+  `ensure_conclusive_response_allowed`, novo código de erro 4006 — ver
+  `docs/tasks/TASK-034.md`). Suíte completa: 278/278 testes aprovados.
 
-As demais 114 TASKs permanecem com status **Pendente**.
+As demais 113 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-034 — Implementar bloqueio de resposta
-conclusiva em LOW**.
+Próxima TASK executável: **TASK-035 — Implementar regra obrigatória para
+informação volátil**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
