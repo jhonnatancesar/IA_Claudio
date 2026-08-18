@@ -1,6 +1,6 @@
 # TASK-032 — Implementar volatilidade VOLATILE/NON_VOLATILE
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,16 @@ Testes unitários de confiança/guardrails, incluindo casos de bloqueio (LOW), r
 
 ## Documentação afetada
 
-`docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `backend/app/confidence/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/confidence/volatility.py`:
+`Volatility` (`VOLATILE`/`NON_VOLATILE`), `requires_revalidation(volatility)`
+— `True` só para `VOLATILE`, independente de confiança. Seção 13.2 da
+especificação é curta (só essa regra), então a implementação ficou
+proporcionalmente pequena, de propósito. Onde a volatilidade é registrada
+(Knowledge Tool) e onde é aplicada como guardrail antes de responder
+(TASK-035) não são desta TASK.
+
+5 testes unitários novos. Suíte completa: 263/263 testes aprovados.

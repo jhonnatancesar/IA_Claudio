@@ -22,6 +22,13 @@ Engine, TASK-033 — não implementado aqui.
 `VOLATILE / NON_VOLATILE`. Informação `VOLATILE` deve ser **revalidada sempre que for
 usada**, mesmo se o modelo estiver em `HIGH`.
 
+**Implementação (TASK-032):** `backend/app/confidence/volatility.py` —
+`Volatility` (enum) e `requires_revalidation(volatility)`, que retorna
+`True` só para `VOLATILE`, independente de qualquer confiança. Onde a
+volatilidade de um fato é registrada e consultada de verdade é o Knowledge
+Tool (TASK-052 em diante); aplicar isso como guardrail antes de responder é
+TASK-035 — nenhum dos dois implementado nesta TASK, só o enum e a regra.
+
 ## Confiança final
 
 Também usa `LOW / MEDIUM / HIGH`. O orquestrador calcula a confiança final usando

@@ -125,12 +125,15 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 
 - **TASK-031** — concluída (confiança do modelo,
   `backend/app/confidence/model_confidence.py` — ver
-  `docs/tasks/TASK-031.md`). Suíte completa: 258/258 testes aprovados.
+  `docs/tasks/TASK-031.md`).
+- **TASK-032** — concluída (volatilidade,
+  `backend/app/confidence/volatility.py` — ver `docs/tasks/TASK-032.md`).
+  Suíte completa: 263/263 testes aprovados.
 
-As demais 116 TASKs permanecem com status **Pendente**.
+As demais 115 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-032 — Implementar volatilidade
-VOLATILE/NON_VOLATILE**.
+Próxima TASK executável: **TASK-033 — Criar confidence engine do
+orquestrador**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
