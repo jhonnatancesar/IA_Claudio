@@ -215,11 +215,13 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-054** — concluída (versionamento de conhecimento,
   `create_new_version`/`get_current_version`/`list_version_history` — ver
   `docs/tasks/TASK-054.md`). Suíte completa: 419/419 testes aprovados.
+- **TASK-055** — concluída (escopo GLOBAL/APPLICATION,
+  `KnowledgeScope`/`list_knowledge_for_scope` — ver
+  `docs/tasks/TASK-055.md`). Suíte completa: 434/434 testes aprovados.
 
-As demais 93 TASKs permanecem com status **Pendente**.
+As demais 92 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-055 — Implementar escopo
-GLOBAL/APPLICATION**.
+Próxima TASK executável: **TASK-056 — Implementar evidências/fontes**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -72,6 +72,20 @@ Knowledge Tool como `operation: "NEW_VERSION"`. Preservar fontes
 promovido automaticamente para global** — promoção exige avaliação explícita (ver
 regra de promoção, TASK-057).
 
+**Implementação (TASK-055):** `KnowledgeScope` (`GLOBAL`/`APPLICATION`) e
+`scope_id` (`str | None`) em `Knowledge`/`save_knowledge` — `GLOBAL` por
+padrão; `APPLICATION` exige `scope_id` não vazio
+(`InvalidKnowledgeScopeError` caso contrário, ou se `GLOBAL` vier com
+`scope_id`), reforçado por `CHECK` no schema
+(`backend/app/db/migrations/0008_knowledge_scope.sql`). `create_new_version`
+(TASK-054) herda o escopo da versão anterior. `list_knowledge_for_scope
+(scope_type, scope_id=None)` lista as versões atuais de um escopo, nunca
+misturando `GLOBAL` com `APPLICATION` nem aplicações diferentes entre si.
+Nenhuma função troca o escopo de um conhecimento existente — "não pode ser
+promovido automaticamente para global" é satisfeito por omissão. Exposta
+na Knowledge Tool: `scope_type`/`scope_id` opcionais em `SAVE`, nova
+operação `"LIST_SCOPE"`.
+
 ## Relação com fontes e confiança
 
 Conhecimento provisório/confirmado se apoia em evidências e fontes (ver

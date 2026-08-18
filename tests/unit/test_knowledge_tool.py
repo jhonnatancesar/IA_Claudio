@@ -6,6 +6,7 @@ import pytest
 
 from app.llm.protocol import Action, Confidence, ModelStep
 from app.tools.knowledge_tool import (
+    InvalidKnowledgeScopeParameterError,
     InvalidKnowledgeStatusParameterError,
     MissingToolParameterError,
     UnknownKnowledgeOperationError,
@@ -87,6 +88,23 @@ def test_new_version_missing_new_content_raises():
                 }
             )
         )
+
+
+def test_save_invalid_scope_type_raises():
+    with pytest.raises(InvalidKnowledgeScopeParameterError):
+        execute_knowledge_tool(
+            _step({"operation": "SAVE", "content": "x", "scope_type": "TEAM"})
+        )
+
+
+def test_list_scope_missing_scope_type_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(_step({"operation": "LIST_SCOPE"}))
+
+
+def test_list_scope_invalid_scope_type_raises():
+    with pytest.raises(InvalidKnowledgeScopeParameterError):
+        execute_knowledge_tool(_step({"operation": "LIST_SCOPE", "scope_type": "TEAM"}))
 
 
 def test_new_version_missing_reason_raises():

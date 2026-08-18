@@ -32,8 +32,19 @@ ciclo de maturidade para o conteúdo novo é a escolha mais simples e
 defensável, já que a especificação não detalha se uma nova versão herda a
 maturidade da anterior.
 
-Preservar fontes (TASK-056), escopo `GLOBAL`/`APPLICATION` (TASK-055) e
-avaliação de utilidade pelo orquestrador (TASK-058) não são desta TASK.
+Esta TASK (TASK-055) acrescenta escopo: `GLOBAL` ou `APPLICATION:<id>`
+(seção 12) — `KnowledgeScope` mais `scope_id` (obrigatório só para
+`APPLICATION`, validado em Python e reforçado por `CHECK` no schema,
+`backend/app/db/migrations/0008_knowledge_scope.sql`). Padrão `GLOBAL`
+quando não informado. Uma nova versão (`create_new_version`) herda o
+escopo da versão anterior — mudar de escopo não é o mesmo que mudar de
+conteúdo, e esta TASK não implementa nenhuma função que troque o escopo
+de um conhecimento existente, muito menos automaticamente: "conhecimento
+específico de uma aplicação não pode ser promovido automaticamente para
+global" já é satisfeito por omissão, já que nada aqui altera escopo.
+
+Preservar fontes (TASK-056) e avaliação de utilidade pelo orquestrador
+(TASK-058) não são desta TASK.
 """
 
 from __future__ import annotations
@@ -48,7 +59,7 @@ from app.db.connection import connect
 
 _SELECT_COLUMNS = (
     "id, status, content, created_at, root_id, version, is_current, "
-    "previous_version_id, change_reason"
+    "previous_version_id, change_reason, scope_type, scope_id"
 )
 
 
@@ -56,6 +67,11 @@ class KnowledgeStatus(StrEnum):
     RAW = "RAW"
     PROVISIONAL = "PROVISIONAL"
     CONFIRMED = "CONFIRMED"
+
+
+class KnowledgeScope(StrEnum):
+    GLOBAL = "GLOBAL"
+    APPLICATION = "APPLICATION"
 
 
 _VALID_TRANSITIONS: dict[KnowledgeStatus, frozenset[KnowledgeStatus]] = {
@@ -83,6 +99,11 @@ class KnowledgeVersionConflictError(ValueError):
     `knowledge_id` que não é a versão atual da sua linhagem."""
 
 
+class InvalidKnowledgeScopeError(ValueError):
+    """Levantado quando `scope_type`/`scope_id` são inconsistentes:
+    `APPLICATION` sem `scope_id`, ou `GLOBAL` com `scope_id`."""
+
+
 @dataclass(frozen=True)
 class Knowledge:
     id: UUID
@@ -94,6 +115,8 @@ class Knowledge:
     is_current: bool
     previous_version_id: UUID | None
     change_reason: str | None
+    scope_type: KnowledgeScope
+    scope_id: str | None
 
 
 def _knowledge_from_row(row: tuple[Any, ...]) -> Knowledge:
@@ -107,6 +130,8 @@ def _knowledge_from_row(row: tuple[Any, ...]) -> Knowledge:
         is_current,
         previous_version_id,
         change_reason,
+        scope_type,
+        scope_id,
     ) = row
     return Knowledge(
         id=knowledge_id,
@@ -118,23 +143,42 @@ def _knowledge_from_row(row: tuple[Any, ...]) -> Knowledge:
         is_current=is_current,
         previous_version_id=previous_version_id,
         change_reason=change_reason,
+        scope_type=KnowledgeScope(scope_type),
+        scope_id=scope_id,
     )
 
 
-def save_knowledge(content: str) -> Knowledge:
+def _validate_scope(scope_type: KnowledgeScope, scope_id: str | None) -> None:
+    if scope_type == KnowledgeScope.APPLICATION and not scope_id:
+        raise InvalidKnowledgeScopeError(
+            "scope_id é obrigatório quando scope_type é APPLICATION"
+        )
+    if scope_type == KnowledgeScope.GLOBAL and scope_id:
+        raise InvalidKnowledgeScopeError("scope_id deve ser vazio quando scope_type é GLOBAL")
+
+
+def save_knowledge(
+    content: str,
+    scope_type: KnowledgeScope = KnowledgeScope.GLOBAL,
+    scope_id: str | None = None,
+) -> Knowledge:
     """Persiste um fato novo, sempre começando em `RAW` ("NÃO SEI" — a
     primeira captura, antes de qualquer validação) e como versão `1` da
-    sua própria linhagem (`root_id == id`). Levanta `ValueError` para
-    `content` vazio."""
+    sua própria linhagem (`root_id == id`). `scope_type` é `GLOBAL` por
+    padrão; `APPLICATION` exige `scope_id` (`InvalidKnowledgeScopeError`
+    caso contrário, ou se `GLOBAL` vier com `scope_id`). Levanta
+    `ValueError` para `content` vazio."""
     if not content or not content.strip():
         raise ValueError("content não pode ser vazio")
+    _validate_scope(scope_type, scope_id)
 
     new_id = uuid4()
     with connect() as conn:
         row = conn.execute(
-            "INSERT INTO knowledge (id, root_id, content) VALUES (%s, %s, %s) "
+            "INSERT INTO knowledge (id, root_id, content, scope_type, scope_id) "
+            "VALUES (%s, %s, %s, %s, %s) "
             f"RETURNING {_SELECT_COLUMNS}",
-            (new_id, new_id, content),
+            (new_id, new_id, content, scope_type.value, scope_id),
         ).fetchone()
 
     return _knowledge_from_row(row)
@@ -219,8 +263,8 @@ def create_new_version(knowledge_id: UUID, new_content: str, reason: str) -> Kno
         row = conn.execute(
             "INSERT INTO knowledge "
             "(id, root_id, version, is_current, previous_version_id, "
-            "change_reason, content) "
-            "VALUES (%s, %s, %s, true, %s, %s, %s) "
+            "change_reason, content, scope_type, scope_id) "
+            "VALUES (%s, %s, %s, true, %s, %s, %s, %s, %s) "
             f"RETURNING {_SELECT_COLUMNS}",
             (
                 new_id,
@@ -229,6 +273,8 @@ def create_new_version(knowledge_id: UUID, new_content: str, reason: str) -> Kno
                 current.id,
                 reason,
                 new_content,
+                current.scope_type.value,
+                current.scope_id,
             ),
         ).fetchone()
 
@@ -259,5 +305,35 @@ def list_version_history(root_id: UUID) -> list[Knowledge]:
             "WHERE root_id = %s ORDER BY version ASC",
             (root_id,),
         ).fetchall()
+
+    return [_knowledge_from_row(row) for row in rows]
+
+
+def list_knowledge_for_scope(
+    scope_type: KnowledgeScope, scope_id: str | None = None
+) -> list[Knowledge]:
+    """Lista as versões *atuais* (`is_current`) de todos os conhecimentos
+    de um escopo — `GLOBAL` (todo conhecimento global) ou `APPLICATION`
+    com `scope_id` (só o conhecimento daquela aplicação; nunca mistura
+    aplicações diferentes nem GLOBAL com APPLICATION). Mais recente
+    primeiro. Levanta `InvalidKnowledgeScopeError` para combinação
+    inconsistente de `scope_type`/`scope_id` (mesma validação de
+    `save_knowledge`)."""
+    _validate_scope(scope_type, scope_id)
+
+    with connect() as conn:
+        if scope_type == KnowledgeScope.GLOBAL:
+            rows = conn.execute(
+                f"SELECT {_SELECT_COLUMNS} FROM knowledge "
+                "WHERE scope_type = 'GLOBAL' AND is_current "
+                "ORDER BY created_at DESC",
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                f"SELECT {_SELECT_COLUMNS} FROM knowledge "
+                "WHERE scope_type = 'APPLICATION' AND scope_id = %s AND is_current "
+                "ORDER BY created_at DESC",
+                (scope_id,),
+            ).fetchall()
 
     return [_knowledge_from_row(row) for row in rows]

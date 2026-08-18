@@ -70,7 +70,7 @@ Aplicado em `backend/app/db/migrations/0001_initial_schema.sql` (SQL puro via
 Ver `docs/MEMORY.md` para o módulo (`app.memory.memory_model`) que
 lê/grava nelas.
 
-## Conhecimento (TASK-052, TASK-054)
+## Conhecimento (TASK-052, TASK-054, TASK-055)
 
 `backend/app/db/migrations/0006_knowledge.sql` — tabela `knowledge`
 (`id`, `status` — `RAW`/`PROVISIONAL`/`CONFIRMED` —, `content`,
@@ -78,8 +78,11 @@ lê/grava nelas.
 `backend/app/db/migrations/0007_knowledge_versioning.sql` — colunas
 `root_id`/`version`/`is_current`/`previous_version_id`/`change_reason`,
 índice único parcial garantindo uma única versão atual por linhagem
-(`root_id`), TASK-054. Ver `docs/KNOWLEDGE.md` para o módulo
-(`app.knowledge.knowledge_model`) que lê/grava nela.
+(`root_id`), TASK-054.
+`backend/app/db/migrations/0008_knowledge_scope.sql` — colunas
+`scope_type`/`scope_id`, `CHECK` garantindo `scope_id` presente só quando
+`scope_type = 'APPLICATION'`, TASK-055. Ver `docs/KNOWLEDGE.md` para o
+módulo (`app.knowledge.knowledge_model`) que lê/grava nela.
 
 Os demais domínios de dados (fontes, histórico de fontes, blacklist,
 conversas, resumos, execuções, fila, auditoria, cotas, atualizações,
