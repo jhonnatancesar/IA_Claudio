@@ -24,12 +24,19 @@ Modelo RAW/PROVISIONAL/CONFIRMED, Knowledge Tool, versionamento, escopo GLOBAL/A
   `Confidence`/`Volatility` já existentes) e
   `Evidence`/`add_evidence`/`list_evidence` (texto livre; fonte cadastrada
   de verdade é TASK-059+) (TASK-056).
+- `promotion_rule.py` (TASK-057) — `is_eligible_for_confirmation
+  (knowledge, evidence_count)` (função pura: confiança `HIGH` + pelo
+  menos 1 evidência) e `promote_to_confirmed(knowledge_id)` — aplica a
+  regra e só então chama `advance_knowledge_status`;
+  `KnowledgePromotionNotEligibleError` se não elegível, sem alterar
+  nada. Promoção `RAW → PROVISIONAL` não é desta TASK.
 
 Testes em `tests/integration/test_knowledge_model_integration.py`,
 `tests/integration/test_knowledge_versioning_integration.py`,
 `tests/integration/test_knowledge_scope_integration.py`,
-`tests/integration/test_knowledge_evidence_integration.py`
-(persistência/transições/versionamento/escopo/evidências reais) e
-`tests/unit/test_knowledge_model.py`/`tests/unit/test_knowledge_versioning.py`/
-`tests/unit/test_knowledge_scope.py`/`tests/unit/test_knowledge_evidence.py`
-(validação de campos vazios/escopo).
+`tests/integration/test_knowledge_evidence_integration.py`,
+`tests/integration/test_knowledge_promotion_rule_integration.py`
+(persistência/transições/versionamento/escopo/evidências/promoção reais)
+e `tests/unit/test_knowledge_model.py`/`tests/unit/test_knowledge_versioning.py`/
+`tests/unit/test_knowledge_scope.py`/`tests/unit/test_knowledge_evidence.py`/
+`tests/unit/test_knowledge_promotion_rule.py` (validação/regra pura).

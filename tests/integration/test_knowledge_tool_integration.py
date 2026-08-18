@@ -224,3 +224,54 @@ def test_list_evidence_operation_returns_message_when_empty(postgres_dsn, create
     )
 
     assert result == "Nenhuma evidência encontrada para este conhecimento."
+
+
+def test_promote_to_confirmed_operation_succeeds_when_eligible(
+    postgres_dsn, created_knowledge_id
+):
+    execute_knowledge_tool(
+        _step(
+            {
+                "operation": "ADVANCE",
+                "knowledge_id": created_knowledge_id,
+                "new_status": "PROVISIONAL",
+            }
+        )
+    )
+    execute_knowledge_tool(
+        _step(
+            {
+                "operation": "SET_CONFIDENCE",
+                "knowledge_id": created_knowledge_id,
+                "confidence": "HIGH",
+            }
+        )
+    )
+    execute_knowledge_tool(
+        _step(
+            {
+                "operation": "ADD_EVIDENCE",
+                "knowledge_id": created_knowledge_id,
+                "description": "fonte oficial",
+            }
+        )
+    )
+
+    result = execute_knowledge_tool(
+        _step({"operation": "PROMOTE_TO_CONFIRMED", "knowledge_id": created_knowledge_id})
+    )
+
+    assert "CONFIRMED" in result
+    fetched = execute_knowledge_tool(_step({"operation": "GET", "knowledge_id": created_knowledge_id}))
+    assert fetched.startswith("[CONFIRMED]")
+
+
+def test_promote_to_confirmed_operation_rejects_when_not_eligible(
+    postgres_dsn, created_knowledge_id
+):
+    from app.knowledge.promotion_rule import KnowledgePromotionNotEligibleError
+
+    with pytest.raises(KnowledgePromotionNotEligibleError):
+        execute_knowledge_tool(
+            _step({"operation": "PROMOTE_TO_CONFIRMED", "knowledge_id": created_knowledge_id})
+        )

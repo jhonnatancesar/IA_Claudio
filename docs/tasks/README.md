@@ -222,11 +222,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `set_knowledge_confidence`/`set_knowledge_volatility`/`add_evidence` —
   ver `docs/tasks/TASK-056.md`). Suíte completa: 456/456 testes
   aprovados.
+- **TASK-057** — concluída (regra de promoção para CONFIRMED,
+  `backend/app/knowledge/promotion_rule.py`, `promote_to_confirmed` —
+  ver `docs/tasks/TASK-057.md`). Suíte completa: 470/470 testes
+  aprovados.
 
-As demais 91 TASKs permanecem com status **Pendente**.
+As demais 90 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-057 — Implementar regra de promoção
-para CONFIRMED**.
+Próxima TASK executável: **TASK-058 — Implementar avaliação de
+utilidade pelo orquestrador**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
