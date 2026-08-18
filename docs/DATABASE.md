@@ -70,8 +70,15 @@ Aplicado em `backend/app/db/migrations/0001_initial_schema.sql` (SQL puro via
 Ver `docs/MEMORY.md` para o módulo (`app.memory.memory_model`) que
 lê/grava nelas.
 
-Os demais domínios de dados (conhecimento, fontes, histórico de fontes,
-blacklist, conversas, resumos, execuções, fila, auditoria, cotas, atualizações,
+## Conhecimento (TASK-052)
+
+`backend/app/db/migrations/0006_knowledge.sql` — tabela `knowledge`
+(`id`, `status` — `RAW`/`PROVISIONAL`/`CONFIRMED` —, `content`,
+`created_at`, `updated_at`). Ver `docs/KNOWLEDGE.md` para o módulo
+(`app.knowledge.knowledge_model`) que lê/grava nela.
+
+Os demais domínios de dados (fontes, histórico de fontes, blacklist,
+conversas, resumos, execuções, fila, auditoria, cotas, atualizações,
 backups) ainda não têm schema — cada um ganha o seu na TASK do bloco funcional
 correspondente, conforme `docs/BACKLOG.md`.
 

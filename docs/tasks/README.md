@@ -205,11 +205,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `list_removal_audit_for_owner` — ver `docs/tasks/TASK-051.md`). Suíte
   completa: 379/379 testes aprovados. **Com esta TASK, o bloco "Memória"
   (TASK-044 a TASK-051) está completo.**
+- **TASK-052** — concluída (modelo RAW/PROVISIONAL/CONFIRMED,
+  `backend/app/knowledge/knowledge_model.py`, `KnowledgeStatus`/
+  `advance_knowledge_status` — ver `docs/tasks/TASK-052.md`). Suíte
+  completa: 391/391 testes aprovados.
 
-As demais 96 TASKs permanecem com status **Pendente**.
+As demais 95 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-052 — Criar modelo
-RAW/PROVISIONAL/CONFIRMED**.
+Próxima TASK executável: **TASK-053 — Implementar Knowledge Tool**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
