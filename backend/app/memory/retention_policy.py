@@ -26,9 +26,9 @@ TASK-028; `DEFAULT_REPEAT_THRESHOLD`, TASK-029; `DEFAULT_WARNING_THRESHOLD`,
 TASK-043). `enforce_memory_limit` remove as memórias excedentes em ordem
 de `relevance_score` crescente (menos relevantes primeiro).
 
-Auditoria da remoção (guardar que existiu, quando e por qual regra) é
-TASK-051 — `apply_retention_policy`/`enforce_memory_limit` removem sem
-deixar rastro, TASK-051 constrói a auditoria em cima da mesma remoção.
+Esta TASK (TASK-051) não muda a lógica de elegibilidade — só passa a
+`reason` correta para `delete_memory` (TASK-051, `app.memory.memory_model`),
+que agora grava a auditoria da remoção na mesma transação.
 """
 
 from __future__ import annotations
@@ -55,6 +55,14 @@ MAX_MEMORIES_PER_OWNER = 500
 """Limite fixo de memórias por dono na V1 (seção 11: "fixo na V1, valor
 exato a definir durante a implementação"). Ao ser excedido,
 `enforce_memory_limit` remove as menos relevantes primeiro."""
+
+REMOVAL_REASON_RETENTION = "RETENTION_AGE_AND_LOW_RELEVANCE"
+"""`reason` gravado na auditoria (TASK-051) para remoções de
+`apply_retention_policy`."""
+
+REMOVAL_REASON_MEMORY_LIMIT = "MEMORY_LIMIT_EXCEEDED"
+"""`reason` gravado na auditoria (TASK-051) para remoções de
+`enforce_memory_limit`."""
 
 
 def is_eligible_for_retention_removal(
@@ -93,7 +101,7 @@ def apply_retention_policy(
         )
     ]
     for memory in to_remove:
-        delete_memory(memory.id)
+        delete_memory(memory.id, reason=REMOVAL_REASON_RETENTION)
     return [memory.id for memory in to_remove]
 
 
@@ -117,5 +125,5 @@ def enforce_memory_limit(
     memories.sort(key=lambda memory: relevance_score(memory, now))
     to_remove = memories[:excess]
     for memory in to_remove:
-        delete_memory(memory.id)
+        delete_memory(memory.id, reason=REMOVAL_REASON_MEMORY_LIMIT)
     return [memory.id for memory in to_remove]

@@ -32,8 +32,18 @@ sem detalhar uma fórmula, então o critério aqui é o mais simples e
 defensável possível (mesmo espírito do threshold de `loop_detector.py`,
 TASK-029).
 
-Política de retenção (TASK-049, `app.memory.retention_policy`), limite
-fixo (TASK-050) e auditoria de remoção (TASK-051) não são deste módulo.
+Política de retenção (TASK-049, TASK-050, `app.memory.retention_policy`)
+não é deste módulo.
+
+Esta TASK (TASK-051) muda `delete_memory` para exigir um `reason` e
+gravar, na mesma transação, um registro em `memory_removal_audit`
+(`backend/app/db/migrations/0005_memory_removal_audit.sql`) — "quando
+removida, o conteúdo pode desaparecer, mas fica auditoria mínima
+informando que existiu, quando foi removida e por qual regra" (seção 11).
+De propósito, a auditoria **não** guarda `content` — só `memory_id`,
+`owner_type`, `owner_id`, `reason` e `removed_at`, o suficiente para provar
+que existiu sem reter o dado em si. `list_removal_audit_for_owner` lê esse
+histórico.
 """
 
 from __future__ import annotations
@@ -182,14 +192,70 @@ def record_memory_usage(memory_id: UUID) -> Memory:
     return _memory_from_row(row)
 
 
-def delete_memory(memory_id: UUID) -> bool:
+@dataclass(frozen=True)
+class MemoryRemovalRecord:
+    memory_id: UUID
+    owner_type: str
+    owner_id: str
+    reason: str
+    removed_at: datetime
+
+
+def delete_memory(memory_id: UUID, reason: str) -> bool:
     """Remove a memória `memory_id` (TASK-049, usado por
-    `app.memory.retention_policy`). Retorna `True` se algo foi removido,
-    `False` se `memory_id` já não existia. Sem auditoria da remoção —
-    isso é TASK-051, não implementado aqui."""
+    `app.memory.retention_policy`) e grava, na mesma transação, um
+    registro de auditoria em `memory_removal_audit` com `reason`
+    (TASK-051) — sem copiar `content`. Retorna `True` se algo foi
+    removido, `False` se `memory_id` já não existia (nesse caso, nenhum
+    registro de auditoria é criado). Levanta `ValueError` se `reason` for
+    vazio."""
+    if not reason or not reason.strip():
+        raise ValueError("reason não pode ser vazio")
+
     with connect() as conn:
-        result = conn.execute("DELETE FROM memories WHERE id = %s", (memory_id,))
-    return result.rowcount > 0
+        row = conn.execute(
+            "DELETE FROM memories WHERE id = %s RETURNING owner_type, owner_id",
+            (memory_id,),
+        ).fetchone()
+        if row is None:
+            return False
+        owner_type, owner_id = row
+        conn.execute(
+            "INSERT INTO memory_removal_audit "
+            "(memory_id, owner_type, owner_id, reason) "
+            "VALUES (%s, %s, %s, %s)",
+            (memory_id, owner_type, owner_id, reason),
+        )
+    return True
+
+
+def list_removal_audit_for_owner(
+    owner_type: str, owner_id: str
+) -> list[MemoryRemovalRecord]:
+    """Lista o histórico de memórias removidas de um dono (TASK-051), mais
+    recente primeiro. Levanta `InvalidOwnerTypeError` para `owner_type`
+    desconhecido."""
+    if owner_type not in VALID_OWNER_TYPES:
+        raise InvalidOwnerTypeError(f"owner_type inválido: {owner_type!r}")
+
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT memory_id, owner_type, owner_id, reason, removed_at "
+            "FROM memory_removal_audit WHERE owner_type = %s AND owner_id = %s "
+            "ORDER BY removed_at DESC",
+            (owner_type, owner_id),
+        ).fetchall()
+
+    return [
+        MemoryRemovalRecord(
+            memory_id=row[0],
+            owner_type=row[1],
+            owner_id=row[2],
+            reason=row[3],
+            removed_at=row[4],
+        )
+        for row in rows
+    ]
 
 
 def relevance_score(memory: Memory, now: datetime) -> float:

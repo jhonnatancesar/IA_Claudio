@@ -200,11 +200,16 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-050** — concluída (limite fixo de memória,
   `MAX_MEMORIES_PER_OWNER = 500`, `enforce_memory_limit` — ver
   `docs/tasks/TASK-050.md`). Suíte completa: 373/373 testes aprovados.
+- **TASK-051** — concluída (auditoria de memória removida, tabela
+  `memory_removal_audit`, `delete_memory(reason)`/
+  `list_removal_audit_for_owner` — ver `docs/tasks/TASK-051.md`). Suíte
+  completa: 379/379 testes aprovados. **Com esta TASK, o bloco "Memória"
+  (TASK-044 a TASK-051) está completo.**
 
-As demais 97 TASKs permanecem com status **Pendente**.
+As demais 96 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-051 — Implementar auditoria de memória
-removida**.
+Próxima TASK executável: **TASK-052 — Criar modelo
+RAW/PROVISIONAL/CONFIRMED**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
