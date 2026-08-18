@@ -89,9 +89,20 @@ sinal, TASK-048; "idade" é critério separado). `apply_retention_policy
 desse dono (`delete_memory`, novo em `memory_model.py`) e retorna os `id`s
 removidos. Os limiares padrão (180 dias, 0.05) são a escolha mais simples e
 defensável, já que a especificação não define números exatos —
-configuráveis por parâmetro. Limite máximo por dono (TASK-050) e auditoria
-da remoção (TASK-051, "guardar que existiu, quando e por qual regra") não
-são desta TASK — a remoção aqui não deixa rastro.
+configuráveis por parâmetro.
+
+**Implementação (TASK-050):** `MAX_MEMORIES_PER_OWNER = 500` — limite fixo
+por dono na V1, mesmo espírito de outros limiares já definidos em código
+sem decisão de arquitetura à parte (`DEFAULT_MAX_STEPS`, TASK-028;
+`DEFAULT_REPEAT_THRESHOLD`, TASK-029). `enforce_memory_limit(owner_type,
+owner_id, now, max_memories=MAX_MEMORIES_PER_OWNER)` — se o dono exceder o
+limite, remove as excedentes começando pelas de menor `relevance_score`
+("remove primeiro as memórias menos relevantes e menos usadas
+recentemente", seção 11).
+
+Auditoria da remoção (TASK-051, "guardar que existiu, quando e por qual
+regra") não é desta TASK — nem `apply_retention_policy` nem
+`enforce_memory_limit` deixam rastro da remoção.
 
 ## TASKs relacionadas
 

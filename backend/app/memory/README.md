@@ -16,11 +16,14 @@ Modelo de memória por usuário/aplicação, Memory Tool, busca estruturada, rel
   (memory, now)` (TASK-048) — rastreamento de uso e pontuação heurística
   de relevância. `delete_memory(memory_id)` (TASK-049) — remoção
   sem auditoria (TASK-051).
-- `retention_policy.py` (TASK-049) — `is_eligible_for_retention_removal
+- `retention_policy.py` (TASK-049, TASK-050) — `is_eligible_for_retention_removal
   (memory, now, ...)` e `apply_retention_policy(owner_type, owner_id,
   now, ...)`: remove memórias antigas (`created_at`) e de baixa
-  relevância/pouco uso (`relevance_score`, TASK-048). Limite fixo por
-  dono (TASK-050) e auditoria da remoção (TASK-051) não são desta TASK.
+  relevância/pouco uso (`relevance_score`, TASK-048).
+  `MAX_MEMORIES_PER_OWNER = 500`/`enforce_memory_limit(owner_type,
+  owner_id, now, ...)` (TASK-050): limite fixo por dono, remove as menos
+  relevantes primeiro quando excedido. Auditoria da remoção (TASK-051)
+  não é desta TASK.
 
 Testes em `tests/integration/test_memory_model_integration.py` e
 `tests/integration/test_retention_policy_integration.py` (persistência/

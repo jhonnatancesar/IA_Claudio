@@ -15,10 +15,20 @@ critérios separados de uso e relevância. "Idade" é avaliada sobre
 ter poucos usos recentes mas ainda ser nova o bastante para não ser
 removida).
 
-Limite máximo de memórias por dono é TASK-050, não implementado aqui.
+Esta TASK (TASK-050) acrescenta o limite fixo por dono: "o limite máximo
+de memória por usuário/aplicação é fixo na V1 (valor exato a definir
+durante a implementação da TASK correspondente — TASK-050). Ao atingir o
+limite, remove primeiro as memórias menos relevantes e menos usadas
+recentemente" (seção 11). `MAX_MEMORIES_PER_OWNER = 500` é o valor fixo
+escolhido nesta TASK — mesmo espírito de outros limiares já definidos em
+código sem exigir decisão de arquitetura à parte (`DEFAULT_MAX_STEPS`,
+TASK-028; `DEFAULT_REPEAT_THRESHOLD`, TASK-029; `DEFAULT_WARNING_THRESHOLD`,
+TASK-043). `enforce_memory_limit` remove as memórias excedentes em ordem
+de `relevance_score` crescente (menos relevantes primeiro).
+
 Auditoria da remoção (guardar que existiu, quando e por qual regra) é
-TASK-051 — `apply_retention_policy` remove sem deixar rastro, TASK-051
-constrói a auditoria em cima da mesma remoção.
+TASK-051 — `apply_retention_policy`/`enforce_memory_limit` removem sem
+deixar rastro, TASK-051 constrói a auditoria em cima da mesma remoção.
 """
 
 from __future__ import annotations
@@ -40,6 +50,11 @@ elegível para remoção por retenção."""
 DEFAULT_MIN_RELEVANCE = 0.05
 """Pontuação mínima de `relevance_score` abaixo da qual a memória conta
 como baixa relevância/pouco uso para fins de retenção."""
+
+MAX_MEMORIES_PER_OWNER = 500
+"""Limite fixo de memórias por dono na V1 (seção 11: "fixo na V1, valor
+exato a definir durante a implementação"). Ao ser excedido,
+`enforce_memory_limit` remove as menos relevantes primeiro."""
 
 
 def is_eligible_for_retention_removal(
@@ -77,6 +92,30 @@ def apply_retention_policy(
             memory, now, max_age_days=max_age_days, min_relevance=min_relevance
         )
     ]
+    for memory in to_remove:
+        delete_memory(memory.id)
+    return [memory.id for memory in to_remove]
+
+
+def enforce_memory_limit(
+    owner_type: str,
+    owner_id: str,
+    now: datetime,
+    *,
+    max_memories: int = MAX_MEMORIES_PER_OWNER,
+) -> list[UUID]:
+    """Se `owner_type`/`owner_id` tiver mais de `max_memories` memórias,
+    remove as excedentes começando pelas de menor `relevance_score` —
+    "remove primeiro as memórias menos relevantes e menos usadas
+    recentemente" (seção 11). Retorna os `id`s removidos, da menos para a
+    mais relevante; lista vazia se o dono não excedeu o limite."""
+    memories = list_memories_for_owner(owner_type, owner_id)
+    excess = len(memories) - max_memories
+    if excess <= 0:
+        return []
+
+    memories.sort(key=lambda memory: relevance_score(memory, now))
+    to_remove = memories[:excess]
     for memory in to_remove:
         delete_memory(memory.id)
     return [memory.id for memory in to_remove]
