@@ -11,6 +11,7 @@ import pytest
 from app.memory.memory_model import (
     InvalidOwnerTypeError,
     MemoryNotFoundError,
+    delete_memory,
     get_memory,
     list_memories_for_owner,
     record_memory_usage,
@@ -170,3 +171,14 @@ def test_record_memory_usage_sets_last_used_at(postgres_dsn, unique_owner_id):
 def test_record_memory_usage_raises_for_unknown_id(postgres_dsn):
     with pytest.raises(MemoryNotFoundError):
         record_memory_usage(uuid.uuid4())
+
+
+def test_delete_memory_removes_and_returns_true(postgres_dsn, unique_owner_id):
+    memory = save_memory("USER", unique_owner_id, "conteúdo qualquer")
+
+    assert delete_memory(memory.id) is True
+    assert get_memory(memory.id) is None
+
+
+def test_delete_memory_returns_false_for_unknown_id(postgres_dsn):
+    assert delete_memory(uuid.uuid4()) is False

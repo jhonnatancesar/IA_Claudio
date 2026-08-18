@@ -32,8 +32,8 @@ sem detalhar uma fórmula, então o critério aqui é o mais simples e
 defensável possível (mesmo espírito do threshold de `loop_detector.py`,
 TASK-029).
 
-Política de retenção (TASK-049), limite fixo (TASK-050) e auditoria de
-remoção (TASK-051) não são desta TASK.
+Política de retenção (TASK-049, `app.memory.retention_policy`), limite
+fixo (TASK-050) e auditoria de remoção (TASK-051) não são deste módulo.
 """
 
 from __future__ import annotations
@@ -180,6 +180,16 @@ def record_memory_usage(memory_id: UUID) -> Memory:
     if row is None:
         raise MemoryNotFoundError(f"memória não encontrada: {memory_id!r}")
     return _memory_from_row(row)
+
+
+def delete_memory(memory_id: UUID) -> bool:
+    """Remove a memória `memory_id` (TASK-049, usado por
+    `app.memory.retention_policy`). Retorna `True` se algo foi removido,
+    `False` se `memory_id` já não existia. Sem auditoria da remoção —
+    isso é TASK-051, não implementado aqui."""
+    with connect() as conn:
+        result = conn.execute("DELETE FROM memories WHERE id = %s", (memory_id,))
+    return result.rowcount > 0
 
 
 def relevance_score(memory: Memory, now: datetime) -> float:
