@@ -212,11 +212,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-053** — concluída (Knowledge Tool,
   `backend/app/tools/knowledge_tool.py`, `execute_knowledge_tool` — ver
   `docs/tasks/TASK-053.md`). Suíte completa: 402/402 testes aprovados.
+- **TASK-054** — concluída (versionamento de conhecimento,
+  `create_new_version`/`get_current_version`/`list_version_history` — ver
+  `docs/tasks/TASK-054.md`). Suíte completa: 419/419 testes aprovados.
 
-As demais 94 TASKs permanecem com status **Pendente**.
+As demais 93 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-054 — Implementar versionamento de
-conhecimento**.
+Próxima TASK executável: **TASK-055 — Implementar escopo
+GLOBAL/APPLICATION**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

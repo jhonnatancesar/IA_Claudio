@@ -67,3 +67,36 @@ def test_advance_invalid_new_status_raises():
                 }
             )
         )
+
+
+def test_new_version_missing_knowledge_id_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(
+            _step({"operation": "NEW_VERSION", "new_content": "x", "reason": "y"})
+        )
+
+
+def test_new_version_missing_new_content_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "NEW_VERSION",
+                    "knowledge_id": "11111111-1111-1111-1111-111111111111",
+                    "reason": "y",
+                }
+            )
+        )
+
+
+def test_new_version_missing_reason_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "NEW_VERSION",
+                    "knowledge_id": "11111111-1111-1111-1111-111111111111",
+                    "new_content": "x",
+                }
+            )
+        )

@@ -52,6 +52,20 @@ só aplica a transição mecânica já validada por `advance_knowledge_status`
 TASK-057, não implementada aqui. Cadastro no Tool Registry (catálogo fixo)
 é TASK-088 em diante.
 
+**Implementação (TASK-054):** `create_new_version(knowledge_id,
+new_content, reason)` — cria uma linha nova (`version` seguinte,
+`is_current=True`, `previous_version_id`/`change_reason` preenchidos),
+marca a versão anterior como não-atual, na mesma transação; nunca faz
+`UPDATE` em `content`. Exige que `knowledge_id` seja a versão atual da
+linhagem (`KnowledgeVersionConflictError` caso contrário). Uma versão
+nova sempre começa em `RAW`, mesmo que a anterior estivesse `CONFIRMED` —
+conteúdo novo ainda não foi revalidado. `get_current_version(root_id)` e
+`list_version_history(root_id)` consultam a linhagem. Unicidade de "uma
+versão atual por linhagem" garantida por índice único parcial no schema
+(`backend/app/db/migrations/0007_knowledge_versioning.sql`). Exposta na
+Knowledge Tool como `operation: "NEW_VERSION"`. Preservar fontes
+(TASK-056) não é desta TASK.
+
 ## Escopos
 
 `GLOBAL` e `APPLICATION:<id>`. Conhecimento específico de uma aplicação **não pode ser
