@@ -19,12 +19,12 @@ Assunto principal, entidades recentes, objetivo atual, últimas ações, referê
   (new_topic)` (TASK-041) decide se `new_topic` é uma troca real (string
   diferente do assunto atual) e, se sim, troca e limpa
   `recent_entities`/`implicit_references`.
-- `context_window.py` (TASK-042) — `ContextWindowMonitor(capacity)`,
-  `usage_ratio(tokens_used)`, `is_full(tokens_used)`. `capacity` é recebida
-  como parâmetro explícito — configuração via painel não existe ainda.
-  Aviso preventivo em 80% de uso é TASK-043.
+- `context_window.py` (TASK-042, TASK-043) — `ContextWindowMonitor
+  (capacity)`, `usage_ratio(tokens_used)`, `is_full(tokens_used)`.
+  `requires_warning(tokens_used, threshold=DEFAULT_WARNING_THRESHOLD)`
+  (TASK-043) — `True` a partir de 80% de uso. `capacity` é recebida como
+  parâmetro explícito — configuração via painel não existe ainda.
 
-Com TASK-042, faltam só TASK-043 para o bloco "Contexto" (TASK-037 a
-TASK-043) estar completo.
+Com esta TASK, o bloco "Contexto" (TASK-037 a TASK-043) está completo.
 
 Testes em `tests/unit/test_context_manager.py`, `tests/unit/test_context_window.py`.

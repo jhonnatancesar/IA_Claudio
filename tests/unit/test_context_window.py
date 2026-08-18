@@ -2,7 +2,11 @@
 
 import pytest
 
-from app.context.context_window import ContextWindowMonitor, InvalidContextWindowError
+from app.context.context_window import (
+    DEFAULT_WARNING_THRESHOLD,
+    ContextWindowMonitor,
+    InvalidContextWindowError,
+)
 
 
 def test_usage_ratio_computes_fraction_used():
@@ -41,3 +45,32 @@ def test_rejects_negative_tokens_used():
 
     with pytest.raises(InvalidContextWindowError):
         monitor.usage_ratio(-1)
+
+
+def test_default_warning_threshold_is_eighty_percent():
+    assert DEFAULT_WARNING_THRESHOLD == 0.8
+
+
+def test_requires_warning_false_below_threshold():
+    monitor = ContextWindowMonitor(capacity=1000)
+
+    assert monitor.requires_warning(799) is False
+
+
+def test_requires_warning_true_at_threshold():
+    monitor = ContextWindowMonitor(capacity=1000)
+
+    assert monitor.requires_warning(800) is True
+
+
+def test_requires_warning_stays_true_past_full():
+    monitor = ContextWindowMonitor(capacity=1000)
+
+    assert monitor.requires_warning(1500) is True
+
+
+def test_requires_warning_accepts_custom_threshold():
+    monitor = ContextWindowMonitor(capacity=1000)
+
+    assert monitor.requires_warning(500, threshold=0.5) is True
+    assert monitor.requires_warning(499, threshold=0.5) is False

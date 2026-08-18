@@ -1,6 +1,6 @@
 # TASK-043 — Implementar aviso em 80%
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,18 @@ Testes unitários do ContextManager para este comportamento (rastreamento, corre
 ## Documentação afetada
 
 `docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Acrescentado `ContextWindowMonitor.requires_warning
+(tokens_used, threshold=DEFAULT_WARNING_THRESHOLD)` em
+`backend/app/context/context_window.py`, com a nova constante
+`DEFAULT_WARNING_THRESHOLD = 0.8`: `True` a partir de 80% de uso da janela
+— "aviso preventivo, discreto, ao atingir 80% de uso" (seção 9). Continua
+`True` mesmo além de 100% de uso. Só o sinal booleano — como o aviso é
+efetivamente mostrado ao usuário é responsabilidade de quem consome esse
+sinal (painel/API), fora do escopo desta TASK.
+
+Com esta TASK, o bloco "Contexto" (TASK-037 a TASK-043) está completo.
+
+5 testes unitários novos. Suíte completa: 323/323 testes aprovados.

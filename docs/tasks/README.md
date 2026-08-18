@@ -174,10 +174,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-042** — concluída (monitor de janela de contexto,
   `backend/app/context/context_window.py`, `ContextWindowMonitor` — ver
   `docs/tasks/TASK-042.md`). Suíte completa: 318/318 testes aprovados.
+- **TASK-043** — concluída (aviso em 80%,
+  `ContextWindowMonitor.requires_warning` — ver `docs/tasks/TASK-043.md`).
+  Suíte completa: 323/323 testes aprovados. **Com esta TASK, o bloco
+  "Contexto" (TASK-037 a TASK-043) está completo.**
 
-As demais 105 TASKs permanecem com status **Pendente**.
+As demais 104 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-043 — Implementar aviso em 80%**.
+Próxima TASK executável: **TASK-044 — Criar modelo de memória
+persistente**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
