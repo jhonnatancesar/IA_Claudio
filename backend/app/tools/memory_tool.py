@@ -10,15 +10,17 @@ assinatura que `ExecutionOrchestrator.tool_executor` espera
 O Tool Registry (catálogo fixo de ferramentas, validação de que `"MEMORY"`
 é um nome de ferramenta conhecido/autorizado) é TASK-088 em diante — esta
 TASK só cria a função que executa a ferramenta quando chamada diretamente,
-sem se cadastrar em lugar nenhum ainda. Busca estruturada por relevância
-(TASK-047 em diante) não é desta TASK — `LIST` devolve todas as memórias
-do dono, sem filtro de conteúdo.
+sem se cadastrar em lugar nenhum ainda.
+
+TASK-047 acrescenta a operação `"SEARCH"`, expondo `search_memories`
+(busca estruturada por conteúdo, dentro do escopo do dono). Ranking por
+relevância (TASK-048) não é desta TASK.
 """
 
 from __future__ import annotations
 
 from app.llm.protocol import ModelStep
-from app.memory.memory_model import list_memories_for_owner, save_memory
+from app.memory.memory_model import list_memories_for_owner, save_memory, search_memories
 
 MEMORY_TOOL_NAME = "MEMORY"
 
@@ -47,10 +49,13 @@ def execute_memory_tool(step: ModelStep) -> str:
       memória nova (`save_memory`) e devolve confirmação com o `id` gerado.
     - `"LIST"`: exige `owner_type`, `owner_id`; devolve todas as memórias
       desse dono (`list_memories_for_owner`), uma por linha.
+    - `"SEARCH"`: exige `owner_type`, `owner_id`, `query`; devolve as
+      memórias desse dono cujo conteúdo contém `query`
+      (`search_memories`, TASK-047), uma por linha.
 
     Levanta `MissingToolParameterError` para parâmetro obrigatório ausente
     e `UnknownMemoryOperationError` para `operation` diferente de `SAVE`/
-    `LIST`.
+    `LIST`/`SEARCH`.
     """
     operation = _require(step.parameters, "operation")
 
@@ -67,6 +72,15 @@ def execute_memory_tool(step: ModelStep) -> str:
         memories = list_memories_for_owner(owner_type, owner_id)
         if not memories:
             return "Nenhuma memória encontrada para este dono."
+        return "\n".join(f"- {memory.content}" for memory in memories)
+
+    if operation == "SEARCH":
+        owner_type = _require(step.parameters, "owner_type")
+        owner_id = _require(step.parameters, "owner_id")
+        query = _require(step.parameters, "query")
+        memories = search_memories(owner_type, owner_id, query)
+        if not memories:
+            return "Nenhuma memória encontrada para esta busca."
         return "\n".join(f"- {memory.content}" for memory in memories)
 
     raise UnknownMemoryOperationError(f"operação de memória desconhecida: {operation!r}")

@@ -14,8 +14,15 @@ devolve memórias do próprio dono ("usuários diferentes têm memórias
 separadas", seção 11): filtra por `owner_type`/`owner_id` exatos, nunca
 retorna memórias de outro dono.
 
-Memory Tool (TASK-046), busca estruturada (TASK-047),
-relevância/frequência/last_used (TASK-048), política de retenção
+Memory Tool (TASK-046) expõe as funções deste módulo ao protocolo do
+orquestrador (`app.tools.memory_tool`). Esta TASK (TASK-047) acrescenta
+`search_memories`: busca estruturada por conteúdo, dentro do escopo de um
+dono (reaproveita a garantia de separação da TASK-045) — combinação
+`owner_type`/`owner_id`/`query`, sem ranking por relevância (isso é
+TASK-048, não implementado aqui: a ordem aqui é só recência, mesma de
+`list_memories_for_owner`).
+
+Relevância/frequência/last_used (TASK-048), política de retenção
 (TASK-049), limite fixo (TASK-050) e auditoria de remoção (TASK-051) não
 são desta TASK.
 """
@@ -108,6 +115,40 @@ def list_memories_for_owner(owner_type: str, owner_id: str) -> list[Memory]:
             "FROM memories WHERE owner_type = %s AND owner_id = %s "
             "ORDER BY created_at DESC",
             (owner_type, owner_id),
+        ).fetchall()
+
+    return [
+        Memory(
+            id=row[0],
+            owner_type=row[1],
+            owner_id=row[2],
+            content=row[3],
+            created_at=row[4],
+        )
+        for row in rows
+    ]
+
+
+def search_memories(owner_type: str, owner_id: str, query: str) -> list[Memory]:
+    """Busca estruturada por conteúdo (TASK-047): memórias de
+    `owner_type`/`owner_id` cujo `content` contém `query` (comparação sem
+    diferenciar maiúsculas/minúsculas), mais recente primeiro. Nunca
+    devolve memórias de outro dono — mesma garantia de
+    `list_memories_for_owner` (TASK-045). Sem ranking por relevância
+    (TASK-048). Levanta `InvalidOwnerTypeError` para `owner_type`
+    desconhecido e `ValueError` para `query` vazia."""
+    if owner_type not in VALID_OWNER_TYPES:
+        raise InvalidOwnerTypeError(f"owner_type inválido: {owner_type!r}")
+    if not query or not query.strip():
+        raise ValueError("query não pode ser vazia")
+
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, owner_type, owner_id, content, created_at "
+            "FROM memories "
+            "WHERE owner_type = %s AND owner_id = %s AND content ILIKE %s "
+            "ORDER BY created_at DESC",
+            (owner_type, owner_id, f"%{query}%"),
         ).fetchall()
 
     return [
