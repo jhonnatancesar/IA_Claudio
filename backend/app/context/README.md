@@ -18,7 +18,13 @@ Assunto principal, entidades recentes, objetivo atual, últimas ações, referê
   usuário em `corrections`, em ordem cronológica. `detect_topic_switch
   (new_topic)` (TASK-041) decide se `new_topic` é uma troca real (string
   diferente do assunto atual) e, se sim, troca e limpa
-  `recent_entities`/`implicit_references`. Monitor de janela de contexto
-  (TASK-042/TASK-043) não é desta TASK.
+  `recent_entities`/`implicit_references`.
+- `context_window.py` (TASK-042) — `ContextWindowMonitor(capacity)`,
+  `usage_ratio(tokens_used)`, `is_full(tokens_used)`. `capacity` é recebida
+  como parâmetro explícito — configuração via painel não existe ainda.
+  Aviso preventivo em 80% de uso é TASK-043.
 
-Testes em `tests/unit/test_context_manager.py`.
+Com TASK-042, faltam só TASK-043 para o bloco "Contexto" (TASK-037 a
+TASK-043) estar completo.
+
+Testes em `tests/unit/test_context_manager.py`, `tests/unit/test_context_window.py`.

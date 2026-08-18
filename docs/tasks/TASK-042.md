@@ -1,6 +1,6 @@
 # TASK-042 — Implementar monitor de janela de contexto
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,16 @@ Testes unitários do ContextManager para este comportamento (rastreamento, corre
 ## Documentação afetada
 
 `docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado `backend/app/context/context_window.py`:
+`ContextWindowMonitor(capacity)` (dataclass imutável), `usage_ratio
+(tokens_used)` (fração usada da janela, podendo passar de `1.0`) e
+`is_full(tokens_used)`. `InvalidContextWindowError` para `capacity`
+não positiva ou `tokens_used` negativo. O painel (TASK-100+) e a
+persistência de configuração ainda não existem, por isso `capacity` é
+recebida como parâmetro explícito de quem cria o monitor. Emitir o aviso
+preventivo ao atingir 80% de uso é TASK-043, não implementado aqui.
+
+6 testes unitários novos. Suíte completa: 318/318 testes aprovados.

@@ -77,6 +77,14 @@ fora do escopo desta TASK.
   limite é atingido, o usuário inicia outra conversa; se quiser continuidade, pode
   pedir um resumo/prompt de transferência e levar manualmente.
 
+**Implementação (TASK-042):** `backend/app/context/context_window.py` —
+`ContextWindowMonitor(capacity)` (dataclass imutável), `usage_ratio
+(tokens_used)` (fração usada, pode passar de `1.0`) e `is_full(tokens_used)`.
+O painel (TASK-100 em diante) e a persistência de configuração ainda não
+existem — `capacity` é recebida como parâmetro explícito de quem cria o
+monitor, não lida de configuração salva. Emitir o aviso preventivo ao
+atingir 80% é TASK-043, não implementado aqui.
+
 ## Complexidade e limitação do chat
 
 Antes de executar, o Claudião faz pré-avaliação de complexidade. O chat possui

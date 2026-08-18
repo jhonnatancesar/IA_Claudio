@@ -171,11 +171,13 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-041** — concluída (detecção de troca de assunto,
   `ContextManager.detect_topic_switch` — ver `docs/tasks/TASK-041.md`).
   Suíte completa: 311/311 testes aprovados.
+- **TASK-042** — concluída (monitor de janela de contexto,
+  `backend/app/context/context_window.py`, `ContextWindowMonitor` — ver
+  `docs/tasks/TASK-042.md`). Suíte completa: 318/318 testes aprovados.
 
-As demais 106 TASKs permanecem com status **Pendente**.
+As demais 105 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-042 — Implementar monitor de janela de
-contexto**.
+Próxima TASK executável: **TASK-043 — Implementar aviso em 80%**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
