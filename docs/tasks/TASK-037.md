@@ -1,6 +1,6 @@
 # TASK-037 — Criar ContextManager
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -29,3 +29,19 @@ Testes unitários do ContextManager para este comportamento (rastreamento, corre
 ## Documentação afetada
 
 `docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/context/context_manager.py`:
+`ContextManager` (dataclass) — `conversation_id`, `active_topic`,
+`recent_entities`, `current_objective`, `recent_actions`,
+`implicit_references`, `corrections`, todos vazios/`None` até as TASKs
+seguintes preenchê-los de fato. `ContextManager.new(conversation_id)` cria a
+instância vazia, mesmo padrão de `Execution.new()` (TASK-020/021). Só o
+modelo de dados nasce aqui — active topic e troca de assunto (TASK-038/
+TASK-041), rastreamento de entidades/referências implícitas (TASK-039),
+correção de contexto (TASK-040) e monitor de janela de contexto/aviso em
+80% (TASK-042/TASK-043) são comportamento de TASKs futuras, não
+implementado nesta TASK.
+
+4 testes unitários novos. Suíte completa: 290/290 testes aprovados.
