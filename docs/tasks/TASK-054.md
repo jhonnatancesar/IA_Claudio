@@ -1,6 +1,6 @@
 # TASK-054 — Implementar versionamento de conhecimento
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,25 @@ Testes unitários de conhecimento (modelo RAW/PROVISIONAL/CONFIRMED, versionamen
 ## Documentação afetada
 
 `docs/KNOWLEDGE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado schema
+`backend/app/db/migrations/0007_knowledge_versioning.sql` (colunas
+`root_id`/`version`/`is_current`/`previous_version_id`/`change_reason` em
+`knowledge`, índice único parcial garantindo uma única versão atual por
+linhagem), aplicado no PostgreSQL local real. Em
+`backend/app/knowledge/knowledge_model.py`: `create_new_version
+(knowledge_id, new_content, reason)` — insere uma linha nova (nunca
+sobrescreve `content`), marca a anterior como não-atual na mesma
+transação, exige que `knowledge_id` seja a versão atual
+(`KnowledgeVersionConflictError` caso contrário); a nova versão sempre
+começa em `RAW`. `get_current_version(root_id)`/`list_version_history
+(root_id)` consultam a linhagem. Exposta na Knowledge Tool
+(`backend/app/tools/knowledge_tool.py`) como nova operação
+`"NEW_VERSION"`.
+
+Preservar fontes (TASK-056) não é desta TASK.
+
+17 testes novos (5 unitários de validação + 12 de integração real, entre
+modelo e Knowledge Tool). Suíte completa: 419/419 testes aprovados.

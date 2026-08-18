@@ -32,7 +32,9 @@ def created_knowledge_id(postgres_dsn):
     knowledge_id = result.split("id=")[1].rstrip(").")
     yield knowledge_id
     with psycopg.connect(postgres_dsn) as conn:
-        conn.execute("DELETE FROM knowledge WHERE id = %s", (knowledge_id,))
+        # `root_id`, não `id`: NEW_VERSION cria linhas novas na mesma
+        # linhagem, com `id` diferente do original.
+        conn.execute("DELETE FROM knowledge WHERE root_id = %s", (knowledge_id,))
 
 
 def test_save_operation_persists_knowledge_as_raw(postgres_dsn, created_knowledge_id):
@@ -75,6 +77,53 @@ def test_advance_operation_rejects_skipping_stage(postgres_dsn, created_knowledg
                     "operation": "ADVANCE",
                     "knowledge_id": created_knowledge_id,
                     "new_status": "CONFIRMED",
+                }
+            )
+        )
+
+
+def test_new_version_operation_creates_version_and_marks_previous_stale(
+    postgres_dsn, created_knowledge_id
+):
+    result = execute_knowledge_tool(
+        _step(
+            {
+                "operation": "NEW_VERSION",
+                "knowledge_id": created_knowledge_id,
+                "new_content": "conteúdo atualizado",
+                "reason": "correção de erro",
+            }
+        )
+    )
+
+    assert "v2" in result
+
+    old = execute_knowledge_tool(_step({"operation": "GET", "knowledge_id": created_knowledge_id}))
+    assert old.startswith("[RAW]")  # a versão antiga continua legível, só não é mais a atual
+
+
+def test_new_version_operation_rejects_stale_knowledge_id(postgres_dsn, created_knowledge_id):
+    from app.knowledge.knowledge_model import KnowledgeVersionConflictError
+
+    execute_knowledge_tool(
+        _step(
+            {
+                "operation": "NEW_VERSION",
+                "knowledge_id": created_knowledge_id,
+                "new_content": "conteúdo v2",
+                "reason": "motivo",
+            }
+        )
+    )
+
+    with pytest.raises(KnowledgeVersionConflictError):
+        execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "NEW_VERSION",
+                    "knowledge_id": created_knowledge_id,
+                    "new_content": "conteúdo v3 inválido",
+                    "reason": "motivo",
                 }
             )
         )

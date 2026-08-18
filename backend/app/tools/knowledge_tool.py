@@ -16,8 +16,11 @@ chamada diretamente, sem se cadastrar em lugar nenhum ainda.
 A operação `"ADVANCE"` só aplica a transição mecânica de status já
 validada por `advance_knowledge_status` — decidir *quando* uma transição
 deve acontecer (a regra de promoção baseada em evidências/fontes) é
-TASK-057, não desta TASK. Busca/versionamento/escopo/evidências
-(TASK-054 a TASK-058) também não são desta TASK.
+TASK-057, não desta TASK.
+
+TASK-054 acrescenta `"NEW_VERSION"`, expondo `create_new_version`: cria
+uma versão nova de um fato sem apagar a anterior. Escopo/evidências
+(TASK-055/TASK-056) não são desta TASK.
 """
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ from __future__ import annotations
 from app.knowledge.knowledge_model import (
     KnowledgeStatus,
     advance_knowledge_status,
+    create_new_version,
     get_knowledge,
     save_knowledge,
 )
@@ -34,8 +38,8 @@ KNOWLEDGE_TOOL_NAME = "KNOWLEDGE"
 
 
 class UnknownKnowledgeOperationError(ValueError):
-    """Levantado quando `parameters["operation"]` não é `SAVE`, `GET` nem
-    `ADVANCE`."""
+    """Levantado quando `parameters["operation"]` não é `SAVE`, `GET`,
+    `ADVANCE` nem `NEW_VERSION`."""
 
 
 class MissingToolParameterError(ValueError):
@@ -66,11 +70,14 @@ def execute_knowledge_tool(step: ModelStep) -> str:
     - `"ADVANCE"`: exige `knowledge_id`, `new_status`; aplica a transição
       mecânica de status (`advance_knowledge_status`) e devolve
       confirmação com o novo status.
+    - `"NEW_VERSION"`: exige `knowledge_id` (a versão atual da linhagem),
+      `new_content`, `reason`; cria uma versão nova (`create_new_version`)
+      e devolve confirmação com o `id`/número da nova versão.
 
     Levanta `MissingToolParameterError` para parâmetro obrigatório
     ausente, `InvalidKnowledgeStatusParameterError` para `new_status`
     desconhecido e `UnknownKnowledgeOperationError` para `operation`
-    diferente de `SAVE`/`GET`/`ADVANCE`.
+    diferente de `SAVE`/`GET`/`ADVANCE`/`NEW_VERSION`.
     """
     operation = _require(step.parameters, "operation")
 
@@ -97,6 +104,15 @@ def execute_knowledge_tool(step: ModelStep) -> str:
             ) from exc
         knowledge = advance_knowledge_status(knowledge_id, new_status)
         return f"Conhecimento avançado para {knowledge.status.value} (id={knowledge.id})."
+
+    if operation == "NEW_VERSION":
+        knowledge_id = _require(step.parameters, "knowledge_id")
+        new_content = _require(step.parameters, "new_content")
+        reason = _require(step.parameters, "reason")
+        knowledge = create_new_version(knowledge_id, new_content, reason)
+        return (
+            f"Nova versão criada: v{knowledge.version} (id={knowledge.id})."
+        )
 
     raise UnknownKnowledgeOperationError(
         f"operação de conhecimento desconhecida: {operation!r}"
