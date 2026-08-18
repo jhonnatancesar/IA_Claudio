@@ -1,6 +1,6 @@
 # TASK-053 — Implementar Knowledge Tool
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,18 @@ Testes unitários de conhecimento (modelo RAW/PROVISIONAL/CONFIRMED, versionamen
 ## Documentação afetada
 
 `docs/KNOWLEDGE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado `backend/app/tools/knowledge_tool.py`:
+`execute_knowledge_tool(step)`, assinatura compatível com
+`ExecutionOrchestrator.tool_executor` (`Callable[[ModelStep], str]`,
+TASK-026), mesmo padrão de `app.tools.memory_tool` (TASK-046).
+`step.parameters["operation"]` (`"SAVE"`/`"GET"`/`"ADVANCE"`) decide a
+chamada a `save_knowledge`/`get_knowledge`/`advance_knowledge_status`
+(TASK-052). `ADVANCE` só aplica a transição mecânica já validada —
+decidir *quando* promover é a regra de promoção, TASK-057, não
+implementada aqui. Cadastro no Tool Registry é TASK-088 em diante.
+
+11 testes novos (7 unitários de validação de parâmetros + 4 de integração
+real). Suíte completa: 402/402 testes aprovados.

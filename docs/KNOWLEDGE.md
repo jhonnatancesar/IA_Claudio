@@ -41,6 +41,17 @@ não implementada aqui. Versionamento de fato (TASK-054), escopo
 `GLOBAL`/`APPLICATION` (TASK-055) e evidências/fontes (TASK-056) também
 não são desta TASK.
 
+**Implementação (TASK-053):** `backend/app/tools/knowledge_tool.py` —
+`execute_knowledge_tool(step)`, assinatura compatível com
+`ExecutionOrchestrator.tool_executor` (`Callable[[ModelStep], str]`,
+TASK-026), mesmo padrão de `app.tools.memory_tool` (TASK-046). Traduz
+`step.parameters["operation"]` (`"SAVE"`/`"GET"`/`"ADVANCE"`) em chamadas
+a `save_knowledge`/`get_knowledge`/`advance_knowledge_status`. `ADVANCE`
+só aplica a transição mecânica já validada por `advance_knowledge_status`
+— decidir *quando* promover (regra de promoção baseada em evidências) é
+TASK-057, não implementada aqui. Cadastro no Tool Registry (catálogo fixo)
+é TASK-088 em diante.
+
 ## Escopos
 
 `GLOBAL` e `APPLICATION:<id>`. Conhecimento específico de uma aplicação **não pode ser
