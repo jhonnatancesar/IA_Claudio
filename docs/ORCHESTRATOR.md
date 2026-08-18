@@ -26,6 +26,16 @@ isso". Se houver ambiguidade real, **pergunta em vez de assumir**. A V1 mantém 
 assunto principal por vez e limpa referências antigas quando houver mudança real de
 tópico.
 
+**Implementação (TASK-037):** `backend/app/context/context_manager.py` —
+`ContextManager` (dataclass), uma instância por conversa: `conversation_id`,
+`active_topic`, `recent_entities`, `current_objective`, `recent_actions`,
+`implicit_references`, `corrections`. `ContextManager.new(conversation_id)`
+cria a instância vazia. Só o modelo de dados e sua identidade nascem aqui,
+mesmo padrão de `Execution` (TASK-020): active topic e troca de assunto de
+fato são TASK-038/TASK-041, rastreamento de entidades/referências é
+TASK-039, correção é TASK-040, monitor de janela de contexto e aviso em 80%
+são TASK-042/TASK-043 — nenhum desses comportamentos implementado ainda.
+
 ## Janela de contexto
 
 - Configurável pelo painel; mudança exige reinicialização.

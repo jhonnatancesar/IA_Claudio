@@ -11,8 +11,9 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-036** concluídas — blocos "Fundação", "Segurança e
-identidade", "LLM", "Orquestração" e "Confiança e guardrails" completos. Ver
+**TASK-001** a **TASK-037** concluídas — blocos "Fundação", "Segurança e
+identidade", "LLM", "Orquestração" e "Confiança e guardrails" completos;
+bloco "Contexto" em andamento (`ContextManager`). Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
@@ -36,5 +37,5 @@ identidade", "LLM", "Orquestração" e "Confiança e guardrails" completos. Ver
 
 ## Próxima TASK
 
-**TASK-037 — Criar ContextManager**
-([docs/tasks/TASK-037.md](docs/tasks/TASK-037.md)).
+**TASK-038 — Criar active topic**
+([docs/tasks/TASK-038.md](docs/tasks/TASK-038.md)).

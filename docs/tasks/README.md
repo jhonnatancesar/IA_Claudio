@@ -151,9 +151,13 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 **Checkpoint de 10 TASKs (AGENTS.md):** próximo checkpoint automático de
 push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 
-As demais 111 TASKs permanecem com status **Pendente**.
+- **TASK-037** — concluída (`ContextManager`,
+  `backend/app/context/context_manager.py` — ver `docs/tasks/TASK-037.md`).
+  Suíte completa: 290/290 testes aprovados.
 
-Próxima TASK executável: **TASK-037 — Criar ContextManager**.
+As demais 110 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-038 — Criar active topic**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
