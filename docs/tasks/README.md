@@ -197,11 +197,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-049** — concluída (política de retenção,
   `backend/app/memory/retention_policy.py`, `apply_retention_policy` — ver
   `docs/tasks/TASK-049.md`). Suíte completa: 370/370 testes aprovados.
+- **TASK-050** — concluída (limite fixo de memória,
+  `MAX_MEMORIES_PER_OWNER = 500`, `enforce_memory_limit` — ver
+  `docs/tasks/TASK-050.md`). Suíte completa: 373/373 testes aprovados.
 
-As demais 98 TASKs permanecem com status **Pendente**.
+As demais 97 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-050 — Implementar limite fixo de
-memória**.
+Próxima TASK executável: **TASK-051 — Implementar auditoria de memória
+removida**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
