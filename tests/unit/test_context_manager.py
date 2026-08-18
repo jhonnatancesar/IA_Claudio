@@ -60,3 +60,61 @@ def test_set_active_topic_rejects_empty_topic(topic):
 
     with pytest.raises(ValueError):
         context.set_active_topic(topic)
+
+
+def test_track_entity_adds_entity_as_most_recent():
+    context = ContextManager.new("conv-1")
+
+    context.track_entity("Ollama")
+    context.track_entity("PostgreSQL")
+
+    assert context.recent_entities == ["PostgreSQL", "Ollama"]
+
+
+def test_track_entity_moves_existing_entity_to_front_without_duplicating():
+    context = ContextManager.new("conv-1")
+    context.track_entity("Ollama")
+    context.track_entity("PostgreSQL")
+
+    context.track_entity("Ollama")
+
+    assert context.recent_entities == ["Ollama", "PostgreSQL"]
+
+
+@pytest.mark.parametrize("entity", ["", "   "])
+def test_track_entity_rejects_empty_entity(entity):
+    context = ContextManager.new("conv-1")
+
+    with pytest.raises(ValueError):
+        context.track_entity(entity)
+
+
+def test_set_and_resolve_implicit_reference():
+    context = ContextManager.new("conv-1")
+
+    context.set_implicit_reference("esse", "PostgreSQL")
+
+    assert context.resolve_reference("esse") == "PostgreSQL"
+
+
+def test_set_implicit_reference_replaces_previous_association():
+    context = ContextManager.new("conv-1")
+    context.set_implicit_reference("esse", "PostgreSQL")
+
+    context.set_implicit_reference("esse", "Ollama")
+
+    assert context.resolve_reference("esse") == "Ollama"
+
+
+def test_resolve_reference_returns_none_when_unresolved():
+    context = ContextManager.new("conv-1")
+
+    assert context.resolve_reference("esse") is None
+
+
+@pytest.mark.parametrize("reference,entity", [("", "PostgreSQL"), ("esse", "")])
+def test_set_implicit_reference_rejects_empty_values(reference, entity):
+    context = ContextManager.new("conv-1")
+
+    with pytest.raises(ValueError):
+        context.set_implicit_reference(reference, entity)

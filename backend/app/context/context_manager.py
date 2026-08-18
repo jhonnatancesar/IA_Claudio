@@ -15,9 +15,16 @@ real aconteceu (para então trocar e limpar referências antigas) é
 TASK-041, não implementado aqui — este método só troca o valor, dado que
 quem chama já decidiu que deve trocar.
 
-Rastreamento de entidades/referências implícitas é TASK-039, correção de
-contexto é TASK-040, monitor de janela de contexto e aviso em 80% são
-TASK-042/TASK-043. Nenhum desses comportamentos é implementado aqui.
+Esta TASK (TASK-039) acrescenta rastreamento de entidades recentes
+(`track_entity`) e de referências implícitas (`set_implicit_reference`/
+`resolve_reference`) — "o Claudião deve entender referências como 'esse',
+'ele', 'o outro'" (seção 9). `recent_entities` guarda a entidade mais
+recente primeiro, sem repetição; `implicit_references` mapeia a palavra de
+referência ("esse", "ele") para a entidade que ela resolve no momento.
+
+Correção de contexto é TASK-040, monitor de janela de contexto e aviso em
+80% são TASK-042/TASK-043. Nenhum desses comportamentos é implementado
+aqui.
 """
 
 from __future__ import annotations
@@ -55,3 +62,32 @@ class ContextManager:
         if not topic or not topic.strip():
             raise ValueError("active_topic não pode ser vazio")
         self.active_topic = topic
+
+    def track_entity(self, entity: str) -> None:
+        """Registra `entity` como a mais recentemente mencionada (TASK-039).
+        Se `entity` já estiver em `recent_entities`, é movida para o início
+        em vez de duplicada — `recent_entities` reflete recência, não
+        contagem de menções. Levanta `ValueError` se `entity` for vazia."""
+        if not entity or not entity.strip():
+            raise ValueError("entity não pode ser vazia")
+        if entity in self.recent_entities:
+            self.recent_entities.remove(entity)
+        self.recent_entities.insert(0, entity)
+
+    def set_implicit_reference(self, reference: str, entity: str) -> None:
+        """Associa uma palavra de referência implícita (ex.: "esse", "ele",
+        "o outro") à entidade que ela resolve neste momento da conversa
+        (TASK-039). Uma nova chamada com a mesma `reference` substitui a
+        associação anterior. Levanta `ValueError` se `reference` ou `entity`
+        forem vazias."""
+        if not reference or not reference.strip():
+            raise ValueError("reference não pode ser vazia")
+        if not entity or not entity.strip():
+            raise ValueError("entity não pode ser vazia")
+        self.implicit_references[reference] = entity
+
+    def resolve_reference(self, reference: str) -> str | None:
+        """Resolve uma referência implícita para a entidade associada
+        (TASK-039), ou `None` se `reference` não tiver associação
+        registrada."""
+        return self.implicit_references.get(reference)
