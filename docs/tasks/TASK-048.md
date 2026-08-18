@@ -1,6 +1,6 @@
 # TASK-048 — Implementar relevância/frequência/last used
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,24 @@ Testes unitários de memória (persistência, busca, relevância, retenção ou 
 ## Documentação afetada
 
 `docs/MEMORY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Colunas `use_count`/`last_used_at` em
+`backend/app/db/migrations/0004_memory_usage.sql`, aplicada no PostgreSQL
+local real. Em `backend/app/memory/memory_model.py`:
+`record_memory_usage(memory_id)` incrementa `use_count` e atualiza
+`last_used_at` (`MemoryNotFoundError` se o `id` não existir);
+`relevance_score(memory, now)` combina frequência e recência numa
+pontuação heurística — critério mais simples e defensável, já que a
+especificação (seção 11) lista "relevância" e "pouco uso" como critérios
+de limpeza sem detalhar uma fórmula (mesmo espírito do threshold de
+`loop_detector.py`, TASK-029).
+
+Nenhuma das duas funções é acionada automaticamente ao ler/buscar
+memórias — decidir o que fazer com a pontuação (o que remover, em que
+limiar) é política de retenção, TASK-049, não implementado aqui.
+
+8 testes novos (4 unitários de `relevance_score`, função pura + 4 de
+integração de `record_memory_usage`/`save_memory`). Suíte completa:
+361/361 testes aprovados.

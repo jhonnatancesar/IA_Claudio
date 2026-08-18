@@ -15,16 +15,25 @@ separadas", seção 11): filtra por `owner_type`/`owner_id` exatos, nunca
 retorna memórias de outro dono.
 
 Memory Tool (TASK-046) expõe as funções deste módulo ao protocolo do
-orquestrador (`app.tools.memory_tool`). Esta TASK (TASK-047) acrescenta
+orquestrador (`app.tools.memory_tool`). TASK-047 acrescentou
 `search_memories`: busca estruturada por conteúdo, dentro do escopo de um
 dono (reaproveita a garantia de separação da TASK-045) — combinação
-`owner_type`/`owner_id`/`query`, sem ranking por relevância (isso é
-TASK-048, não implementado aqui: a ordem aqui é só recência, mesma de
-`list_memories_for_owner`).
+`owner_type`/`owner_id`/`query`, sem ranking por relevância.
 
-Relevância/frequência/last_used (TASK-048), política de retenção
-(TASK-049), limite fixo (TASK-050) e auditoria de remoção (TASK-051) não
-são desta TASK.
+Esta TASK (TASK-048) acrescenta rastreamento de uso: `use_count`
+(frequência) e `last_used_at` (last used), colunas novas em
+`backend/app/db/migrations/0004_memory_usage.sql`. `record_memory_usage`
+incrementa `use_count` e atualiza `last_used_at` — "se voltar a ser usada
+antes da limpeza, a vida útil é renovada" (seção 11) depende de
+`last_used_at` estar atualizado, mas a limpeza de fato é TASK-049, não
+aqui. `relevance_score` combina os dois numa pontuação heurística — a
+especificação lista "relevância" e "pouco uso" como critérios de limpeza
+sem detalhar uma fórmula, então o critério aqui é o mais simples e
+defensável possível (mesmo espírito do threshold de `loop_detector.py`,
+TASK-029).
+
+Política de retenção (TASK-049), limite fixo (TASK-050) e auditoria de
+remoção (TASK-051) não são desta TASK.
 """
 
 from __future__ import annotations
@@ -42,6 +51,11 @@ class InvalidOwnerTypeError(ValueError):
     """Levantado quando `owner_type` não é `USER` nem `APPLICATION`."""
 
 
+class MemoryNotFoundError(ValueError):
+    """Levantado quando um `memory_id` não corresponde a nenhuma memória
+    existente."""
+
+
 @dataclass(frozen=True)
 class Memory:
     id: UUID
@@ -49,6 +63,21 @@ class Memory:
     owner_id: str
     content: str
     created_at: datetime
+    use_count: int = 0
+    last_used_at: datetime | None = None
+
+
+def _memory_from_row(row: tuple) -> Memory:
+    memory_id, owner_type, owner_id, content, created_at, use_count, last_used_at = row
+    return Memory(
+        id=memory_id,
+        owner_type=owner_type,
+        owner_id=owner_id,
+        content=content,
+        created_at=created_at,
+        use_count=use_count,
+        last_used_at=last_used_at,
+    )
 
 
 def save_memory(owner_type: str, owner_id: str, content: str) -> Memory:
@@ -66,39 +95,27 @@ def save_memory(owner_type: str, owner_id: str, content: str) -> Memory:
         row = conn.execute(
             "INSERT INTO memories (owner_type, owner_id, content) "
             "VALUES (%s, %s, %s) "
-            "RETURNING id, owner_type, owner_id, content, created_at",
+            "RETURNING id, owner_type, owner_id, content, created_at, "
+            "use_count, last_used_at",
             (owner_type, owner_id, content),
         ).fetchone()
 
-    memory_id, db_owner_type, db_owner_id, db_content, created_at = row
-    return Memory(
-        id=memory_id,
-        owner_type=db_owner_type,
-        owner_id=db_owner_id,
-        content=db_content,
-        created_at=created_at,
-    )
+    return _memory_from_row(row)
 
 
 def get_memory(memory_id: UUID) -> Memory | None:
     """Busca uma memória pelo `id`. Retorna `None` se não existir."""
     with connect() as conn:
         row = conn.execute(
-            "SELECT id, owner_type, owner_id, content, created_at "
+            "SELECT id, owner_type, owner_id, content, created_at, "
+            "use_count, last_used_at "
             "FROM memories WHERE id = %s",
             (memory_id,),
         ).fetchone()
 
     if row is None:
         return None
-    memory_id, owner_type, owner_id, content, created_at = row
-    return Memory(
-        id=memory_id,
-        owner_type=owner_type,
-        owner_id=owner_id,
-        content=content,
-        created_at=created_at,
-    )
+    return _memory_from_row(row)
 
 
 def list_memories_for_owner(owner_type: str, owner_id: str) -> list[Memory]:
@@ -111,22 +128,14 @@ def list_memories_for_owner(owner_type: str, owner_id: str) -> list[Memory]:
 
     with connect() as conn:
         rows = conn.execute(
-            "SELECT id, owner_type, owner_id, content, created_at "
+            "SELECT id, owner_type, owner_id, content, created_at, "
+            "use_count, last_used_at "
             "FROM memories WHERE owner_type = %s AND owner_id = %s "
             "ORDER BY created_at DESC",
             (owner_type, owner_id),
         ).fetchall()
 
-    return [
-        Memory(
-            id=row[0],
-            owner_type=row[1],
-            owner_id=row[2],
-            content=row[3],
-            created_at=row[4],
-        )
-        for row in rows
-    ]
+    return [_memory_from_row(row) for row in rows]
 
 
 def search_memories(owner_type: str, owner_id: str, query: str) -> list[Memory]:
@@ -144,20 +153,45 @@ def search_memories(owner_type: str, owner_id: str, query: str) -> list[Memory]:
 
     with connect() as conn:
         rows = conn.execute(
-            "SELECT id, owner_type, owner_id, content, created_at "
+            "SELECT id, owner_type, owner_id, content, created_at, "
+            "use_count, last_used_at "
             "FROM memories "
             "WHERE owner_type = %s AND owner_id = %s AND content ILIKE %s "
             "ORDER BY created_at DESC",
             (owner_type, owner_id, f"%{query}%"),
         ).fetchall()
 
-    return [
-        Memory(
-            id=row[0],
-            owner_type=row[1],
-            owner_id=row[2],
-            content=row[3],
-            created_at=row[4],
-        )
-        for row in rows
-    ]
+    return [_memory_from_row(row) for row in rows]
+
+
+def record_memory_usage(memory_id: UUID) -> Memory:
+    """Registra um uso da memória `memory_id` (TASK-048): incrementa
+    `use_count` e atualiza `last_used_at` para agora. Levanta
+    `MemoryNotFoundError` se `memory_id` não existir."""
+    with connect() as conn:
+        row = conn.execute(
+            "UPDATE memories SET use_count = use_count + 1, last_used_at = now() "
+            "WHERE id = %s "
+            "RETURNING id, owner_type, owner_id, content, created_at, "
+            "use_count, last_used_at",
+            (memory_id,),
+        ).fetchone()
+
+    if row is None:
+        raise MemoryNotFoundError(f"memória não encontrada: {memory_id!r}")
+    return _memory_from_row(row)
+
+
+def relevance_score(memory: Memory, now: datetime) -> float:
+    """Pontuação heurística de relevância (TASK-048), combinando frequência
+    de uso (`use_count`) e recência (`last_used_at`, ou `created_at` se
+    nunca usada) — critério mais simples e defensável possível, já que a
+    especificação (seção 11) lista "relevância" e "pouco uso" como
+    critérios de limpeza sem detalhar uma fórmula.
+
+    Quanto mais usos e mais recente o último uso, maior a pontuação; nunca
+    negativa. Decidir o que fazer com essa pontuação (o que remover, em que
+    limiar) é política de retenção, TASK-049, não implementado aqui."""
+    reference = memory.last_used_at or memory.created_at
+    age_days = max((now - reference).total_seconds() / 86400, 0)
+    return memory.use_count / (1 + age_days)

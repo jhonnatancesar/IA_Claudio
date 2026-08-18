@@ -66,9 +66,20 @@ cria a função executável, sem se registrar em lugar nenhum.
 query)` em `backend/app/memory/memory_model.py` — busca estruturada por
 conteúdo (`content ILIKE '%query%'`, sem diferenciar maiúsculas/
 minúsculas), dentro do escopo do dono (mesma garantia de separação da
-TASK-045), mais recente primeiro. Sem ranking por relevância — isso é
-TASK-048. Exposta na Memory Tool como `operation: "SEARCH"` (exige
-`owner_type`/`owner_id`/`query`).
+TASK-045), mais recente primeiro. Exposta na Memory Tool como
+`operation: "SEARCH"` (exige `owner_type`/`owner_id`/`query`).
+
+**Implementação (TASK-048):** colunas `use_count` (frequência) e
+`last_used_at` (last used) em `backend/app/db/migrations/0004_memory_usage.sql`.
+`record_memory_usage(memory_id)` incrementa `use_count` e atualiza
+`last_used_at` para agora (`MemoryNotFoundError` se o `id` não existir).
+`relevance_score(memory, now)` combina os dois numa pontuação heurística
+(mais usos + uso mais recente → maior pontuação) — critério mais simples e
+defensável, já que a especificação não detalha uma fórmula de relevância.
+Nenhuma das duas funções é acionada automaticamente ao ler/buscar memórias
+ainda (isso ficaria a critério de quem chama); decidir o que fazer com a
+pontuação (o que remover, em que limiar) é política de retenção,
+TASK-049.
 
 ## TASKs relacionadas
 
