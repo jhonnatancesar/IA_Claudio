@@ -14,6 +14,7 @@ from app.memory.memory_model import (
     delete_memory,
     get_memory,
     list_memories_for_owner,
+    list_removal_audit_for_owner,
     record_memory_usage,
     save_memory,
     search_memories,
@@ -27,6 +28,7 @@ def unique_owner_id(postgres_dsn):
     yield owner_id
     with psycopg.connect(postgres_dsn) as conn:
         conn.execute("DELETE FROM memories WHERE owner_id = %s", (owner_id,))
+        conn.execute("DELETE FROM memory_removal_audit WHERE owner_id = %s", (owner_id,))
 
 
 def test_save_memory_persists_and_is_readable_by_id(postgres_dsn, unique_owner_id):
@@ -176,9 +178,43 @@ def test_record_memory_usage_raises_for_unknown_id(postgres_dsn):
 def test_delete_memory_removes_and_returns_true(postgres_dsn, unique_owner_id):
     memory = save_memory("USER", unique_owner_id, "conteúdo qualquer")
 
-    assert delete_memory(memory.id) is True
+    assert delete_memory(memory.id, reason="TESTE") is True
     assert get_memory(memory.id) is None
 
 
 def test_delete_memory_returns_false_for_unknown_id(postgres_dsn):
-    assert delete_memory(uuid.uuid4()) is False
+    assert delete_memory(uuid.uuid4(), reason="TESTE") is False
+
+
+def test_delete_memory_rejects_empty_reason(postgres_dsn, unique_owner_id):
+    memory = save_memory("USER", unique_owner_id, "conteúdo qualquer")
+
+    with pytest.raises(ValueError):
+        delete_memory(memory.id, reason="")
+
+
+def test_delete_memory_records_audit_without_content(postgres_dsn, unique_owner_id):
+    memory = save_memory("USER", unique_owner_id, "conteúdo sensível")
+
+    delete_memory(memory.id, reason="TESTE_MANUAL")
+
+    audit = list_removal_audit_for_owner("USER", unique_owner_id)
+    assert len(audit) == 1
+    record = audit[0]
+    assert record.memory_id == memory.id
+    assert record.owner_type == "USER"
+    assert record.owner_id == unique_owner_id
+    assert record.reason == "TESTE_MANUAL"
+    assert record.removed_at is not None
+    assert not hasattr(record, "content")
+
+
+def test_delete_memory_does_not_record_audit_for_unknown_id(postgres_dsn, unique_owner_id):
+    delete_memory(uuid.uuid4(), reason="TESTE")
+
+    assert list_removal_audit_for_owner("USER", unique_owner_id) == []
+
+
+def test_list_removal_audit_for_owner_rejects_invalid_owner_type(postgres_dsn):
+    with pytest.raises(InvalidOwnerTypeError):
+        list_removal_audit_for_owner("SUPERUSER", "qualquer")

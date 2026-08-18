@@ -13,10 +13,16 @@ import pytest
 from app.memory.memory_model import (
     get_memory,
     list_memories_for_owner,
+    list_removal_audit_for_owner,
     record_memory_usage,
     save_memory,
 )
-from app.memory.retention_policy import apply_retention_policy, enforce_memory_limit
+from app.memory.retention_policy import (
+    REMOVAL_REASON_MEMORY_LIMIT,
+    REMOVAL_REASON_RETENTION,
+    apply_retention_policy,
+    enforce_memory_limit,
+)
 
 
 @pytest.fixture
@@ -25,6 +31,7 @@ def unique_owner_id(postgres_dsn):
     yield owner_id
     with psycopg.connect(postgres_dsn) as conn:
         conn.execute("DELETE FROM memories WHERE owner_id = %s", (owner_id,))
+        conn.execute("DELETE FROM memory_removal_audit WHERE owner_id = %s", (owner_id,))
 
 
 def _backdate(postgres_dsn, memory_id, days: int) -> None:
@@ -47,6 +54,11 @@ def test_apply_retention_policy_removes_old_unused_memory(postgres_dsn, unique_o
 
     assert removed == [memory.id]
     assert get_memory(memory.id) is None
+
+    audit = list_removal_audit_for_owner("USER", unique_owner_id)
+    assert len(audit) == 1
+    assert audit[0].memory_id == memory.id
+    assert audit[0].reason == REMOVAL_REASON_RETENTION
 
 
 def test_apply_retention_policy_keeps_recent_memory(postgres_dsn, unique_owner_id):
@@ -92,6 +104,11 @@ def test_enforce_memory_limit_removes_least_relevant_when_over_limit(
     assert removed == [least_relevant.id]
     remaining = list_memories_for_owner("USER", unique_owner_id)
     assert [memory.id for memory in remaining] == [most_relevant.id]
+
+    audit = list_removal_audit_for_owner("USER", unique_owner_id)
+    assert len(audit) == 1
+    assert audit[0].memory_id == least_relevant.id
+    assert audit[0].reason == REMOVAL_REASON_MEMORY_LIMIT
 
 
 def test_enforce_memory_limit_does_nothing_when_within_limit(

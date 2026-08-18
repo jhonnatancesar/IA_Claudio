@@ -1,6 +1,6 @@
 # TASK-051 — Implementar auditoria de memória removida
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,21 @@ Testes unitários de memória (persistência, busca, relevância, retenção ou 
 ## Documentação afetada
 
 `docs/MEMORY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado schema
+`backend/app/db/migrations/0005_memory_removal_audit.sql` (tabela
+`memory_removal_audit`: `memory_id`, `owner_type`, `owner_id`, `reason`,
+`removed_at` — de propósito, sem `content`), aplicado no PostgreSQL local
+real. `delete_memory(memory_id, reason)` em `memory_model.py` agora exige
+`reason` e grava o registro de auditoria na mesma transação da remoção
+(`RETURNING owner_type, owner_id` antes de perder a linha).
+`list_removal_audit_for_owner(owner_type, owner_id)` lê o histórico.
+`apply_retention_policy`/`enforce_memory_limit` (TASK-049/050) passam
+`REMOVAL_REASON_RETENTION`/`REMOVAL_REASON_MEMORY_LIMIT`.
+
+Com esta TASK, o bloco "Memória" (TASK-044 a TASK-051) está completo.
+
+6 testes novos (2 unitários de validação de `reason` + 4 de integração de
+auditoria real). Suíte completa: 379/379 testes aprovados.

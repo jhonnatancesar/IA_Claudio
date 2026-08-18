@@ -100,9 +100,19 @@ limite, remove as excedentes começando pelas de menor `relevance_score`
 ("remove primeiro as memórias menos relevantes e menos usadas
 recentemente", seção 11).
 
-Auditoria da remoção (TASK-051, "guardar que existiu, quando e por qual
-regra") não é desta TASK — nem `apply_retention_policy` nem
-`enforce_memory_limit` deixam rastro da remoção.
+**Implementação (TASK-051):** `delete_memory(memory_id, reason)` em
+`backend/app/memory/memory_model.py` agora exige `reason` e grava, na
+mesma transação da remoção, um registro em `memory_removal_audit`
+(`backend/app/db/migrations/0005_memory_removal_audit.sql`) — "quando
+removida, o conteúdo pode desaparecer, mas fica auditoria mínima
+informando que existiu, quando foi removida e por qual regra". De
+propósito, a auditoria **não** guarda `content`: só `memory_id`,
+`owner_type`, `owner_id`, `reason`, `removed_at`. `list_removal_audit_for_owner
+(owner_type, owner_id)` lê esse histórico. `apply_retention_policy`/
+`enforce_memory_limit` (TASK-049/050) passam `REMOVAL_REASON_RETENTION`/
+`REMOVAL_REASON_MEMORY_LIMIT` como `reason`.
+
+Com esta TASK, o bloco "Memória" (TASK-044 a TASK-051) está completo.
 
 ## TASKs relacionadas
 
