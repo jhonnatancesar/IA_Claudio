@@ -1,6 +1,6 @@
 # TASK-039 — Criar rastreamento de entidades/referências
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -29,3 +29,17 @@ Testes unitários do ContextManager para este comportamento (rastreamento, corre
 ## Documentação afetada
 
 `docs/ORCHESTRATOR.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-16. Acrescentados três métodos em
+`backend/app/context/context_manager.py`: `track_entity(entity)` — registra
+a entidade mais recente em `recent_entities` (ordem de recência, sem
+duplicar: entidade já presente move para o início); `set_implicit_reference
+(reference, entity)` e `resolve_reference(reference)` — associam e
+consultam a entidade que uma palavra de referência implícita ("esse",
+"ele", "o outro", seção 9) resolve neste momento da conversa, via
+`implicit_references` (dicionário simples, sem histórico). Todos levantam
+`ValueError` para valores vazios.
+
+9 testes unitários novos. Suíte completa: 303/303 testes aprovados.

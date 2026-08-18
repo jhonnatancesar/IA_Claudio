@@ -44,6 +44,15 @@ assunto real aconteceu (para então chamar este método e limpar
 referências antigas) é TASK-041 — aqui só a troca do valor, assumindo que
 quem chama já decidiu trocar.
 
+**Implementação (TASK-039):** `track_entity(entity)` registra a entidade
+mais recentemente mencionada em `recent_entities` — lista em ordem de
+recência (mais recente primeiro), sem duplicar: reencontrar uma entidade já
+presente move para o início em vez de repetir. `set_implicit_reference
+(reference, entity)`/`resolve_reference(reference)` associam e consultam a
+entidade que uma palavra de referência ("esse", "ele", "o outro") resolve
+neste momento — `implicit_references`, um dicionário simples de referência
+→ entidade, sem histórico de associações anteriores.
+
 ## Janela de contexto
 
 - Configurável pelo painel; mudança exige reinicialização.

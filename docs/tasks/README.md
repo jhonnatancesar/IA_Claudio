@@ -157,11 +157,14 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 - **TASK-038** — concluída (assunto principal,
   `ContextManager.set_active_topic` — ver `docs/tasks/TASK-038.md`). Suíte
   completa: 294/294 testes aprovados.
+- **TASK-039** — concluída (rastreamento de entidades/referências,
+  `ContextManager.track_entity`/`set_implicit_reference`/
+  `resolve_reference` — ver `docs/tasks/TASK-039.md`). Suíte completa:
+  303/303 testes aprovados.
 
-As demais 109 TASKs permanecem com status **Pendente**.
+As demais 108 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-039 — Criar rastreamento de
-entidades/referências**.
+Próxima TASK executável: **TASK-040 — Implementar correção de contexto**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
