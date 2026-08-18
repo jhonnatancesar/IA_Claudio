@@ -22,9 +22,14 @@ Esta TASK (TASK-039) acrescenta rastreamento de entidades recentes
 recente primeiro, sem repetição; `implicit_references` mapeia a palavra de
 referência ("esse", "ele") para a entidade que ela resolve no momento.
 
-Correção de contexto é TASK-040, monitor de janela de contexto e aviso em
-80% são TASK-042/TASK-043. Nenhum desses comportamentos é implementado
-aqui.
+Esta TASK (TASK-040) acrescenta `record_correction`: registra uma correção
+feita pelo usuário ("correções feitas pelo usuário", seção 9) em
+`corrections`, em ordem cronológica — histórico simples, sem tentar
+reinterpretar `active_topic`/`current_objective` a partir da correção
+(isso exigiria entender o conteúdo da correção, fora do escopo desta TASK).
+
+Monitor de janela de contexto e aviso em 80% são TASK-042/TASK-043.
+Nenhum desses comportamentos é implementado aqui.
 """
 
 from __future__ import annotations
@@ -91,3 +96,14 @@ class ContextManager:
         (TASK-039), ou `None` se `reference` não tiver associação
         registrada."""
         return self.implicit_references.get(reference)
+
+    def record_correction(self, correction: str) -> None:
+        """Registra uma correção feita pelo usuário (TASK-040) em
+        `corrections`, em ordem cronológica (mais antiga primeiro). Só
+        registra o histórico — aplicar a correção sobre `active_topic`/
+        `current_objective` exigiria interpretar seu conteúdo, fora do
+        escopo desta TASK. Levanta `ValueError` se `correction` for
+        vazia."""
+        if not correction or not correction.strip():
+            raise ValueError("correction não pode ser vazia")
+        self.corrections.append(correction)

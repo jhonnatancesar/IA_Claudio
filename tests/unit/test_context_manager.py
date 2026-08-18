@@ -118,3 +118,23 @@ def test_set_implicit_reference_rejects_empty_values(reference, entity):
 
     with pytest.raises(ValueError):
         context.set_implicit_reference(reference, entity)
+
+
+def test_record_correction_appends_in_chronological_order():
+    context = ContextManager.new("conv-1")
+
+    context.record_correction("não é PostgreSQL, é MySQL")
+    context.record_correction("na verdade é MariaDB")
+
+    assert context.corrections == [
+        "não é PostgreSQL, é MySQL",
+        "na verdade é MariaDB",
+    ]
+
+
+@pytest.mark.parametrize("correction", ["", "   "])
+def test_record_correction_rejects_empty_correction(correction):
+    context = ContextManager.new("conv-1")
+
+    with pytest.raises(ValueError):
+        context.record_correction(correction)
