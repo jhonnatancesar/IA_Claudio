@@ -138,3 +138,45 @@ def test_record_correction_rejects_empty_correction(correction):
 
     with pytest.raises(ValueError):
         context.record_correction(correction)
+
+
+def test_detect_topic_switch_applies_new_topic_and_clears_context():
+    context = ContextManager.new("conv-1")
+    context.set_active_topic("PostgreSQL")
+    context.track_entity("claudiao_app")
+    context.set_implicit_reference("esse", "claudiao_app")
+
+    switched = context.detect_topic_switch("Ollama")
+
+    assert switched is True
+    assert context.active_topic == "Ollama"
+    assert context.recent_entities == []
+    assert context.implicit_references == {}
+
+
+def test_detect_topic_switch_returns_false_for_same_topic():
+    context = ContextManager.new("conv-1")
+    context.set_active_topic("PostgreSQL")
+    context.track_entity("claudiao_app")
+
+    switched = context.detect_topic_switch("PostgreSQL")
+
+    assert switched is False
+    assert context.recent_entities == ["claudiao_app"]
+
+
+def test_detect_topic_switch_from_no_topic_counts_as_switch():
+    context = ContextManager.new("conv-1")
+
+    switched = context.detect_topic_switch("PostgreSQL")
+
+    assert switched is True
+    assert context.active_topic == "PostgreSQL"
+
+
+@pytest.mark.parametrize("new_topic", ["", "   "])
+def test_detect_topic_switch_rejects_empty_topic(new_topic):
+    context = ContextManager.new("conv-1")
+
+    with pytest.raises(ValueError):
+        context.detect_topic_switch(new_topic)

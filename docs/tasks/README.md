@@ -168,10 +168,14 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 **Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-040, a `main` local foi
 enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 
-As demais 107 TASKs permanecem com status **Pendente**.
+- **TASK-041** — concluída (detecção de troca de assunto,
+  `ContextManager.detect_topic_switch` — ver `docs/tasks/TASK-041.md`).
+  Suíte completa: 311/311 testes aprovados.
 
-Próxima TASK executável: **TASK-041 — Implementar detecção de troca de
-assunto**.
+As demais 106 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-042 — Implementar monitor de janela de
+contexto**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
