@@ -19,17 +19,22 @@ deve acontecer (a regra de promoção baseada em evidências/fontes) é
 TASK-057, não desta TASK.
 
 TASK-054 acrescenta `"NEW_VERSION"`, expondo `create_new_version`: cria
-uma versão nova de um fato sem apagar a anterior. Escopo/evidências
-(TASK-055/TASK-056) não são desta TASK.
+uma versão nova de um fato sem apagar a anterior.
+
+TASK-055 acrescenta `scope_type`/`scope_id` opcionais em `"SAVE"` e a
+operação `"LIST_SCOPE"`, expondo `list_knowledge_for_scope`. Evidências
+(TASK-056) não são desta TASK.
 """
 
 from __future__ import annotations
 
 from app.knowledge.knowledge_model import (
+    KnowledgeScope,
     KnowledgeStatus,
     advance_knowledge_status,
     create_new_version,
     get_knowledge,
+    list_knowledge_for_scope,
     save_knowledge,
 )
 from app.llm.protocol import ModelStep
@@ -39,7 +44,7 @@ KNOWLEDGE_TOOL_NAME = "KNOWLEDGE"
 
 class UnknownKnowledgeOperationError(ValueError):
     """Levantado quando `parameters["operation"]` não é `SAVE`, `GET`,
-    `ADVANCE` nem `NEW_VERSION`."""
+    `ADVANCE`, `NEW_VERSION` nem `LIST_SCOPE`."""
 
 
 class MissingToolParameterError(ValueError):
@@ -50,6 +55,11 @@ class MissingToolParameterError(ValueError):
 class InvalidKnowledgeStatusParameterError(ValueError):
     """Levantado quando `parameters["new_status"]` não é um valor válido de
     `KnowledgeStatus`."""
+
+
+class InvalidKnowledgeScopeParameterError(ValueError):
+    """Levantado quando `parameters["scope_type"]` não é um valor válido de
+    `KnowledgeScope`."""
 
 
 def _require(parameters: dict, key: str) -> str:
@@ -63,7 +73,8 @@ def execute_knowledge_tool(step: ModelStep) -> str:
     """Executa a Knowledge Tool para `step`. `parameters["operation"]`
     decide o que fazer:
 
-    - `"SAVE"`: exige `content`; persiste um conhecimento novo em `RAW`
+    - `"SAVE"`: exige `content`; aceita `scope_type`/`scope_id` opcionais
+      (padrão `GLOBAL`); persiste um conhecimento novo em `RAW`
       (`save_knowledge`) e devolve confirmação com o `id` gerado.
     - `"GET"`: exige `knowledge_id`; devolve o conteúdo e o status do
       conhecimento (`get_knowledge`), ou uma mensagem se não existir.
@@ -73,17 +84,29 @@ def execute_knowledge_tool(step: ModelStep) -> str:
     - `"NEW_VERSION"`: exige `knowledge_id` (a versão atual da linhagem),
       `new_content`, `reason`; cria uma versão nova (`create_new_version`)
       e devolve confirmação com o `id`/número da nova versão.
+    - `"LIST_SCOPE"`: exige `scope_type` (`GLOBAL` ou `APPLICATION`;
+      `APPLICATION` exige também `scope_id`); devolve os conhecimentos
+      atuais desse escopo (`list_knowledge_for_scope`), um por linha.
 
     Levanta `MissingToolParameterError` para parâmetro obrigatório
-    ausente, `InvalidKnowledgeStatusParameterError` para `new_status`
-    desconhecido e `UnknownKnowledgeOperationError` para `operation`
-    diferente de `SAVE`/`GET`/`ADVANCE`/`NEW_VERSION`.
+    ausente, `InvalidKnowledgeStatusParameterError`/
+    `InvalidKnowledgeScopeParameterError` para `new_status`/`scope_type`
+    desconhecidos e `UnknownKnowledgeOperationError` para `operation`
+    diferente de `SAVE`/`GET`/`ADVANCE`/`NEW_VERSION`/`LIST_SCOPE`.
     """
     operation = _require(step.parameters, "operation")
 
     if operation == "SAVE":
         content = _require(step.parameters, "content")
-        knowledge = save_knowledge(content)
+        scope_type_raw = step.parameters.get("scope_type", KnowledgeScope.GLOBAL.value)
+        try:
+            scope_type = KnowledgeScope(scope_type_raw)
+        except ValueError as exc:
+            raise InvalidKnowledgeScopeParameterError(
+                f"scope_type inválido: {scope_type_raw!r}"
+            ) from exc
+        scope_id = step.parameters.get("scope_id")
+        knowledge = save_knowledge(content, scope_type=scope_type, scope_id=scope_id)
         return f"Conhecimento salvo em RAW (id={knowledge.id})."
 
     if operation == "GET":
@@ -113,6 +136,20 @@ def execute_knowledge_tool(step: ModelStep) -> str:
         return (
             f"Nova versão criada: v{knowledge.version} (id={knowledge.id})."
         )
+
+    if operation == "LIST_SCOPE":
+        scope_type_raw = _require(step.parameters, "scope_type")
+        try:
+            scope_type = KnowledgeScope(scope_type_raw)
+        except ValueError as exc:
+            raise InvalidKnowledgeScopeParameterError(
+                f"scope_type inválido: {scope_type_raw!r}"
+            ) from exc
+        scope_id = step.parameters.get("scope_id")
+        knowledge_list = list_knowledge_for_scope(scope_type, scope_id)
+        if not knowledge_list:
+            return "Nenhum conhecimento encontrado para este escopo."
+        return "\n".join(f"- [{k.status.value}] {k.content}" for k in knowledge_list)
 
     raise UnknownKnowledgeOperationError(
         f"operação de conhecimento desconhecida: {operation!r}"

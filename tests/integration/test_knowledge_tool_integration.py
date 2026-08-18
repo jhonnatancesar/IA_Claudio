@@ -102,6 +102,49 @@ def test_new_version_operation_creates_version_and_marks_previous_stale(
     assert old.startswith("[RAW]")  # a versão antiga continua legível, só não é mais a atual
 
 
+def test_save_operation_accepts_application_scope(postgres_dsn, created_knowledge_id):
+    result = execute_knowledge_tool(
+        _step(
+            {
+                "operation": "SAVE",
+                "content": f"fato de aplicação {uuid.uuid4().hex[:8]}",
+                "scope_type": "APPLICATION",
+                "scope_id": "app-teste-053",
+            }
+        )
+    )
+    scope_knowledge_id = result.split("id=")[1].rstrip(").")
+
+    try:
+        listed = execute_knowledge_tool(
+            _step(
+                {
+                    "operation": "LIST_SCOPE",
+                    "scope_type": "APPLICATION",
+                    "scope_id": "app-teste-053",
+                }
+            )
+        )
+        assert "fato de aplicação" in listed
+    finally:
+        with psycopg.connect(postgres_dsn) as conn:
+            conn.execute("DELETE FROM knowledge WHERE root_id = %s", (scope_knowledge_id,))
+
+
+def test_list_scope_operation_returns_message_when_empty(postgres_dsn):
+    result = execute_knowledge_tool(
+        _step(
+            {
+                "operation": "LIST_SCOPE",
+                "scope_type": "APPLICATION",
+                "scope_id": f"app-vazio-{uuid.uuid4().hex[:8]}",
+            }
+        )
+    )
+
+    assert result == "Nenhum conhecimento encontrado para este escopo."
+
+
 def test_new_version_operation_rejects_stale_knowledge_id(postgres_dsn, created_knowledge_id):
     from app.knowledge.knowledge_model import KnowledgeVersionConflictError
 
