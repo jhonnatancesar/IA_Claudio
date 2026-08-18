@@ -141,11 +141,19 @@ push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
   `backend/app/confidence/revalidation_guardrail.py`,
   `ensure_volatile_information_revalidated`, novo código de erro 4007 — ver
   `docs/tasks/TASK-035.md`). Suíte completa: 282/282 testes aprovados.
+- **TASK-036** — concluída (tratamento de ambiguidade,
+  `backend/app/confidence/ambiguity_guardrail.py`,
+  `ensure_ambiguity_resolved_before_response`, novo código de erro 4008 —
+  ver `docs/tasks/TASK-036.md`). Suíte completa: 286/286 testes aprovados.
+  **Com esta TASK, o bloco "Confiança e guardrails" (TASK-031 a TASK-036)
+  está completo.**
 
-As demais 112 TASKs permanecem com status **Pendente**.
+**Checkpoint de 10 TASKs (AGENTS.md):** próximo checkpoint automático de
+push da `main` + atualização de `docs/HANDOFF.md` é na TASK-040.
 
-Próxima TASK executável: **TASK-036 — Implementar tratamento de
-ambiguidade**.
+As demais 111 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-037 — Criar ContextManager**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
