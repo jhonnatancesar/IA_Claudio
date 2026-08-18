@@ -178,11 +178,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `ContextWindowMonitor.requires_warning` — ver `docs/tasks/TASK-043.md`).
   Suíte completa: 323/323 testes aprovados. **Com esta TASK, o bloco
   "Contexto" (TASK-037 a TASK-043) está completo.**
+- **TASK-044** — concluída (modelo de memória persistente, schema
+  `backend/app/db/migrations/0003_memory.sql`,
+  `backend/app/memory/memory_model.py` — ver `docs/tasks/TASK-044.md`).
+  Suíte completa: 327/327 testes aprovados.
 
-As demais 104 TASKs permanecem com status **Pendente**.
+As demais 103 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-044 — Criar modelo de memória
-persistente**.
+Próxima TASK executável: **TASK-045 — Separar memória por
+usuário/aplicação**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

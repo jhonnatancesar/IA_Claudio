@@ -1,6 +1,6 @@
 # TASK-044 — Criar modelo de memória persistente
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,24 @@ Testes unitários de memória (persistência, busca, relevância, retenção ou 
 ## Documentação afetada
 
 `docs/MEMORY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Criado schema `backend/app/db/migrations/0003_memory.sql`
+(tabela `memories`: `id`, `owner_type` `USER`/`APPLICATION`, `owner_id`,
+`content`, `created_at`, `updated_at`), aplicado no PostgreSQL local real.
+Criado `backend/app/memory/memory_model.py`: `Memory` (dataclass),
+`save_memory(owner_type, owner_id, content)`, `get_memory(memory_id)` —
+persistência real via `psycopg`, mesmo padrão de `app.auth.users`
+(TASK-009). `InvalidOwnerTypeError` para `owner_type` desconhecido.
+
+`owner_type`/`owner_id` já existem no schema, mas garantir que uma consulta
+só devolve memórias do próprio dono (separação de fato) é TASK-045, não
+implementado aqui — `get_memory` busca só pelo `id`. Memory Tool
+(TASK-046), busca estruturada (TASK-047), relevância/frequência/last_used
+(TASK-048), retenção (TASK-049), limite fixo (TASK-050) e auditoria de
+remoção (TASK-051) não são desta TASK.
+
+4 testes de integração novos (persistência real contra o PostgreSQL local
+— sem teste unitário separado, mesmo padrão de `app.auth.users`). Suíte
+completa: 327/327 testes aprovados.
