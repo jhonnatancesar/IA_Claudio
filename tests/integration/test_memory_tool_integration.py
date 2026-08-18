@@ -78,3 +78,44 @@ def test_list_operation_returns_message_when_empty(postgres_dsn, unique_owner_id
     )
 
     assert result == "Nenhuma memória encontrada para este dono."
+
+
+def test_search_operation_returns_matching_memories(postgres_dsn, unique_owner_id):
+    execute_memory_tool(
+        _step(
+            {
+                "operation": "SAVE",
+                "owner_type": "USER",
+                "owner_id": unique_owner_id,
+                "content": "prefere café sem açúcar",
+            }
+        )
+    )
+
+    result = execute_memory_tool(
+        _step(
+            {
+                "operation": "SEARCH",
+                "owner_type": "USER",
+                "owner_id": unique_owner_id,
+                "query": "café",
+            }
+        )
+    )
+
+    assert "café" in result
+
+
+def test_search_operation_returns_message_when_no_match(postgres_dsn, unique_owner_id):
+    result = execute_memory_tool(
+        _step(
+            {
+                "operation": "SEARCH",
+                "owner_type": "USER",
+                "owner_id": unique_owner_id,
+                "query": "café",
+            }
+        )
+    )
+
+    assert result == "Nenhuma memória encontrada para esta busca."

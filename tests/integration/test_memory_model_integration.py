@@ -13,6 +13,7 @@ from app.memory.memory_model import (
     get_memory,
     list_memories_for_owner,
     save_memory,
+    search_memories,
 )
 
 
@@ -87,3 +88,53 @@ def test_list_memories_for_owner_empty_when_none_exist(postgres_dsn, unique_owne
 def test_list_memories_for_owner_rejects_invalid_owner_type(postgres_dsn):
     with pytest.raises(InvalidOwnerTypeError):
         list_memories_for_owner("SUPERUSER", "qualquer")
+
+
+def test_search_memories_finds_matching_content(postgres_dsn, unique_owner_id):
+    save_memory("USER", unique_owner_id, "prefere café sem açúcar")
+    save_memory("USER", unique_owner_id, "gosta de chá à tarde")
+
+    results = search_memories("USER", unique_owner_id, "café")
+
+    assert len(results) == 1
+    assert "café" in results[0].content
+
+
+def test_search_memories_is_case_insensitive(postgres_dsn, unique_owner_id):
+    save_memory("USER", unique_owner_id, "prefere Café sem açúcar")
+
+    results = search_memories("USER", unique_owner_id, "café")
+
+    assert len(results) == 1
+
+
+def test_search_memories_does_not_return_other_owner_matches(
+    postgres_dsn, unique_owner_id
+):
+    other_owner_id = f"{unique_owner_id}_outro"
+    save_memory("USER", other_owner_id, "prefere café sem açúcar")
+
+    try:
+        results = search_memories("USER", unique_owner_id, "café")
+
+        assert results == []
+    finally:
+        with psycopg.connect(postgres_dsn) as conn:
+            conn.execute("DELETE FROM memories WHERE owner_id = %s", (other_owner_id,))
+
+
+def test_search_memories_empty_when_no_match(postgres_dsn, unique_owner_id):
+    save_memory("USER", unique_owner_id, "gosta de chá à tarde")
+
+    assert search_memories("USER", unique_owner_id, "café") == []
+
+
+def test_search_memories_rejects_invalid_owner_type(postgres_dsn):
+    with pytest.raises(InvalidOwnerTypeError):
+        search_memories("SUPERUSER", "qualquer", "busca")
+
+
+@pytest.mark.parametrize("query", ["", "   "])
+def test_search_memories_rejects_empty_query(postgres_dsn, query):
+    with pytest.raises(ValueError):
+        search_memories("USER", "qualquer", query)

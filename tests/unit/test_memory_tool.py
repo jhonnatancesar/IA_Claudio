@@ -60,3 +60,24 @@ def test_list_missing_owner_type_raises():
 def test_list_missing_owner_id_raises():
     with pytest.raises(MissingToolParameterError):
         execute_memory_tool(_step({"operation": "LIST", "owner_type": "USER"}))
+
+
+def test_search_missing_owner_type_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_memory_tool(
+            _step({"operation": "SEARCH", "owner_id": "x", "query": "y"})
+        )
+
+
+def test_search_missing_owner_id_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_memory_tool(
+            _step({"operation": "SEARCH", "owner_type": "USER", "query": "y"})
+        )
+
+
+def test_search_missing_query_raises():
+    with pytest.raises(MissingToolParameterError):
+        execute_memory_tool(
+            _step({"operation": "SEARCH", "owner_type": "USER", "owner_id": "x"})
+        )

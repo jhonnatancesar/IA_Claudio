@@ -1,6 +1,6 @@
 # TASK-047 — Implementar busca estruturada de memória
 
-Status: Pendente
+Status: **Concluída em 2026-08-18**
 
 ## Objetivo
 
@@ -29,3 +29,16 @@ Testes unitários de memória (persistência, busca, relevância, retenção ou 
 ## Documentação afetada
 
 `docs/MEMORY.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-18. Acrescentado `search_memories(owner_type,
+owner_id, query)` em `backend/app/memory/memory_model.py`: busca
+estruturada por conteúdo (`content ILIKE '%query%'`, sem diferenciar
+maiúsculas/minúsculas), dentro do escopo do dono (mesma garantia de
+separação da TASK-045), mais recente primeiro. Sem ranking por relevância
+— isso é TASK-048. Exposta na Memory Tool (`backend/app/tools/memory_tool.py`)
+como nova operação `"SEARCH"` (exige `owner_type`/`owner_id`/`query`).
+
+12 testes novos (8 unitários/integração de `search_memories` +
+`execute_memory_tool`). Suíte completa: 353/353 testes aprovados.

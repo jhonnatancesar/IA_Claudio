@@ -52,16 +52,23 @@ recente primeiro.
 **Implementação (TASK-046):** `backend/app/tools/memory_tool.py` —
 `execute_memory_tool(step)`, assinatura compatível com
 `ExecutionOrchestrator.tool_executor` (`Callable[[ModelStep], str]`,
-TASK-026). Traduz `step.parameters["operation"]` (`"SAVE"`/`"LIST"`) em
-chamadas a `save_memory`/`list_memories_for_owner`: `SAVE` exige
-`owner_type`/`owner_id`/`content` e devolve confirmação com o `id` gerado;
-`LIST` exige `owner_type`/`owner_id` e devolve as memórias desse dono, uma
-por linha. `MissingToolParameterError`/`UnknownMemoryOperationError` para
-parâmetro ausente/operação desconhecida. Cadastro no Tool Registry
-(catálogo fixo de ferramentas conhecidas/autorizadas) é TASK-088 em
-diante — esta TASK só cria a função executável, sem se registrar em lugar
-nenhum. Busca estruturada por relevância (TASK-047) não é desta TASK —
-`LIST` devolve tudo, sem filtro de conteúdo.
+TASK-026). Traduz `step.parameters["operation"]` (`"SAVE"`/`"LIST"`/
+`"SEARCH"`) em chamadas a `save_memory`/`list_memories_for_owner`/
+`search_memories`: `SAVE` exige `owner_type`/`owner_id`/`content` e
+devolve confirmação com o `id` gerado; `LIST` exige `owner_type`/
+`owner_id` e devolve as memórias desse dono, uma por linha.
+`MissingToolParameterError`/`UnknownMemoryOperationError` para parâmetro
+ausente/operação desconhecida. Cadastro no Tool Registry (catálogo fixo de
+ferramentas conhecidas/autorizadas) é TASK-088 em diante — esta TASK só
+cria a função executável, sem se registrar em lugar nenhum.
+
+**Implementação (TASK-047):** `search_memories(owner_type, owner_id,
+query)` em `backend/app/memory/memory_model.py` — busca estruturada por
+conteúdo (`content ILIKE '%query%'`, sem diferenciar maiúsculas/
+minúsculas), dentro do escopo do dono (mesma garantia de separação da
+TASK-045), mais recente primeiro. Sem ranking por relevância — isso é
+TASK-048. Exposta na Memory Tool como `operation: "SEARCH"` (exige
+`owner_type`/`owner_id`/`query`).
 
 ## TASKs relacionadas
 
