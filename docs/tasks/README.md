@@ -209,10 +209,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/knowledge/knowledge_model.py`, `KnowledgeStatus`/
   `advance_knowledge_status` — ver `docs/tasks/TASK-052.md`). Suíte
   completa: 391/391 testes aprovados.
+- **TASK-053** — concluída (Knowledge Tool,
+  `backend/app/tools/knowledge_tool.py`, `execute_knowledge_tool` — ver
+  `docs/tasks/TASK-053.md`). Suíte completa: 402/402 testes aprovados.
 
-As demais 95 TASKs permanecem com status **Pendente**.
+As demais 94 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-053 — Implementar Knowledge Tool**.
+Próxima TASK executável: **TASK-054 — Implementar versionamento de
+conhecimento**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
