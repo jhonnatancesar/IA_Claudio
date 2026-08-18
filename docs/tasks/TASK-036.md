@@ -1,6 +1,6 @@
 # TASK-036 — Implementar tratamento de ambiguidade
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -29,3 +29,24 @@ Testes unitários de confiança/guardrails, incluindo casos de bloqueio (LOW), r
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado
+`backend/app/confidence/ambiguity_guardrail.py`:
+`ensure_ambiguity_resolved_before_response(is_ambiguous,
+clarification_requested)`, que levanta `ClaudiaoError` (novo código `4008`,
+`UNRESOLVED_AMBIGUITY`) quando há ambiguidade real sem pergunta de
+esclarecimento — mesmo padrão de guarda isolada de `response_guardrail.py`
+(TASK-034) e `revalidation_guardrail.py` (TASK-035). O protocolo (TASK-016)
+não tem `action` própria de "pergunta"; perguntar é um `RESPOND` cujo
+`reason` pergunta em vez de concluir, por isso a guarda recebe
+`clarification_requested` como booleano explícito em vez de tentar
+distingui-lo do conteúdo da resposta. Avaliar de fato se há ambiguidade
+(`ContextManager`, TASK-037 em diante) e acionar esta guarda no fluxo real
+do orquestrador não são desta TASK.
+
+Com esta TASK, o bloco "Confiança e guardrails" (TASK-031 a TASK-036) está
+completo.
+
+3 testes unitários novos. Suíte completa: 286/286 testes aprovados.

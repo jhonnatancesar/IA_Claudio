@@ -87,6 +87,17 @@ Tipos de fonte: `PRIMARY / SECONDARY / UNKNOWN`. Confiabilidade: `LOW / MEDIUM /
 - Ambiguidade real gera pergunta ao usuário/aplicação em vez de suposição (TASK-036,
   ver também `ORCHESTRATOR.md`).
 
+**Implementação (TASK-036):** `backend/app/confidence/ambiguity_guardrail.py`
+— `ensure_ambiguity_resolved_before_response(is_ambiguous,
+clarification_requested)`, novo código de erro `4008`
+(`UNRESOLVED_AMBIGUITY`). Bloqueia com `ClaudiaoError` quando há ambiguidade
+real e nenhuma pergunta de esclarecimento foi feita; uma resposta que é a
+própria pergunta (`clarification_requested=True`) passa livre mesmo com
+ambiguidade. O protocolo (TASK-016) não tem uma `action` própria de
+"pergunta" — perguntar é um `RESPOND` cujo `reason` pergunta em vez de
+concluir. Avaliar de fato se há ambiguidade (`ContextManager`, TASK-037+) e
+acionar esta guarda no fluxo real do orquestrador não são desta TASK.
+
 **Implementação (TASK-035):**
 `backend/app/confidence/revalidation_guardrail.py` —
 `ensure_volatile_information_revalidated(volatility, was_revalidated)`, novo
