@@ -13,9 +13,9 @@ estão resumidas aqui.
 
 ## Checkpoint atual
 
-**Data:** 2026-08-16 · **TASK:** TASK-030 · **TASKs concluídas:** 30 de 147
-(TASK-001 a TASK-030) · **Próxima TASK executável:** TASK-031 — Implementar
-confiança LOW/MEDIUM/HIGH do modelo.
+**Data:** 2026-08-18 · **TASK:** TASK-040 · **TASKs concluídas:** 40 de 147
+(TASK-001 a TASK-040) · **Próxima TASK executável:** TASK-041 — Implementar
+detecção de troca de assunto.
 
 ## O que já existe (resumo, não repete `docs/tasks/`)
 
@@ -44,7 +44,23 @@ confiança LOW/MEDIUM/HIGH do modelo.
   planejamento inicial, validação de plano, execução por etapas com
   observações realimentadas ao modelo, replanejamento completo, `max_steps`,
   detecção de loop e cancelamento (`CancellationToken`).
-- **Testes:** 247/247 aprovados (unitários + integração real contra PostgreSQL
+- **Bloco "Confiança e guardrails" completo (TASK-031 a TASK-036):**
+  confiança do modelo (`get_model_confidence`, `is_at_least`), volatilidade
+  (`Volatility`, `requires_revalidation`), Confidence Engine (`EvidenceStrength`,
+  `calculate_final_confidence`), bloqueio de resposta conclusiva em `LOW`
+  (código 4006), regra obrigatória de revalidação de informação `VOLATILE`
+  (código 4007), tratamento de ambiguidade — bloqueio de resposta sem pergunta
+  de esclarecimento (código 4008). Todos os guardrails de bloqueio recebem a
+  avaliação (confiança final, volatilidade, ambiguidade) já pronta de quem
+  chama — nenhum é acionado ainda no fluxo real do `ExecutionOrchestrator`.
+- **Bloco "Contexto" em andamento (TASK-037 a TASK-040 concluídas, de
+  TASK-037 a TASK-043):** `ContextManager` — uma instância por conversa,
+  guardando assunto principal (`set_active_topic`), entidades recentes
+  (`track_entity`, ordem de recência), referências implícitas
+  (`set_implicit_reference`/`resolve_reference`) e correções do usuário
+  (`record_correction`). Faltam: detecção de troca de assunto (TASK-041) e
+  monitor de janela de contexto + aviso em 80% (TASK-042/TASK-043).
+- **Testes:** 306/306 aprovados (unitários + integração real contra PostgreSQL
   e Ollama locais). Rodar com:
   ```
   python -m pytest tests/ -v --basetemp=".pytest_tmp"
@@ -62,6 +78,8 @@ confiança LOW/MEDIUM/HIGH do modelo.
 | `llm/` | Completo (TASK-014 a TASK-019) | `provider.py`, `providers/ollama_provider.py`, `protocol.py`, `protocol_validator.py`, `prompt.py`, `prompt_composer.py` |
 | `policies/` | Implementado (TASK-022) | `execution_policy.py` |
 | `orchestrator/` | Completo (TASK-020 a TASK-030) | `execution.py`, `execution_id.py`, `orchestrator.py`, `planner.py`, `plan_validator.py`, `replanner.py`, `loop_detector.py`, `cancellation.py` |
+| `confidence/` | Completo (TASK-031 a TASK-036) | `model_confidence.py`, `volatility.py`, `confidence_engine.py`, `response_guardrail.py`, `revalidation_guardrail.py`, `ambiguity_guardrail.py` |
+| `context/` | Em andamento (TASK-037 a TASK-040 de TASK-037 a TASK-043) | `context_manager.py` |
 | Demais módulos (`api/`, `memory/`, `knowledge/`, `panel/`, `tools/`, ...) | Só README.md, sem código | — |
 
 ## Decisões técnicas já tomadas (ver `docs/DECISION_LOG.md` para o texto completo)
@@ -148,8 +166,23 @@ confiança LOW/MEDIUM/HIGH do modelo.
    fake (ver `_InfiniteToolProvider`/`_ProgressingToolProvider` em
    `tests/unit/test_max_steps.py`/`test_orchestrator_loop_detection.py`).
 10. **Checkpoint de 10 em 10 é contado a partir do checkpoint anterior, não
-    arredondado** — o segundo checkpoint foi na TASK-020, então o terceiro é
-    exatamente na TASK-030 (não 040). Simples soma, sem lógica escondida.
+    arredondado** — o segundo checkpoint foi na TASK-020, então o terceiro
+    foi na TASK-030 e este (quarto) é exatamente na TASK-040. Simples soma,
+    sem lógica escondida.
+11. **Padrão de guardrail isolado (TASK-034/035/036):** quando a especificação
+    pede um comportamento (bloquear LOW, exigir revalidação de VOLATILE,
+    tratar ambiguidade) mas os sistemas reais que alimentariam esse
+    comportamento ainda não existem (evidências reais, Knowledge Tool,
+    avaliação de ambiguidade do `ContextManager`), a solução adotada é criar
+    a função de guarda isolada recebendo o resultado já avaliado como
+    parâmetro explícito (booleano/enum), em vez de tentar calculá-lo. Quem
+    acopla a guarda ao fluxo real do orquestrador é uma TASK futura,
+    explicitamente citada no docstring/Encerramento de cada uma.
+12. **`ContextManager` (TASK-037) nasceu com todos os campos já presentes**
+    (vazios/`None`), e cada TASK seguinte (038/039/040) só acrescenta
+    métodos que operam sobre campos já existentes — não redesenha o
+    dataclass. Mesmo padrão de `Execution` (TASK-020), que já tinha
+    `observations` antes de `set_last_observation` existir (TASK-026).
 
 ## Workflow que está sendo seguido
 
@@ -165,17 +198,15 @@ termina, sem precisar pedir); não são deletadas depois do merge.
 
 ## Próximos passos imediatos
 
-**TASK-031 — Implementar confiança LOW/MEDIUM/HIGH do modelo** (dependência:
-TASK-030 concluída). Início do bloco "Confiança e guardrails" (TASK-031 a
-TASK-036). O protocolo (TASK-016) já tem `Confidence` (`LOW`/`MEDIUM`/`HIGH`)
-como enum do campo `confidence` de cada `ModelStep` — TASK-031 provavelmente
-formaliza essa leitura/uso pelo orquestrador (hoje o campo existe e é
-validado, mas nada consome seu valor para tomar decisão). TASK-032
-(volatilidade), TASK-033 (confidence engine — cálculo da confiança final
-combinando confiança do modelo + evidências + reputação de fontes), TASK-034
-(bloqueio de resposta em LOW), TASK-035 (revalidação obrigatória de
-informação volátil), TASK-036 (tratamento de ambiguidade) — ver
-`docs/TRUST_GUARDRAILS.md`.
+**TASK-041 — Implementar detecção de troca de assunto** (dependência:
+TASK-040 concluída). `ContextManager.set_active_topic` (TASK-038) já troca o
+valor do assunto principal quando chamado, mas não decide *quando* chamar —
+TASK-041 deve decidir isso (critério de detecção não detalhado na
+especificação mestre, seção 9, além de "limpa referências antigas quando
+houver mudança real de tópico"). Prováveis candidatos a limpar junto:
+`recent_entities`/`implicit_references`. TASK-042 (monitor de janela de
+contexto) e TASK-043 (aviso em 80%) fecham o bloco "Contexto" — depois disso
+começa o bloco "Memória" (TASK-044 a TASK-051, ver `docs/BACKLOG.md`).
 
 ## Histórico de checkpoints
 
@@ -185,9 +216,14 @@ informação volátil), TASK-036 (tratamento de ambiguidade) — ver
   identidade" e "LLM" completos; bloco "Orquestração" iniciado (modelo de
   `Execution`). Ollama instalado e rodando localmente (sem modelo baixado).
   161/161 testes.
-- **2026-08-16 — TASK-030 (este checkpoint):** terceiro checkpoint — feito
-  com atraso (deveria ter sido automático ao concluir a TASK-030, só rodou
-  quando o usuário perguntou pelo status). Bloco "Orquestração" completo:
-  ciclo inteiro de execução (planejamento, validação, execução por etapas,
-  replanejamento, `max_steps`, detecção de loop, cancelamento). 247/247
-  testes.
+- **2026-08-16 — TASK-030:** terceiro checkpoint — feito com atraso (deveria
+  ter sido automático ao concluir a TASK-030, só rodou quando o usuário
+  perguntou pelo status). Bloco "Orquestração" completo: ciclo inteiro de
+  execução (planejamento, validação, execução por etapas, replanejamento,
+  `max_steps`, detecção de loop, cancelamento). 247/247 testes.
+- **2026-08-18 — TASK-040 (este checkpoint):** quarto checkpoint, no prazo.
+  Bloco "Confiança e guardrails" completo (confiança do modelo, volatilidade,
+  Confidence Engine, três guardrails de bloqueio isolados — LOW, VOLATILE não
+  revalidada, ambiguidade não resolvida). Bloco "Contexto" iniciado:
+  `ContextManager` com assunto principal, rastreamento de entidades/
+  referências implícitas e correção de contexto. 306/306 testes.
