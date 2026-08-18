@@ -6,6 +6,17 @@ Fonte: seções 13, 14 e 15 da especificação mestre.
 
 `LOW / MEDIUM / HIGH`.
 
+**Implementação (TASK-031):** o enum `Confidence` já existe em
+`app.llm.protocol` (TASK-016) — vocabulário compartilhado do protocolo JSON,
+reaproveitado aqui, não duplicado. `backend/app/confidence/model_confidence.py`
+acrescenta o que faltava: `CONFIDENCE_ORDER` (ordem explícita `LOW < MEDIUM <
+HIGH`, já que o `StrEnum` sozinho não é ordenável), `is_at_least(confidence,
+minimum)`, e `get_model_confidence(execution)` — lê a confiança que o modelo
+declarou na etapa `RESPOND` da execução (`NoRespondStepError` se ainda não
+houver uma). O **cálculo da confiança final** (combinando confiança do
+modelo, evidências, reputação de fontes e contradições) é a Confidence
+Engine, TASK-033 — não implementado aqui.
+
 ## Volatilidade
 
 `VOLATILE / NON_VOLATILE`. Informação `VOLATILE` deve ser **revalidada sempre que for

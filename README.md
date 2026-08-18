@@ -11,11 +11,9 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-030** concluídas — blocos "Fundação", "Segurança e
-identidade", "LLM" e "Orquestração" completos. O `ExecutionOrchestrator`
-cobre o ciclo inteiro: planejamento, validação de plano, execução por
-etapas com ferramentas, replanejamento, `max_steps`, detecção de loop e
-cancelamento. Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado
+**TASK-001** a **TASK-031** concluídas — blocos "Fundação", "Segurança e
+identidade", "LLM" e "Orquestração" completos; bloco "Confiança e
+guardrails" iniciado. Ver [docs/HANDOFF.md](docs/HANDOFF.md) para o estado
 detalhado do projeto.
 
 ## Documentação
@@ -39,5 +37,5 @@ detalhado do projeto.
 
 ## Próxima TASK
 
-**TASK-031 — Implementar confiança LOW/MEDIUM/HIGH do modelo**
-([docs/tasks/TASK-031.md](docs/tasks/TASK-031.md)).
+**TASK-032 — Implementar volatilidade VOLATILE/NON_VOLATILE**
+([docs/tasks/TASK-032.md](docs/tasks/TASK-032.md)).

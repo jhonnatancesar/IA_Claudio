@@ -1,6 +1,6 @@
 # TASK-031 — Implementar confiança LOW/MEDIUM/HIGH do modelo
 
-Status: Pendente
+Status: **Concluída em 2026-08-16**
 
 ## Objetivo
 
@@ -28,4 +28,18 @@ Testes unitários de confiança/guardrails, incluindo casos de bloqueio (LOW), r
 
 ## Documentação afetada
 
-`docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+`docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `backend/app/confidence/README.md`
+
+## Encerramento
+
+Concluída em 2026-08-16. Criado `backend/app/confidence/model_confidence.py`:
+`CONFIDENCE_ORDER` (ordem explícita `LOW < MEDIUM < HIGH`), `is_at_least()`,
+`get_model_confidence(execution)` (lê a confiança da etapa `RESPOND`,
+`NoRespondStepError` se ainda não houver uma). Reaproveita `Confidence` de
+`app.llm.protocol` (TASK-016), sem duplicar. Cálculo da confiança final
+(Confidence Engine) é TASK-033; guardrails que agem sobre a confiança são
+TASK-034/TASK-035/TASK-036 — nenhum implementado aqui.
+
+10 testes unitários novos (ordem, `is_at_least` parametrizado, leitura da
+confiança em execuções com e sem `RESPOND`, ignorando etapas `USE_TOOL`
+intermediárias). Suíte completa: 258/258 testes aprovados.
