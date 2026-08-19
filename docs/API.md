@@ -48,6 +48,22 @@ validação de schema (isso é TASK-068); a execução nunca é processada de
 fato aqui (TASK-069), nem tem timeout (TASK-070/071), nem o formato final
 de resposta de sucesso (TASK-072), nem rastreio de consumo (TASK-073).
 
+**Implementação (TASK-068):** `backend/app/api/schemas.py` —
+`ExecutionRequest` (Pydantic): `objective`/`usage_type`/
+`web_search_allowed`/`timeout_seconds` obrigatórios ("a aplicação envia
+contexto, tipo de uso, política, permissão de pesquisa, timeout, limites
+e dados necessários... se faltar campo obrigatório, retorna erro
+imediatamente, sem inferir ou preencher"); `context`/`max_steps`
+opcionais, `None` por padrão explícito, nunca inferidos de outro campo.
+`POST /v1/executions` agora recebe `payload: ExecutionRequest` em vez de
+`dict` genérico — o FastAPI rejeita automaticamente um corpo que não
+bate com o schema. Um novo handler em `app.py` converte
+`RequestValidationError` para o formato JSON de erro padrão do projeto,
+reaproveitando os códigos genéricos já existentes desde a fundação
+(`MISSING_REQUIRED_FIELD`, 1001; `INVALID_FIELD_VALUE`, 1002 — TASK-007),
+em vez de criar códigos novos só para isto. Montar a `ExecutionPolicy`
+de fato a partir do payload validado é TASK-069, não implementado aqui.
+
 ## TASKs relacionadas
 
 TASK-067 a TASK-073: API local, validação de payload, execução síncrona, timeout,
