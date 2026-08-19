@@ -1,13 +1,11 @@
-"""Fila FIFO (TASK-074).
+"""Fila FIFO (TASK-074), persistida no PostgreSQL (TASK-075).
 
 Seção 27 da especificação mestre (`docs/QUEUE.md`): "A V1 tem fila FIFO
-persistida no PostgreSQL." Esta TASK cria só a fila em memória — ordem de
+persistida no PostgreSQL." TASK-074 criou a fila em memória — ordem de
 processamento (primeiro item enfileirado é o primeiro tirado) e o ciclo
 de vida de cada item (`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, mesmo
 conjunto documentado em `docs/QUEUE.md`), no mesmo espírito do modelo de
-`Execution` (TASK-020): dataclass com transições de estado válidas,
-sem depender de banco. Persistência real no PostgreSQL é TASK-075, não
-implementada aqui.
+`Execution` (TASK-020): dataclass com transições de estado válidas.
 
 Sem retry automático (seção 27): uma falha marca o item como `FAILED` e o
 processamento segue para o próximo item da fila — não há reprocessamento
@@ -18,6 +16,19 @@ nem retomada de execução interrompida (fora da V1,
 que está enfileirando (execução, ferramenta, etc.); isso é decidido por
 quem a usa, fora desta TASK (nenhuma TASK conecta a fila a
 `POST /v1/executions`, que continua síncrono ponta a ponta).
+
+Esta TASK (TASK-075) acrescenta `save_queue_item`/`get_queue_item`/
+`list_queue_items`: persistência real em `queue_items`
+(`backend/app/db/migrations/0016_queue_items.sql`), mecânica e explícita
+— `FifoQueue.enqueue`/`dequeue` (TASK-074) continuam puramente em
+memória, sem chamar o banco sozinhas; quem quiser durabilidade chama
+`save_queue_item` a cada transição (`enqueue`/`start`/`complete`/
+`fail`), mesmo padrão de `app.usage.usage_model.record_usage` (TASK-073):
+função explícita chamada por quem processa o item, não um efeito colateral
+escondido dentro do método de transição. `payload` precisa ser
+JSON-serializável para ser persistido (guardado como `jsonb`) — estados
+adicionais/histórico de transições (TASK-076) e retenção/limpeza
+(TASK-077) não são desta TASK.
 """
 
 from __future__ import annotations
@@ -28,6 +39,10 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
 from uuid import uuid4
+
+from psycopg.types.json import Json
+
+from app.db.connection import connect
 
 
 class QueueItemStatus(StrEnum):
@@ -135,3 +150,69 @@ class FifoQueue:
     @property
     def is_empty(self) -> bool:
         return len(self._items) == 0
+
+
+_SELECT_COLUMNS = "id, payload, status, error, created_at, finished_at"
+
+
+def _queue_item_from_row(row: tuple) -> QueueItem:
+    item_id, payload, status, error, created_at, finished_at = row
+    return QueueItem(
+        item_id=str(item_id),
+        payload=payload,
+        status=QueueItemStatus(status),
+        error=error,
+        created_at=created_at,
+        finished_at=finished_at,
+    )
+
+
+def save_queue_item(item: QueueItem) -> None:
+    """Persiste o estado atual de `item` no PostgreSQL (TASK-075):
+    `INSERT` na primeira vez, `UPDATE` (via `ON CONFLICT`) nas seguintes,
+    refletindo `status`/`error`/`finished_at` atuais. `item.payload`
+    precisa ser JSON-serializável — é guardado como `jsonb`.
+
+    Mecânico — só grava o que já está em `item`, não decide quando
+    chamar isto."""
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO queue_items (id, payload, status, error, created_at, finished_at) "
+            "VALUES (%s, %s, %s, %s, %s, %s) "
+            "ON CONFLICT (id) DO UPDATE SET "
+            "status = EXCLUDED.status, error = EXCLUDED.error, "
+            "finished_at = EXCLUDED.finished_at",
+            (
+                item.item_id,
+                Json(item.payload),
+                item.status.value,
+                item.error,
+                item.created_at,
+                item.finished_at,
+            ),
+        )
+
+
+def get_queue_item(item_id: str) -> QueueItem | None:
+    """Busca um item persistido pelo `item_id`. Retorna `None` se não
+    existir."""
+    with connect() as conn:
+        row = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM queue_items WHERE id = %s",
+            (item_id,),
+        ).fetchone()
+
+    if row is None:
+        return None
+    return _queue_item_from_row(row)
+
+
+def list_queue_items() -> list[QueueItem]:
+    """Lista todos os itens persistidos, em ordem FIFO (`created_at`
+    crescente)."""
+    with connect() as conn:
+        rows = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM queue_items ORDER BY created_at ASC"
+        ).fetchall()
+
+    return [_queue_item_from_row(row) for row in rows]
