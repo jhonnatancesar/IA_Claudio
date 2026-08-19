@@ -40,6 +40,19 @@ fontes, avaliada dinamicamente e registrada para reutilização futura"
 (seção 14/15). Chamar `set_source_reputation` com o mesmo valor já
 vigente não grava histórico (não houve mudança real).
 `list_reputation_history` lê esse histórico, mais antigo primeiro.
+
+Esta TASK (TASK-064) acrescenta a blacklist: "todo bloqueio guarda
+origem, motivo, data e responsável" (seção 14/15). `sources.is_blocked`
+é o estado atual; `source_blacklist_entries`
+(`backend/app/db/migrations/0014_source_blacklist.sql`) é o histórico
+completo de bloqueios/desbloqueios, mesmo princípio de
+`source_reputation_history` (TASK-063). `origin` (`BlockOrigin`,
+`AGENT`/`ADMIN`) distingue quem iniciou a ação; `responsible` é a
+identidade específica (ex.: usuário ADMIN), `None` quando `origin =
+AGENT`. `block_source`/`unblock_source` são mecânicos — decidir *quando*
+bloquear automaticamente (TASK-065) e impor que só `ADMIN` pode
+desbloquear (TASK-066) não são desta TASK; aqui, qualquer chamador pode
+bloquear ou desbloquear.
 """
 
 from __future__ import annotations
@@ -51,7 +64,9 @@ from uuid import UUID
 
 from app.db.connection import connect
 
-_SELECT_COLUMNS = "id, identifier, created_at, source_type, reputation"
+_SELECT_COLUMNS = (
+    "id, identifier, created_at, source_type, reputation, is_blocked"
+)
 
 
 class SourceType(StrEnum):
@@ -66,9 +81,24 @@ class SourceReputation(StrEnum):
     HIGH = "HIGH"
 
 
+class BlockOrigin(StrEnum):
+    AGENT = "AGENT"
+    ADMIN = "ADMIN"
+
+
+class BlacklistAction(StrEnum):
+    BLOCK = "BLOCK"
+    UNBLOCK = "UNBLOCK"
+
+
 class SourceNotFoundError(ValueError):
     """Levantado quando um `source_id` não corresponde a nenhuma fonte
     existente."""
+
+
+class SourceBlacklistStateError(ValueError):
+    """Levantado ao bloquear uma fonte já bloqueada, ou desbloquear uma
+    que não está bloqueada."""
 
 
 @dataclass(frozen=True)
@@ -78,16 +108,18 @@ class Source:
     created_at: datetime
     source_type: SourceType
     reputation: SourceReputation
+    is_blocked: bool
 
 
 def _source_from_row(row: tuple) -> Source:
-    source_id, identifier, created_at, source_type, reputation = row
+    source_id, identifier, created_at, source_type, reputation, is_blocked = row
     return Source(
         id=source_id,
         identifier=identifier,
         created_at=created_at,
         source_type=SourceType(source_type),
         reputation=SourceReputation(reputation),
+        is_blocked=is_blocked,
     )
 
 
@@ -218,6 +250,133 @@ def list_reputation_history(source_id: UUID) -> list[ReputationHistoryEntry]:
             previous_reputation=SourceReputation(row[2]),
             new_reputation=SourceReputation(row[3]),
             changed_at=row[4],
+        )
+        for row in rows
+    ]
+
+
+@dataclass(frozen=True)
+class BlacklistEntry:
+    id: int
+    source_id: UUID
+    action: BlacklistAction
+    origin: BlockOrigin
+    responsible: str | None
+    reason: str
+    created_at: datetime
+
+
+def _require_reason(reason: str) -> None:
+    if not reason or not reason.strip():
+        raise ValueError("reason não pode ser vazio")
+
+
+def block_source(
+    source_id: UUID,
+    origin: BlockOrigin,
+    reason: str,
+    responsible: str | None = None,
+) -> Source:
+    """Bloqueia uma fonte (TASK-064): marca `is_blocked=True` e grava uma
+    linha em `source_blacklist_entries` (`action=BLOCK`) com
+    `origin`/`responsible`/`reason`, na mesma transação. Levanta
+    `SourceNotFoundError` se `source_id` não existir,
+    `SourceBlacklistStateError` se a fonte já estiver bloqueada, e
+    `ValueError` para `reason` vazio.
+
+    Mecânico — decidir *quando* bloquear automaticamente é TASK-065, e
+    quem pode chamar isto (`ADMIN` sempre; o agente só nesta direção,
+    nunca para desbloquear) é aplicado por quem chama, não aqui."""
+    _require_reason(reason)
+
+    with connect() as conn:
+        current_row = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM sources WHERE id = %s",
+            (source_id,),
+        ).fetchone()
+        if current_row is None:
+            raise SourceNotFoundError(f"fonte não encontrada: {source_id!r}")
+        current = _source_from_row(current_row)
+        if current.is_blocked:
+            raise SourceBlacklistStateError(f"fonte já está bloqueada: {source_id!r}")
+
+        conn.execute(
+            "INSERT INTO source_blacklist_entries "
+            "(source_id, action, origin, responsible, reason) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (source_id, BlacklistAction.BLOCK.value, origin.value, responsible, reason),
+        )
+        row = conn.execute(
+            "UPDATE sources SET is_blocked = true WHERE id = %s "
+            f"RETURNING {_SELECT_COLUMNS}",
+            (source_id,),
+        ).fetchone()
+
+    return _source_from_row(row)
+
+
+def unblock_source(
+    source_id: UUID,
+    origin: BlockOrigin,
+    reason: str,
+    responsible: str | None = None,
+) -> Source:
+    """Desbloqueia uma fonte (TASK-064): marca `is_blocked=False` e grava
+    uma linha em `source_blacklist_entries` (`action=UNBLOCK`), na mesma
+    transação. Levanta `SourceNotFoundError` se `source_id` não existir,
+    `SourceBlacklistStateError` se a fonte não estiver bloqueada, e
+    `ValueError` para `reason` vazio.
+
+    Mecânico — a regra "só `ADMIN` pode desbloquear" é TASK-066, não
+    imposta aqui; quem chama decide se está autorizado."""
+    _require_reason(reason)
+
+    with connect() as conn:
+        current_row = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM sources WHERE id = %s",
+            (source_id,),
+        ).fetchone()
+        if current_row is None:
+            raise SourceNotFoundError(f"fonte não encontrada: {source_id!r}")
+        current = _source_from_row(current_row)
+        if not current.is_blocked:
+            raise SourceBlacklistStateError(f"fonte não está bloqueada: {source_id!r}")
+
+        conn.execute(
+            "INSERT INTO source_blacklist_entries "
+            "(source_id, action, origin, responsible, reason) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (source_id, BlacklistAction.UNBLOCK.value, origin.value, responsible, reason),
+        )
+        row = conn.execute(
+            "UPDATE sources SET is_blocked = false WHERE id = %s "
+            f"RETURNING {_SELECT_COLUMNS}",
+            (source_id,),
+        ).fetchone()
+
+    return _source_from_row(row)
+
+
+def list_blacklist_entries(source_id: UUID) -> list[BlacklistEntry]:
+    """Lista o histórico de bloqueios/desbloqueios de uma fonte, do mais
+    antigo para o mais recente."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, source_id, action, origin, responsible, reason, created_at "
+            "FROM source_blacklist_entries WHERE source_id = %s "
+            "ORDER BY created_at ASC",
+            (source_id,),
+        ).fetchall()
+
+    return [
+        BlacklistEntry(
+            id=row[0],
+            source_id=row[1],
+            action=BlacklistAction(row[2]),
+            origin=BlockOrigin(row[3]),
+            responsible=row[4],
+            reason=row[5],
+            created_at=row[6],
         )
         for row in rows
     ]

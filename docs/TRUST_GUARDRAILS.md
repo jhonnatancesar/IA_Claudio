@@ -131,6 +131,22 @@ primeiro.
 - Todo bloqueio guarda origem, motivo, data e responsável.
 - Bloqueio automático gera alerta no painel.
 
+**Implementação (TASK-064):** `sources.is_blocked` (estado atual) e
+`source_blacklist_entries`
+(`backend/app/db/migrations/0014_source_blacklist.sql`, histórico
+completo — mesmo princípio de `source_reputation_history`, TASK-063).
+`block_source(source_id, origin, reason, responsible=None)`/
+`unblock_source(source_id, origin, reason, responsible=None)` — `origin`
+(`BlockOrigin`: `AGENT`/`ADMIN`) e `responsible` (identidade específica,
+`None` quando `origin=AGENT`) cobrem "origem... e responsável";
+`reason`/`created_at` cobrem "motivo... e data". Mecânicos:
+`SourceBlacklistStateError` para bloquear já bloqueada ou desbloquear
+não bloqueada, mas nenhuma checagem de "quem pode chamar isto" — decidir
+*quando* bloquear automaticamente é TASK-065, e impor que só `ADMIN`
+pode desbloquear é TASK-066, nenhuma das duas implementada aqui.
+`list_blacklist_entries(source_id)` lê o histórico, mais antigo
+primeiro.
+
 ## Guardrails de resposta
 
 - Resposta conclusiva é bloqueada quando a confiança final é `LOW` (TASK-034).
