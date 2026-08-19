@@ -244,11 +244,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-061** — concluída (reputação LOW/MEDIUM/HIGH,
   `SourceReputation`/`set_source_reputation` — ver
   `docs/tasks/TASK-061.md`). Suíte completa: 492/492 testes aprovados.
+- **TASK-062** — concluída (atualização de reputação,
+  `backend/app/sources/reputation_rule.py`, `update_source_reputation` —
+  ver `docs/tasks/TASK-062.md`). Suíte completa: 502/502 testes
+  aprovados.
 
-As demais 86 TASKs permanecem com status **Pendente**.
+As demais 85 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-062 — Implementar atualização de
-reputação**.
+Próxima TASK executável: **TASK-063 — Criar histórico de reputação**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

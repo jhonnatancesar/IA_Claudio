@@ -15,10 +15,16 @@ Cadastro de fontes (PRIMARY/SECONDARY/UNKNOWN), reputação (LOW/MEDIUM/HIGH), h
   source_type)` (TASK-060) — reclassifica uma fonte já registrada.
   `SourceReputation` (`LOW`/`MEDIUM`/`HIGH`)/`set_source_reputation
   (source_id, reputation)` (TASK-061) — troca mecânica de reputação, sem
-  a regra de quando trocar (TASK-062). Blacklist (TASK-064+) não é desta
-  TASK.
+  a regra de quando trocar.
+- `reputation_rule.py` (TASK-062) — `update_reputation(current,
+  was_accurate)` (função pura: um degrau por vez,
+  `HIGH↔MEDIUM↔LOW`) e `update_source_reputation(source_id,
+  was_accurate)` — busca a fonte, calcula a nova reputação e só grava se
+  mudar. Histórico de mudanças (TASK-063) e blacklist (TASK-064+) não
+  são desta TASK.
 
-Testes em `tests/integration/test_source_registry_integration.py`
-(persistência/idempotência/tipo/reputação reais) e
-`tests/unit/test_source_registry.py` (validação de `identifier` vazio,
-enums).
+Testes em `tests/integration/test_source_registry_integration.py`,
+`tests/integration/test_reputation_rule_integration.py`
+(persistência/idempotência/tipo/reputação/atualização reais) e
+`tests/unit/test_source_registry.py`/`tests/unit/test_reputation_rule.py`
+(validação de `identifier` vazio, enums, regra pura).

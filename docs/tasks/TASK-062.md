@@ -1,6 +1,6 @@
 # TASK-062 — Implementar atualização de reputação
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,21 @@ Testes unitários de fontes/reputação/blacklist para este comportamento espec�
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Criado `backend/app/sources/reputation_rule.py`:
+`update_reputation(current, was_accurate)` (função pura) — resultado
+incorreto rebaixa um degrau (`HIGH → MEDIUM → LOW`, permanece `LOW`),
+resultado correto eleva um degrau (`LOW → MEDIUM → HIGH`, permanece
+`HIGH`); "um degrau por vez" é o critério mais simples e defensável, já
+que a especificação não detalha a magnitude do ajuste.
+`update_source_reputation(source_id, was_accurate)` busca a fonte,
+calcula a nova reputação e só grava (`set_source_reputation`, TASK-061)
+se realmente mudar.
+
+Histórico de cada mudança (quando, por quê) é TASK-063, não implementado
+aqui.
+
+10 testes novos (6 unitários de `update_reputation`, função pura + 4 de
+integração real). Suíte completa: 502/502 testes aprovados.
