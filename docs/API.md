@@ -82,12 +82,27 @@ runtime do orquestrador que não são `ClaudiaoError`) são convertidas para
 erros com código próprio (`3002`/`3003`) em vez de vazar como 500 não
 tratado.
 
-`timeout_seconds` é guardado na política mas ainda não é aplicado como
-limite de fato durante a execução (isso é TASK-070); estourar e reportar
-esse limite formalmente é TASK-071. O envelope de sucesso desta TASK é o
-mínimo (`execution_id`/`status`/`result`) — o contrato final formal
-(`"success": true`, à semelhança do `"success": false` de erro) e
-rastreio de consumo são TASK-072/TASK-073, não implementados aqui.
+O envelope de sucesso desta TASK é o mínimo (`execution_id`/`status`/
+`result`) — o contrato final formal (`"success": true`, à semelhança do
+`"success": false` de erro) e rastreio de consumo são TASK-072/TASK-073,
+não implementados aqui.
+
+**Implementação (TASK-070):** `timeout_seconds` agora é um limite de
+verdade, não só um valor guardado na política. `POST /v1/executions` roda
+`ExecutionOrchestrator.run_until_response` num worker de um
+`ThreadPoolExecutor` de módulo e espera com
+`future.result(timeout=payload.timeout_seconds)` — a resposta HTTP
+retorna assim que o prazo estoura, mesmo que a chamada ao modelo local em
+si esteja travada (uma única etapa `RESPOND` não tem outro ponto de
+checagem cooperativa antes dela). Ao estourar, o `CancellationToken`
+(TASK-030) compartilhado é cancelado ("ao estourar, o Claudião cancela a
+execução") e a rota devolve `APPLICATION_TIMEOUT_EXCEEDED` (código 4009,
+HTTP 504, `docs/ERROR_CATALOG.md`). Se o orquestrador estiver entre
+etapas de um fluxo `USE_TOOL`, ele mesmo observa o cancelamento (o mesmo
+mecanismo cooperativo da TASK-030) e chama `execution.cancel(...)` — só
+uma thread por vez escreve em `execution`. O formato específico do erro
+(etapa atual/ferramenta ativa) é TASK-071, não implementado aqui — os
+`details` desta TASK trazem só `timeout_seconds`.
 
 ## TASKs relacionadas
 
