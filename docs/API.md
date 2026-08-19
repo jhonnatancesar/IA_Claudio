@@ -117,6 +117,15 @@ modelo, antes de qualquer etapa ser registrada) — o valor cresce em
 utilidade conforme fluxos com `USE_TOOL` passarem a existir de ponta a
 ponta.
 
+**Implementação (TASK-072):** a resposta de sucesso de `POST
+/v1/executions` agora segue o mesmo envelope `{"success": bool, ...}` do
+erro — `build_success_response(data)` (`backend/app/api/responses.py`)
+monta `{"success": true, "data": data}`. Antes desta TASK a resposta de
+sucesso era o dict cru (`execution_id`/`status`/`result` direto no nível
+superior, sem `success`), inconsistente com o formato de erro já em uso
+desde a TASK-008. Ver `docs/ERROR_CATALOG.md`, "Formato padrão de
+resposta", para o contrato completo (erro e sucesso).
+
 ## TASKs relacionadas
 
 TASK-067 a TASK-073: API local, validação de payload, execução síncrona, timeout,

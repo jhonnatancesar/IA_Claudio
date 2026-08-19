@@ -59,7 +59,10 @@ os `details` da ocorrência, com `error_response_from_exception()` como atalho.
 Ainda não conectado a nenhum framework web/handler HTTP — isso é escopo de
 TASK-067 em diante (API local).
 
-## Formato padrão de erro
+## Formato padrão de resposta
+
+Toda resposta JSON da API (`docs/API.md`) tem um campo `success` (`bool`) no
+nível superior. Em erro, o motivo fica em `error`:
 
 ```json
 {
@@ -75,8 +78,26 @@ TASK-067 em diante (API local).
 }
 ```
 
+Em sucesso (TASK-072), o payload específico da rota fica em `data`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "execution_id": "…",
+    "status": "COMPLETED",
+    "result": "…"
+  }
+}
+```
+
+`data` varia por rota (o exemplo acima é de `POST /v1/executions`); o
+envelope (`success`/`data`) é o mesmo em toda a API.
+
 ## TASKs relacionadas
 
-TASK-007 e TASK-008. Consumido por `API.md` (erro de timeout, campo obrigatório
-ausente), `QUOTAS.md` (erro ao atingir cota) e `OPERATIONS.md` (erro estruturado em
+TASK-007 e TASK-008 (formato de erro); TASK-072 (formato de sucesso,
+`build_success_response`, `backend/app/api/responses.py`). Consumido por
+`API.md` (erro de timeout, campo obrigatório ausente, resposta JSON final),
+`QUOTAS.md` (erro ao atingir cota) e `OPERATIONS.md` (erro estruturado em
 modo de manutenção).

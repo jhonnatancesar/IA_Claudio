@@ -284,10 +284,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `current_step`/`active_tool` nos `details` de
   `APPLICATION_TIMEOUT_EXCEEDED` — ver `docs/tasks/TASK-071.md`). Suíte
   completa: 565/565 testes aprovados.
+- **TASK-072** — concluída (resposta JSON final, `build_success_response`
+  em novo `backend/app/api/responses.py`, espelhando `build_error_response`
+  — `{"success": true, "data": {...}}` — ver `docs/tasks/TASK-072.md`).
+  Suíte completa: 567/567 testes aprovados.
 
-As demais 76 TASKs permanecem com status **Pendente**.
+As demais 75 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-072 — Implementar resposta JSON final**.
+Próxima TASK executável: **TASK-073 — Implementar rastreio de consumo**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
