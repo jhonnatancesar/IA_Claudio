@@ -88,12 +88,14 @@ lê/grava nelas.
 `description`, `created_at`), TASK-056. Ver `docs/KNOWLEDGE.md` para o
 módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 
-## Fontes (TASK-059, TASK-060)
+## Fontes (TASK-059, TASK-060, TASK-061)
 
 `backend/app/db/migrations/0010_sources.sql` — tabela `sources` (`id`,
 `identifier` único, `created_at`).
 `backend/app/db/migrations/0011_source_type.sql` — coluna `source_type`
-(`PRIMARY`/`SECONDARY`/`UNKNOWN`, padrão `UNKNOWN`), TASK-060. Ver
+(`PRIMARY`/`SECONDARY`/`UNKNOWN`, padrão `UNKNOWN`), TASK-060.
+`backend/app/db/migrations/0012_source_reputation.sql` — coluna
+`reputation` (`LOW`/`MEDIUM`/`HIGH`, padrão `MEDIUM`), TASK-061. Ver
 `docs/TRUST_GUARDRAILS.md` para o módulo (`app.sources.source_registry`)
 que lê/grava nela.
 

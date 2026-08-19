@@ -1,6 +1,6 @@
 # TASK-061 — Implementar reputação LOW/MEDIUM/HIGH
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,21 @@ Testes unitários de fontes/reputação/blacklist para este comportamento espec�
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Criado schema
+`backend/app/db/migrations/0012_source_reputation.sql` (coluna
+`reputation` em `sources`, `CHECK` restringindo a `LOW`/`MEDIUM`/`HIGH`,
+padrão `MEDIUM`), aplicado no PostgreSQL local real. Em
+`backend/app/sources/source_registry.py`: `SourceReputation` (enum),
+`register_source` aceita `reputation` opcional (padrão `MEDIUM`),
+`set_source_reputation(source_id, reputation)` aplica a troca mecânica
+(`SourceNotFoundError` se não existir).
+
+A regra que decide *quando* rebaixar/elevar a reputação com base em
+dados corretos/errados apresentados é a atualização de reputação,
+TASK-062, não implementada aqui.
+
+5 testes novos (1 unitário de enum + 4 de integração real). Suíte
+completa: 492/492 testes aprovados.

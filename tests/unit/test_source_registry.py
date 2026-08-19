@@ -3,7 +3,7 @@
 
 import pytest
 
-from app.sources.source_registry import SourceType, register_source
+from app.sources.source_registry import SourceReputation, SourceType, register_source
 
 
 @pytest.mark.parametrize("identifier", ["", "   "])
@@ -17,4 +17,12 @@ def test_source_type_has_exactly_three_values():
         "PRIMARY",
         "SECONDARY",
         "UNKNOWN",
+    }
+
+
+def test_source_reputation_has_exactly_three_values():
+    assert {reputation.value for reputation in SourceReputation} == {
+        "LOW",
+        "MEDIUM",
+        "HIGH",
     }

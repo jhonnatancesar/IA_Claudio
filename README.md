@@ -11,10 +11,11 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-060** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-061** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
 "Memória" e "Conhecimento" completos; bloco "Fontes" em andamento
-(cadastro de fontes, tipo PRIMARY/SECONDARY/UNKNOWN). Ver
+(cadastro de fontes, tipo PRIMARY/SECONDARY/UNKNOWN, reputação
+LOW/MEDIUM/HIGH). Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
@@ -38,5 +39,5 @@ identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
 
 ## Próxima TASK
 
-**TASK-061 — Implementar reputação LOW/MEDIUM/HIGH**
-([docs/tasks/TASK-061.md](docs/tasks/TASK-061.md)).
+**TASK-062 — Implementar atualização de reputação**
+([docs/tasks/TASK-062.md](docs/tasks/TASK-062.md)).
