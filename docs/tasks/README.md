@@ -297,10 +297,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-074** — concluída (fila FIFO em memória, novo
   `backend/app/queue/queue_model.py`, `QueueItem`/`FifoQueue` — ver
   `docs/tasks/TASK-074.md`). Suíte completa: 589/589 testes aprovados.
+- **TASK-075** — concluída (fila persistida no PostgreSQL,
+  `save_queue_item`/`get_queue_item`/`list_queue_items`, tabela
+  `queue_items` — ver `docs/tasks/TASK-075.md`). Suíte completa:
+  597/597 testes aprovados.
 
-As demais 73 TASKs permanecem com status **Pendente**.
+As demais 72 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-075 — Persistir fila no PostgreSQL**.
+Próxima TASK executável: **TASK-076 — Criar estados da fila**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

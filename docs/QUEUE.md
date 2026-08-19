@@ -38,3 +38,16 @@ testado explicitamente. Persistência no PostgreSQL (TASK-075), estados
 adicionais e retenção/limpeza (TASK-076/077) não são desta TASK; nenhuma
 TASK conecta esta fila a `POST /v1/executions`, que continua síncrono
 ponta a ponta (TASK-069).
+
+**Implementação (TASK-075):** `save_queue_item(item)`/`get_queue_item
+(item_id)`/`list_queue_items()` (mesmo módulo,
+`backend/app/queue/queue_model.py`) — persistência real em `queue_items`
+(`backend/app/db/migrations/0016_queue_items.sql`, `payload` como
+`jsonb`). `save_queue_item` é `INSERT ... ON CONFLICT DO UPDATE`:
+primeira chamada cria a linha (`PENDING`), chamadas seguintes atualizam
+`status`/`error`/`finished_at`. Mecânico e explícito — `FifoQueue.
+enqueue`/`dequeue` (TASK-074) continuam puramente em memória, sem tocar
+o banco sozinhas; quem processa a fila chama `save_queue_item` a cada
+transição, mesmo padrão de `record_usage` (TASK-073). `list_queue_items`
+devolve em ordem FIFO (`created_at` crescente). Estados adicionais
+(TASK-076) e retenção/limpeza (TASK-077) não são desta TASK.

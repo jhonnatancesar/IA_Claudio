@@ -116,9 +116,20 @@ para o módulo (`app.usage.usage_model`) que lê/grava nela — só o registro
 mínimo de consumo; o sistema de cotas completo (medição de tokens/volume,
 ciclo, alertas, bloqueio) é TASK-108 a TASK-114.
 
-Os demais domínios de dados (conversas, resumos, execuções, fila,
-auditoria, cotas completas, atualizações, backups) ainda não têm schema —
-cada um ganha o seu na TASK do bloco funcional correspondente, conforme
+## Fila (TASK-075)
+
+`backend/app/db/migrations/0016_queue_items.sql` — tabela `queue_items`
+(`id`, `payload jsonb`, `status` — `PENDING`/`RUNNING`/`COMPLETED`/
+`FAILED`, padrão `PENDING` —, `error`, `created_at`, `finished_at`),
+índice em `(status, created_at)`. Ver `docs/QUEUE.md` e
+`backend/app/queue/README.md` para o módulo (`app.queue.queue_model`)
+que lê/grava nela — `FifoQueue`/`QueueItem` (TASK-074) continuam
+puramente em memória; `save_queue_item`/`get_queue_item`/
+`list_queue_items` (TASK-075) são a persistência explícita.
+
+Os demais domínios de dados (conversas, resumos, execuções, auditoria,
+cotas completas, atualizações, backups) ainda não têm schema — cada um
+ganha o seu na TASK do bloco funcional correspondente, conforme
 `docs/BACKLOG.md`.
 
 ## TASKs relacionadas
