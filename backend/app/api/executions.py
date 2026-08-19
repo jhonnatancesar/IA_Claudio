@@ -1,4 +1,4 @@
-"""Rota de execuções da API local (TASK-067 a TASK-071).
+"""Rota de execuções da API local (TASK-067 a TASK-072).
 
 `POST /v1/executions`: ponto de entrada para uma aplicação externa pedir
 uma execução ao Claudião (`docs/API.md`, seções 24/25/26). Autentica a
@@ -16,11 +16,8 @@ campos já validados do payload (`timeout_seconds`/`web_search_allowed`/
 TASK-088 em diante) — se o modelo pedir uma ferramenta,
 `ToolExecutorNotConfiguredError` é convertida num erro claro em vez de
 vazar como 500 não tratado. Falha de comunicação com o modelo local
-(`LocalLLMProviderError`) é convertida do mesmo jeito. O formato final de
-resposta de sucesso (envelope `"success": true`, à semelhança do
-`"success": false` de erro) e rastreio de consumo são TASK-072/TASK-073,
-não implementados aqui — a resposta de sucesso desta TASK é o mínimo
-necessário (`execution_id`/`status`/`result`).
+(`LocalLLMProviderError`) é convertida do mesmo jeito. Rastreio de
+consumo é TASK-073, não implementado aqui.
 
 **Timeout (TASK-070):** `timeout_seconds` (do payload) é aplicado como
 limite de verdade — "o timeout é definido pela própria aplicação... ao
@@ -53,6 +50,14 @@ prática hoje `execution.steps` costuma estar vazia no momento do timeout
 (a única etapa em andamento é a primeira chamada ao modelo, ainda não
 registrada) — o valor cresce em utilidade conforme fluxos com `USE_TOOL`
 passarem a existir de verdade.
+
+**Resposta JSON final (TASK-072):** a resposta de sucesso agora segue o
+mesmo envelope `{"success": bool, ...}` do erro (`docs/ERROR_CATALOG.md`,
+"Formato padrão de resposta") — `build_success_response`
+(`app.api.responses`) monta `{"success": true, "data": {"execution_id":
+..., "status": ..., "result": ...}}`. Antes desta TASK a resposta de
+sucesso era o dict cru (`execution_id`/`status`/`result` no nível
+superior, sem `success`), inconsistente com o formato de erro.
 """
 
 from __future__ import annotations
@@ -64,6 +69,7 @@ from fastapi import APIRouter, Depends
 
 from app.api.auth import get_current_application
 from app.api.dependencies import get_active_model, get_local_llm_provider
+from app.api.responses import build_success_response
 from app.api.schemas import ExecutionRequest
 from app.auth.api_keys import Application
 from app.errors.catalog import ErrorDomain, register_error
@@ -124,7 +130,7 @@ def create_execution(
     application: Application = Depends(get_current_application),
     provider: LocalLLMProvider = Depends(get_local_llm_provider),
     model: str = Depends(get_active_model),
-) -> dict[str, str]:
+) -> dict:
     """Autentica, valida o payload e executa de fato, de forma síncrona,
     via `ExecutionOrchestrator` (TASK-069) — devolve o resultado final na
     mesma resposta HTTP, sem eventos intermediários."""
@@ -160,8 +166,10 @@ def create_execution(
     except ToolExecutorNotConfiguredError as exc:
         raise ClaudiaoError(TOOL_NOT_AVAILABLE, details={"reason": str(exc)}) from exc
 
-    return {
-        "execution_id": execution.execution_id,
-        "status": execution.status.value,
-        "result": step.reason,
-    }
+    return build_success_response(
+        {
+            "execution_id": execution.execution_id,
+            "status": execution.status.value,
+            "result": step.reason,
+        }
+    )

@@ -134,9 +134,11 @@ def test_create_execution_with_valid_payload(postgres_dsn, registered_applicatio
 
     assert response.status_code == 200
     body = response.json()
-    assert "execution_id" in body
-    assert body["status"] == "COMPLETED"
-    assert body["result"] == "resposta pronta"
+    assert body["success"] is True
+    data = body["data"]
+    assert "execution_id" in data
+    assert data["status"] == "COMPLETED"
+    assert data["result"] == "resposta pronta"
 
 
 def test_create_execution_generates_unique_execution_ids(
@@ -148,7 +150,7 @@ def test_create_execution_generates_unique_execution_ids(
     first = client.post("/v1/executions", json=_VALID_PAYLOAD, headers=headers)
     second = client.post("/v1/executions", json=_VALID_PAYLOAD, headers=headers)
 
-    assert first.json()["execution_id"] != second.json()["execution_id"]
+    assert first.json()["data"]["execution_id"] != second.json()["data"]["execution_id"]
 
 
 def test_create_execution_without_api_key_is_rejected(postgres_dsn, client):
@@ -271,7 +273,9 @@ def test_create_execution_completes_normally_when_faster_than_timeout_seconds(
     )
 
     assert response.status_code == 200
-    assert response.json()["result"] == "resposta atrasada"
+    body = response.json()
+    assert body["success"] is True
+    assert body["data"]["result"] == "resposta atrasada"
 
 
 def test_create_execution_without_active_model_configured(
