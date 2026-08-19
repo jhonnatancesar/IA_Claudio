@@ -246,7 +246,13 @@ def test_create_execution_times_out_when_model_is_slower_than_timeout_seconds(
     body = response.json()
     assert body["success"] is False
     assert body["error"]["code"] == 4009
-    assert body["error"]["details"]["timeout_seconds"] == 0.05
+    details = body["error"]["details"]
+    assert details["timeout_seconds"] == 0.05
+    # provider trava na primeira chamada ao modelo: nenhuma etapa chegou a
+    # ser registrada ainda, então é a 1ª etapa que travou, sem ferramenta
+    # ativa (TASK-071).
+    assert details["current_step"] == 1
+    assert details["active_tool"] is None
     # a resposta HTTP não espera o provider travado terminar (0.5s) — só o
     # timeout configurado (0.05s), com folga generosa para o overhead do
     # próprio teste.
