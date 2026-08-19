@@ -30,8 +30,16 @@ confiança alta nem baixa, e `MEDIUM` já implica aviso ao ser usada
 (comportamento conservador correto para algo não avaliado).
 `set_source_reputation` só aplica a troca *mecânica* de reputação — a
 regra de negócio que decide *quando* rebaixar/elevar com base em dados
-corretos/errados apresentados é atualização de reputação, TASK-062, não
-implementada aqui.
+corretos/errados apresentados é atualização de reputação, TASK-062.
+
+Esta TASK (TASK-063) faz `set_source_reputation` gravar, na mesma
+transação, uma linha em `source_reputation_history`
+(`backend/app/db/migrations/0013_source_reputation_history.sql`) sempre
+que a reputação muda de fato — "o sistema mantém base de reputação de
+fontes, avaliada dinamicamente e registrada para reutilização futura"
+(seção 14/15). Chamar `set_source_reputation` com o mesmo valor já
+vigente não grava histórico (não houve mudança real).
+`list_reputation_history` lê esse histórico, mais antigo primeiro.
 """
 
 from __future__ import annotations
@@ -154,15 +162,62 @@ def set_source_type(source_id: UUID, source_type: SourceType) -> Source:
 def set_source_reputation(source_id: UUID, reputation: SourceReputation) -> Source:
     """Aplica a troca mecânica de reputação de uma fonte já registrada
     (TASK-061) — sem decidir se a troca é apropriada, isso é a regra de
-    atualização de reputação, TASK-062. Levanta `SourceNotFoundError` se
-    `source_id` não existir."""
+    atualização de reputação, TASK-062. Se a reputação realmente mudar,
+    grava uma linha em `source_reputation_history` na mesma transação
+    (TASK-063). Levanta `SourceNotFoundError` se `source_id` não existir."""
     with connect() as conn:
+        current_row = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM sources WHERE id = %s",
+            (source_id,),
+        ).fetchone()
+        if current_row is None:
+            raise SourceNotFoundError(f"fonte não encontrada: {source_id!r}")
+        current = _source_from_row(current_row)
+
+        if current.reputation != reputation:
+            conn.execute(
+                "INSERT INTO source_reputation_history "
+                "(source_id, previous_reputation, new_reputation) "
+                "VALUES (%s, %s, %s)",
+                (source_id, current.reputation.value, reputation.value),
+            )
+
         row = conn.execute(
             "UPDATE sources SET reputation = %s WHERE id = %s "
             f"RETURNING {_SELECT_COLUMNS}",
             (reputation.value, source_id),
         ).fetchone()
 
-    if row is None:
-        raise SourceNotFoundError(f"fonte não encontrada: {source_id!r}")
     return _source_from_row(row)
+
+
+@dataclass(frozen=True)
+class ReputationHistoryEntry:
+    id: int
+    source_id: UUID
+    previous_reputation: SourceReputation
+    new_reputation: SourceReputation
+    changed_at: datetime
+
+
+def list_reputation_history(source_id: UUID) -> list[ReputationHistoryEntry]:
+    """Lista o histórico de mudanças de reputação de uma fonte, da mais
+    antiga para a mais recente (`changed_at` crescente)."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, source_id, previous_reputation, new_reputation, changed_at "
+            "FROM source_reputation_history WHERE source_id = %s "
+            "ORDER BY changed_at ASC",
+            (source_id,),
+        ).fetchall()
+
+    return [
+        ReputationHistoryEntry(
+            id=row[0],
+            source_id=row[1],
+            previous_reputation=SourceReputation(row[2]),
+            new_reputation=SourceReputation(row[3]),
+            changed_at=row[4],
+        )
+        for row in rows
+    ]

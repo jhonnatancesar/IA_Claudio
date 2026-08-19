@@ -15,6 +15,7 @@ from app.sources.source_registry import (
     SourceType,
     get_source,
     get_source_by_identifier,
+    list_reputation_history,
     register_source,
     set_source_reputation,
     set_source_type,
@@ -118,3 +119,47 @@ def test_set_source_reputation_updates_existing_source(postgres_dsn, unique_iden
 def test_set_source_reputation_raises_for_unknown_id(postgres_dsn):
     with pytest.raises(SourceNotFoundError):
         set_source_reputation(uuid.uuid4(), SourceReputation.HIGH)
+
+
+def test_set_source_reputation_records_history_when_changed(postgres_dsn, unique_identifier):
+    source = register_source(unique_identifier, reputation=SourceReputation.MEDIUM)
+
+    set_source_reputation(source.id, SourceReputation.LOW)
+
+    history = list_reputation_history(source.id)
+    assert len(history) == 1
+    assert history[0].previous_reputation == SourceReputation.MEDIUM
+    assert history[0].new_reputation == SourceReputation.LOW
+
+
+def test_set_source_reputation_does_not_record_history_when_unchanged(
+    postgres_dsn, unique_identifier
+):
+    source = register_source(unique_identifier, reputation=SourceReputation.MEDIUM)
+
+    set_source_reputation(source.id, SourceReputation.MEDIUM)
+
+    assert list_reputation_history(source.id) == []
+
+
+def test_list_reputation_history_returns_entries_in_chronological_order(
+    postgres_dsn, unique_identifier
+):
+    source = register_source(unique_identifier, reputation=SourceReputation.HIGH)
+
+    set_source_reputation(source.id, SourceReputation.MEDIUM)
+    set_source_reputation(source.id, SourceReputation.LOW)
+
+    history = list_reputation_history(source.id)
+    assert [(h.previous_reputation, h.new_reputation) for h in history] == [
+        (SourceReputation.HIGH, SourceReputation.MEDIUM),
+        (SourceReputation.MEDIUM, SourceReputation.LOW),
+    ]
+
+
+def test_list_reputation_history_empty_for_source_never_changed(
+    postgres_dsn, unique_identifier
+):
+    source = register_source(unique_identifier)
+
+    assert list_reputation_history(source.id) == []
