@@ -1,6 +1,6 @@
 # TASK-059 — Criar cadastro de fontes
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,21 @@ Testes unitários de fontes/reputação/blacklist para este comportamento espec�
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Criado schema
+`backend/app/db/migrations/0010_sources.sql` (tabela `sources`: `id`,
+`identifier` único, `created_at`), aplicado no PostgreSQL local real.
+Criado `backend/app/sources/source_registry.py`: `Source` (dataclass),
+`register_source(identifier)` — idempotente por `identifier`
+(`ON CONFLICT ... DO UPDATE ... RETURNING`, devolve a fonte existente em
+vez de duplicar), `get_source(source_id)`,
+`get_source_by_identifier(identifier)`.
+
+Só a identidade da fonte — tipo `PRIMARY`/`SECONDARY`/`UNKNOWN`
+(TASK-060), reputação (TASK-061 em diante) e blacklist (TASK-064 em
+diante) não são desta TASK.
+
+7 testes novos (2 unitários de validação + 5 de integração real). Suíte
+completa: 482/482 testes aprovados.

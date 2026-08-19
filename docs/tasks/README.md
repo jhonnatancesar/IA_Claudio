@@ -231,10 +231,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   ver `docs/tasks/TASK-058.md`). Suíte completa: 471/471 testes
   aprovados. **Com esta TASK, o bloco "Conhecimento" (TASK-052 a
   TASK-058) está completo.**
+- **TASK-059** — concluída (cadastro de fontes,
+  `backend/app/sources/source_registry.py`, `register_source` — ver
+  `docs/tasks/TASK-059.md`). Suíte completa: 482/482 testes aprovados.
 
-As demais 89 TASKs permanecem com status **Pendente**.
+As demais 88 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-059 — Criar cadastro de fontes**.
+Próxima TASK executável: **TASK-060 — Implementar
+PRIMARY/SECONDARY/UNKNOWN**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
