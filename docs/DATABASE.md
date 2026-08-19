@@ -88,7 +88,7 @@ lê/grava nelas.
 `description`, `created_at`), TASK-056. Ver `docs/KNOWLEDGE.md` para o
 módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 
-## Fontes (TASK-059, TASK-060, TASK-061, TASK-063)
+## Fontes (TASK-059, TASK-060, TASK-061, TASK-063, TASK-064)
 
 `backend/app/db/migrations/0010_sources.sql` — tabela `sources` (`id`,
 `identifier` único, `created_at`).
@@ -98,9 +98,12 @@ módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 `reputation` (`LOW`/`MEDIUM`/`HIGH`, padrão `MEDIUM`), TASK-061.
 `backend/app/db/migrations/0013_source_reputation_history.sql` — tabela
 `source_reputation_history` (`source_id` com `ON DELETE CASCADE`,
-`previous_reputation`, `new_reputation`, `changed_at`), TASK-063. Ver
-`docs/TRUST_GUARDRAILS.md` para o módulo (`app.sources.source_registry`)
-que lê/grava nelas.
+`previous_reputation`, `new_reputation`, `changed_at`), TASK-063.
+`backend/app/db/migrations/0014_source_blacklist.sql` — coluna
+`is_blocked` em `sources` e tabela `source_blacklist_entries`
+(`source_id` com `ON DELETE CASCADE`, `action`, `origin`, `responsible`,
+`reason`, `created_at`), TASK-064. Ver `docs/TRUST_GUARDRAILS.md` para o
+módulo (`app.sources.source_registry`) que lê/grava nelas.
 
 Os demais domínios de dados (histórico de fontes, blacklist,
 conversas, resumos, execuções, fila, auditoria, cotas, atualizações,

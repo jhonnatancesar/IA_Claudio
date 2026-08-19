@@ -251,10 +251,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-063** — concluída (histórico de reputação,
   `ReputationHistoryEntry`/`list_reputation_history` — ver
   `docs/tasks/TASK-063.md`). Suíte completa: 508/508 testes aprovados.
+- **TASK-064** — concluída (blacklist de fontes,
+  `block_source`/`unblock_source`/`list_blacklist_entries` — ver
+  `docs/tasks/TASK-064.md`). Suíte completa: 522/522 testes aprovados.
 
-As demais 84 TASKs permanecem com status **Pendente**.
+As demais 83 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-064 — Criar blacklist**.
+Próxima TASK executável: **TASK-065 — Implementar bloqueio
+automático**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
