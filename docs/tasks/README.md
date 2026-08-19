@@ -273,11 +273,16 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/api/dependencies.py`, `ExecutionOrchestrator.
   run_until_response` conectado a `POST /v1/executions` — ver
   `docs/tasks/TASK-069.md`). Suíte completa: 560/560 testes aprovados.
+- **TASK-070** — concluída (timeout definido pela aplicação aplicado de
+  fato, `backend/app/api/executions.py`, `ThreadPoolExecutor` +
+  `future.result(timeout=...)` cancelando o `CancellationToken`
+  compartilhado — código `APPLICATION_TIMEOUT_EXCEEDED`, `4009`, HTTP
+  `504` — ver `docs/tasks/TASK-070.md`). Suíte completa: 562/562 testes
+  aprovados.
 
-As demais 78 TASKs permanecem com status **Pendente**.
+As demais 77 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-070 — Implementar timeout definido
-pela aplicação**.
+Próxima TASK executável: **TASK-071 — Implementar erro de timeout**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -20,17 +20,23 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   em teste. `get_active_model` lê `CLAUDIAO_ACTIVE_MODEL`
   (`config/.env.example`); código de erro `3001`
   (`NO_ACTIVE_MODEL_CONFIGURED`) se ausente.
-- `executions.py` (TASK-067, TASK-068, TASK-069) — `POST /v1/executions`:
-  autentica, valida o payload contra `ExecutionRequest` e agora executa
-  de fato, de forma síncrona, via `ExecutionOrchestrator.
+- `executions.py` (TASK-067, TASK-068, TASK-069, TASK-070) — `POST
+  /v1/executions`: autentica, valida o payload contra `ExecutionRequest`
+  e executa de fato, de forma síncrona, via `ExecutionOrchestrator.
   run_until_response` (TASK-069) — monta `ExecutionPolicy.for_application`
   a partir do payload. `LocalLLMProviderError`/
   `ToolExecutorNotConfiguredError` viram erros com código próprio
-  (`3002`/`3003`) em vez de 500 não tratado. `timeout_seconds` só é
-  guardado na política — aplicá-lo de fato é TASK-070.
+  (`3002`/`3003`) em vez de 500 não tratado. `timeout_seconds` agora é
+  aplicado como limite de verdade (TASK-070): `run_until_response` roda
+  num worker de um `ThreadPoolExecutor` de módulo, e a rota espera com
+  `future.result(timeout=...)` — retorna assim que o prazo estoura, sem
+  esperar uma chamada travada ao modelo. Ao estourar, cancela o
+  `CancellationToken` (TASK-030) compartilhado e devolve
+  `APPLICATION_TIMEOUT_EXCEEDED` (código `4009`, HTTP `504`). Formato
+  específico do erro (etapa atual/ferramenta ativa) é TASK-071.
 
 Testes em `tests/integration/test_api_executions_integration.py`
-(autenticação/validação/execução síncrona reais via
+(autenticação/validação/execução síncrona real e timeout reais via
 `fastapi.testclient.TestClient`, com `LocalLLMProvider` fake — nenhum
 modelo Ollama real foi baixado) e `tests/unit/test_api_auth.py`/
 `tests/unit/test_api_schemas.py`/`tests/unit/test_api_dependencies.py`

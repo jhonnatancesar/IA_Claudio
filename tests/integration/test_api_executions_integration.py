@@ -1,8 +1,8 @@
 """Teste de integração: API local do Claudião (TASK-067, TASK-068,
-TASK-069) executando de verdade contra o PostgreSQL local — autenticação
-real de aplicação, validação de payload e execução síncrona via HTTP.
-Usa a fixture `postgres_dsn` (tests/integration/conftest.py) — pula
-automaticamente se o banco não estiver disponível.
+TASK-069, TASK-070) executando de verdade contra o PostgreSQL local —
+autenticação real de aplicação, validação de payload e execução síncrona
+via HTTP. Usa a fixture `postgres_dsn` (tests/integration/conftest.py) —
+pula automaticamente se o banco não estiver disponível.
 
 O `LocalLLMProvider`/modelo ativo são substituídos por fakes via
 `app.dependency_overrides` (TASK-069) — nenhum modelo Ollama real foi
@@ -13,6 +13,7 @@ já usado em `tests/unit/test_execution_orchestrator.py`.
 
 import json
 import re
+import time
 import uuid
 
 import psycopg
@@ -74,6 +75,33 @@ class _FailingProvider(LocalLLMProvider):
 
     def is_available(self) -> bool:
         return False
+
+
+class _SlowProvider(LocalLLMProvider):
+    """Provider fake que demora mais que o `timeout_seconds` do payload
+    antes de responder (TASK-070) — simula um modelo local travado."""
+
+    def __init__(self, delay_seconds: float, reason: str = "resposta atrasada") -> None:
+        self._delay_seconds = delay_seconds
+        self._reason = reason
+
+    def complete(self, request: CompletionRequest) -> CompletionResponse:
+        time.sleep(self._delay_seconds)
+        match = _EXECUTION_ID_PATTERN.search(request.prompt)
+        assert match is not None, "prompt sem execution_id reconhecível"
+        text = json.dumps(
+            {
+                "execution_id": match.group(1),
+                "action": "RESPOND",
+                "confidence": "HIGH",
+                "reason": self._reason,
+            },
+            ensure_ascii=False,
+        )
+        return CompletionResponse(text=text, model=request.model)
+
+    def is_available(self) -> bool:
+        return True
 
 
 @pytest.fixture
@@ -199,6 +227,45 @@ def test_create_execution_reports_model_completion_failure(
     body = response.json()
     assert body["success"] is False
     assert body["error"]["code"] == 3002
+
+
+def test_create_execution_times_out_when_model_is_slower_than_timeout_seconds(
+    postgres_dsn, registered_application, client
+):
+    _, api_key = registered_application
+    app.dependency_overrides[get_local_llm_provider] = lambda: _SlowProvider(delay_seconds=0.5)
+    payload = {**_VALID_PAYLOAD, "timeout_seconds": 0.05}
+
+    started_at = time.monotonic()
+    response = client.post(
+        "/v1/executions", json=payload, headers={"Authorization": f"Bearer {api_key}"}
+    )
+    elapsed = time.monotonic() - started_at
+
+    assert response.status_code == 504
+    body = response.json()
+    assert body["success"] is False
+    assert body["error"]["code"] == 4009
+    assert body["error"]["details"]["timeout_seconds"] == 0.05
+    # a resposta HTTP não espera o provider travado terminar (0.5s) — só o
+    # timeout configurado (0.05s), com folga generosa para o overhead do
+    # próprio teste.
+    assert elapsed < 0.5
+
+
+def test_create_execution_completes_normally_when_faster_than_timeout_seconds(
+    postgres_dsn, registered_application, client
+):
+    _, api_key = registered_application
+    app.dependency_overrides[get_local_llm_provider] = lambda: _SlowProvider(delay_seconds=0.01)
+    payload = {**_VALID_PAYLOAD, "timeout_seconds": 5}
+
+    response = client.post(
+        "/v1/executions", json=payload, headers={"Authorization": f"Bearer {api_key}"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["result"] == "resposta atrasada"
 
 
 def test_create_execution_without_active_model_configured(

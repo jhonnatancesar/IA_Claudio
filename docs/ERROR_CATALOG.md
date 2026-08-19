@@ -39,6 +39,10 @@ nasce pequeno — só os erros que a própria fundação já precisa:
 | 4003 | 403 | Ferramenta solicitada não autorizada pela política de execução |
 | 4004 | 429 | Número máximo de etapas (max_steps) da execução foi atingido |
 | 4005 | 409 | Loop detectado: a mesma decisão foi repetida sem progresso |
+| 4006 | 409 | Confiança final LOW não permite resposta conclusiva |
+| 4007 | 409 | Informação volátil usada sem revalidação obrigatória |
+| 4008 | 409 | Ambiguidade real não pode ser resolvida por suposição |
+| 4009 | 504 | Execução cancelada por timeout da aplicação |
 | 9000 | 500 | Erro interno desconhecido |
 
 Cada TASK futura registra os códigos específicos que precisar quando chegar sua
