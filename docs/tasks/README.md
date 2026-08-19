@@ -269,10 +269,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-068** — concluída (validação de payload,
   `backend/app/api/schemas.py`, `ExecutionRequest` — ver
   `docs/tasks/TASK-068.md`). Suíte completa: 556/556 testes aprovados.
+- **TASK-069** — concluída (execução síncrona,
+  `backend/app/api/dependencies.py`, `ExecutionOrchestrator.
+  run_until_response` conectado a `POST /v1/executions` — ver
+  `docs/tasks/TASK-069.md`). Suíte completa: 560/560 testes aprovados.
 
-As demais 79 TASKs permanecem com status **Pendente**.
+As demais 78 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-069 — Implementar execução síncrona**.
+Próxima TASK executável: **TASK-070 — Implementar timeout definido
+pela aplicação**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

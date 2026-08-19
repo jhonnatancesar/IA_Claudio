@@ -30,6 +30,10 @@ nasce pequeno — só os erros que a própria fundação já precisa:
 | 1001 | 400 | Campo obrigatório ausente |
 | 1002 | 400 | Valor de campo inválido |
 | 2001 | 403 | Ação restrita a administradores |
+| 2002 | 401 | API key ausente ou inválida |
+| 3001 | 503 | Nenhum modelo local ativo configurado |
+| 3002 | 502 | Falha ao completar com o modelo local |
+| 3003 | 501 | Ferramenta pedida pelo modelo ainda não está disponível |
 | 4001 | 502 | JSON do modelo fora do protocolo esperado |
 | 4002 | 502 | execution_id da etapa não corresponde à execução em andamento |
 | 4003 | 403 | Ferramenta solicitada não autorizada pela política de execução |
