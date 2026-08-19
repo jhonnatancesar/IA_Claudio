@@ -11,10 +11,10 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-067** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-068** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
 "Memória", "Conhecimento" e "Fontes" completos; bloco "Aplicações" em
-andamento (API local, FastAPI). Ver
+andamento (API local, FastAPI, validação de payload). Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
@@ -38,5 +38,5 @@ andamento (API local, FastAPI). Ver
 
 ## Próxima TASK
 
-**TASK-068 — Criar validação de payload**
-([docs/tasks/TASK-068.md](docs/tasks/TASK-068.md)).
+**TASK-069 — Implementar execução síncrona**
+([docs/tasks/TASK-069.md](docs/tasks/TASK-069.md)).
