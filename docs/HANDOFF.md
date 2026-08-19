@@ -13,14 +13,14 @@ estão resumidas aqui.
 
 ## Checkpoint atual
 
-**Data:** 2026-08-18 · **TASK:** TASK-051 · **TASKs concluídas:** 51 de 147
-(TASK-001 a TASK-051) · **Próxima TASK executável:** TASK-052 — Criar modelo
-RAW/PROVISIONAL/CONFIRMED.
+**Data:** 2026-08-19 · **TASK:** TASK-060 · **TASKs concluídas:** 60 de 147
+(TASK-001 a TASK-060) · **Próxima TASK executável:** TASK-061 — Implementar
+reputação LOW/MEDIUM/HIGH.
 
-Este checkpoint deveria ter rodado automaticamente na TASK-050 (10 TASKs desde
-o checkpoint anterior, TASK-040) e não rodou — mesmo erro já registrado no
-histórico de checkpoints da TASK-030. Corrigido assim que percebido, cobrindo
-TASK-050 e TASK-051 juntas. Ver item 13 de "Armadilhas" abaixo.
+Este checkpoint rodou no prazo certo (10 TASKs desde o checkpoint anterior,
+TASK-050/051) — os dois deslizes anteriores (TASK-030, TASK-050) não se
+repetiram desta vez, graças à mitigação do item 13 de "Armadilhas": conferir a
+contagem explicitamente ao concluir qualquer TASK terminada em 0.
 
 ## O que já existe (resumo, não repete `docs/tasks/`)
 
@@ -50,35 +50,41 @@ TASK-050 e TASK-051 juntas. Ver item 13 de "Armadilhas" abaixo.
   observações realimentadas ao modelo, replanejamento completo, `max_steps`,
   detecção de loop e cancelamento (`CancellationToken`).
 - **Bloco "Confiança e guardrails" completo (TASK-031 a TASK-036):**
-  confiança do modelo (`get_model_confidence`, `is_at_least`), volatilidade
-  (`Volatility`, `requires_revalidation`), Confidence Engine (`EvidenceStrength`,
+  confiança do modelo, volatilidade, Confidence Engine (`EvidenceStrength`,
   `calculate_final_confidence`), bloqueio de resposta conclusiva em `LOW`
   (código 4006), regra obrigatória de revalidação de informação `VOLATILE`
-  (código 4007), tratamento de ambiguidade — bloqueio de resposta sem pergunta
-  de esclarecimento (código 4008). Todos os guardrails de bloqueio recebem a
-  avaliação (confiança final, volatilidade, ambiguidade) já pronta de quem
-  chama — nenhum é acionado ainda no fluxo real do `ExecutionOrchestrator`.
+  (código 4007), tratamento de ambiguidade (código 4008). Todos os guardrails
+  de bloqueio recebem a avaliação já pronta de quem chama — nenhum é acionado
+  ainda no fluxo real do `ExecutionOrchestrator` (isso é TASK-088 em diante).
 - **Bloco "Contexto" completo (TASK-037 a TASK-043):** `ContextManager` — uma
-  instância por conversa, guardando assunto principal (`set_active_topic`),
-  entidades recentes (`track_entity`), referências implícitas
-  (`set_implicit_reference`/`resolve_reference`), correções do usuário
-  (`record_correction`) e detecção de troca real de assunto
-  (`detect_topic_switch`, limpa entidades/referências ao trocar).
-  `ContextWindowMonitor` (`usage_ratio`/`is_full`/`requires_warning`, 80%)
-  monitora uso da janela de contexto, capacidade recebida por parâmetro (sem
-  painel ainda).
+  instância por conversa (assunto principal, entidades recentes, referências
+  implícitas, correções, detecção de troca de assunto) e
+  `ContextWindowMonitor` (uso/aviso em 80% da janela de contexto).
 - **Bloco "Memória" completo (TASK-044 a TASK-051):** modelo persistente real
-  no PostgreSQL (`memories`: `save_memory`/`get_memory`), separação garantida
-  por dono (`list_memories_for_owner`), Memory Tool (`execute_memory_tool`,
-  operações `SAVE`/`LIST`/`SEARCH`), busca por conteúdo (`search_memories`),
-  rastreamento de uso e relevância heurística (`record_memory_usage`,
-  `relevance_score`), política de retenção por idade+relevância
-  (`apply_retention_policy`), limite fixo de 500 por dono
-  (`enforce_memory_limit`) e auditoria mínima de remoção sem guardar
-  conteúdo (`memory_removal_audit`, `delete_memory(reason)`,
-  `list_removal_audit_for_owner`).
-- **Testes:** 379/379 aprovados (unitários + integração real contra PostgreSQL
-  e Ollama locais). Rodar com:
+  no PostgreSQL (`memories`), separação por dono, Memory Tool
+  (`execute_memory_tool`, `SAVE`/`LIST`/`SEARCH`), busca por conteúdo,
+  rastreamento de uso e relevância heurística, retenção por idade+relevância,
+  limite fixo de 500 por dono, auditoria mínima de remoção (sem guardar
+  conteúdo).
+- **Bloco "Conhecimento" completo (TASK-052 a TASK-058):** modelo
+  RAW/PROVISIONAL/CONFIRMED (`knowledge`), Knowledge Tool
+  (`execute_knowledge_tool`), versionamento (nunca sobrescreve `content`,
+  sempre nova linha ligada por linhagem), escopo GLOBAL/APPLICATION,
+  confiança/volatilidade opcionais + evidências (texto livre), regra de
+  promoção para CONFIRMED (`promote_to_confirmed`, exige confiança `HIGH` +
+  evidência) e avaliação de utilidade pelo orquestrador
+  (`is_useful_for_orchestrator`, não exposta como tool — é decisão do
+  orquestrador, não do modelo).
+- **Bloco "Fontes" em andamento (TASK-059/TASK-060 concluídas, de TASK-059 a
+  TASK-066):** cadastro de fontes (`sources`, `register_source` idempotente
+  por `identifier`) e tipo `PRIMARY`/`SECONDARY`/`UNKNOWN`
+  (`set_source_type`). Faltam: reputação `LOW`/`MEDIUM`/`HIGH` e sua
+  atualização/histórico (TASK-061 a TASK-063), blacklist e (des)bloqueio
+  (TASK-064 a TASK-066).
+- **Testes:** 487/487 aprovados (unitários + integração real contra
+  PostgreSQL e Ollama locais — **Ollama precisa estar rodando** para a suíte
+  completa passar sem pular nada; abra o app se os testes de integração do
+  Ollama pularem, não trate o skip como aceitável). Rodar com:
   ```
   python -m pytest tests/ -v --basetemp=".pytest_tmp"
   ```
@@ -90,7 +96,7 @@ TASK-050 e TASK-051 juntas. Ver item 13 de "Armadilhas" abaixo.
 |---|---|---|
 | `errors/` | Implementado (TASK-007/008) | `catalog.py`, `response.py` |
 | `observability/` | Implementado (TASK-005/006) | `logging_config.py`, `postgres_log_handler.py` |
-| `db/` | Implementado (TASK-003/004/009/044/048/051) | `connection.py`, `migrations/000N_*.sql` (0001–0005) |
+| `db/` | Implementado (várias TASKs) | `connection.py`, `migrations/000N_*.sql` (0001–0011) |
 | `auth/` | Completo (TASK-009 a TASK-013) | `password.py`, `users.py`, `roles.py`, `api_keys.py`, `crypto.py`, `master_key.py` |
 | `llm/` | Completo (TASK-014 a TASK-019) | `provider.py`, `providers/ollama_provider.py`, `protocol.py`, `protocol_validator.py`, `prompt.py`, `prompt_composer.py` |
 | `policies/` | Implementado (TASK-022) | `execution_policy.py` |
@@ -98,8 +104,10 @@ TASK-050 e TASK-051 juntas. Ver item 13 de "Armadilhas" abaixo.
 | `confidence/` | Completo (TASK-031 a TASK-036) | `model_confidence.py`, `volatility.py`, `confidence_engine.py`, `response_guardrail.py`, `revalidation_guardrail.py`, `ambiguity_guardrail.py` |
 | `context/` | Completo (TASK-037 a TASK-043) | `context_manager.py`, `context_window.py` |
 | `memory/` | Completo (TASK-044 a TASK-051) | `memory_model.py`, `retention_policy.py` |
-| `tools/` | Em andamento (TASK-046/047; próximas TASKs de outras ferramentas) | `memory_tool.py` |
-| Demais módulos (`api/`, `knowledge/`, `panel/`, ...) | Só README.md, sem código | — |
+| `knowledge/` | Completo (TASK-052 a TASK-058) | `knowledge_model.py`, `promotion_rule.py`, `usefulness.py` |
+| `sources/` | Em andamento (TASK-059/060 de TASK-059 a TASK-066) | `source_registry.py` |
+| `tools/` | Em andamento (Memory/Knowledge Tools prontas; outras ferramentas são TASKs futuras) | `memory_tool.py`, `knowledge_tool.py` |
+| Demais módulos (`api/`, `panel/`, `queue/`, ...) | Só README.md, sem código | — |
 
 ## Decisões técnicas já tomadas (ver `docs/DECISION_LOG.md` para o texto completo)
 
@@ -128,23 +136,30 @@ TASK-050 e TASK-051 juntas. Ver item 13 de "Armadilhas" abaixo.
   `postgresql-x64-17`, porta 5432, `C:\Program Files\PostgreSQL\17`).
   Banco `claudiao`, dono: role de aplicação `claudiao_app` (sem privilégio de
   superusuário). Superusuário `postgres` existe só para administração.
-- **Ollama** instalado via `winget` (serviço rodando em
-  `http://localhost:11434`). **Nenhum modelo baixado** — `OllamaProvider`
-  funciona, mas `complete()` levanta `LocalLLMProviderError` para qualquer
-  modelo, já que nenhum existe localmente ainda.
+- **Ollama** instalado via `winget` (serviço em `http://localhost:11434`).
+  **Nenhum modelo baixado** — `OllamaProvider` funciona, mas `complete()`
+  levanta `LocalLLMProviderError` para qualquer modelo, já que nenhum existe
+  localmente ainda. **O usuário mantém o app Ollama aberto e pediu para
+  nunca deixar testes passarem "pulados" por ele estar fechado** — abra o
+  app (ou inicie o serviço) e re-rode a suíte antes de reportar resultados.
 - **Credenciais reais:** `config/.env` (na raiz do repo, **nunca versionado** —
   confirme com `git check-ignore -v config/.env` se tiver dúvida). Os testes de
   integração (`tests/integration/`) carregam esse arquivo automaticamente via
   `tests/integration/conftest.py` se as variáveis não estiverem no ambiente do
   processo, e pulam (não falham) se o serviço não estiver acessível — mesmo
-  padrão para PostgreSQL (`postgres_dsn`) e Ollama (`ollama_provider`).
+  padrão para PostgreSQL (`postgres_dsn`) e Ollama (`ollama_provider`), mas
+  ver o aviso acima sobre não aceitar esse pulo passivamente.
 - **Python:** 3.14.6 instalado nesta máquina, mas `requires-python >= 3.11` no
   `backend/pyproject.toml` — não assumir 3.14 especificamente em código novo.
 - **Dependências externas do backend:** `psycopg[binary]`, `cryptography`,
   `ollama` (ver `backend/pyproject.toml`). Sem ambiente virtual criado ainda —
   os pacotes foram instalados com `python -m pip install` direto no Python do
   sistema.
-- **Migrations aplicadas manualmente via `psql`** (0001 a 0005) — não há
+- **Instalar programas novos (`winget install ...` ou equivalente) exige
+  perguntar ao usuário primeiro**, mesmo nesta máquina de dev/teste — usar
+  serviços já instalados (abrir o Ollama, rodar o Postgres) é livre; instalar
+  algo novo não é.
+- **Migrations aplicadas manualmente via `psql`** (0001 a 0011) — não há
   script/comando único que reaplique todas; cada TASK que criou uma migration
   a aplicou na hora com `psql -h 127.0.0.1 -p 5432 -U claudiao_app -d claudiao
   -f backend/app/db/migrations/000N_*.sql`, usando `CLAUDIAO_POSTGRES_PASSWORD`
@@ -194,39 +209,51 @@ TASK-050 e TASK-051 juntas. Ver item 13 de "Armadilhas" abaixo.
    fake (ver `_InfiniteToolProvider`/`_ProgressingToolProvider` em
    `tests/unit/test_max_steps.py`/`test_orchestrator_loop_detection.py`).
 10. **Checkpoint de 10 em 10 é contado a partir do checkpoint anterior, não
-    arredondado.** Ver item 13 abaixo — essa regra já foi violada duas vezes
-    (TASK-030 e TASK-050) por eu perder a contagem no meio de uma sequência
-    longa de TASKs consecutivas.
-11. **Padrão de guardrail isolado (TASK-034/035/036):** quando a especificação
-    pede um comportamento (bloquear LOW, exigir revalidação de VOLATILE,
-    tratar ambiguidade) mas os sistemas reais que alimentariam esse
-    comportamento ainda não existem (evidências reais, Knowledge Tool,
-    avaliação de ambiguidade do `ContextManager`), a solução adotada é criar
-    a função de guarda isolada recebendo o resultado já avaliado como
-    parâmetro explícito (booleano/enum), em vez de tentar calculá-lo. Quem
-    acopla a guarda ao fluxo real do orquestrador é uma TASK futura,
-    explicitamente citada no docstring/Encerramento de cada uma.
-12. **`ContextManager`/`Memory` nasceram com todos os campos já presentes**
+    arredondado.** Já foi violado duas vezes (TASK-030 e TASK-050) por perder
+    a contagem no meio de uma sequência longa de TASKs consecutivas — corrigido
+    desta vez (TASK-060, no prazo) conferindo a contagem explicitamente ao
+    concluir qualquer TASK terminada em 0. Mantenha esse hábito.
+11. **Padrão de guardrail isolado (TASK-034/035/036, TASK-058):** quando a
+    especificação pede um comportamento (bloquear LOW, exigir revalidação de
+    VOLATILE, tratar ambiguidade, avaliar utilidade) mas os sistemas reais que
+    alimentariam esse comportamento ainda não existem (evidências reais,
+    contexto de execução real), a solução adotada é criar a função de guarda
+    isolada recebendo o resultado já avaliado como parâmetro explícito
+    (booleano/enum), em vez de tentar calculá-lo. Quem acopla a guarda ao
+    fluxo real do orquestrador é uma TASK futura (em geral TASK-088+),
+    explicitamente citada no docstring/Encerramento de cada uma. Guardrails
+    desse tipo (`app.confidence.*`, `app.knowledge.usefulness`) nunca são
+    expostos como operação de Tool — são decisões do orquestrador, não do
+    modelo.
+12. **Dataclasses de modelo nascem com todos os campos já presentes**
     (vazios/`None`/zero), e cada TASK seguinte só acrescenta métodos que
-    operam sobre campos já existentes — não redesenha o dataclass. Mesmo
-    padrão de `Execution` (TASK-020), que já tinha `observations` antes de
-    `set_last_observation` existir (TASK-026). Exemplo mais recente: `Memory`
-    (TASK-044) já tinha `use_count`/`last_used_at` com defaults antes de
-    `record_memory_usage` (TASK-048) existir.
-13. **Checkpoint perdido de novo, agora na TASK-050 (mesmo erro da TASK-030):**
-    o quarto checkpoint (TASK-040) tinha deixado escrito "próximo checkpoint
-    automático... é na TASK-040" só até ali; o quinto checkpoint devido era
-    exatamente 10 TASKs depois, na TASK-050 — mas isso não foi executado
-    quando a TASK-050 terminou, só quando o usuário pediu para listar as
-    TASKs restantes e a contagem foi refeita manualmente durante a TASK-051.
-    Causa provável: numa sequência longa de TASKs consecutivas dentro do
-    mesmo bloco funcional ("Memória", TASK-044 a TASK-051), a atenção fica no
-    conteúdo de cada TASK e a contagem de checkpoint não é revisitada a cada
-    conclusão. Mitigação prática: ao terminar QUALQUER TASK cujo número
-    termine em 0, parar e conferir explicitamente se é um múltiplo de 10 a
-    partir do último checkpoint (não do zero) antes de seguir para a
-    próxima — não confiar em lembrar da regra "de cabeça" no meio de uma
-    sequência longa.
+    operam sobre campos já existentes — não redesenha a dataclass. Padrão
+    replicado em `Execution` (TASK-020), `ContextManager` (TASK-037),
+    `Memory` (TASK-044) e `Knowledge` (TASK-052): campos como
+    `use_count`/`root_id`/`scope_type`/`confidence` chegam com default antes
+    da função que os usa de verdade existir.
+13. **Checkpoint perdido duas vezes seguidas (TASK-030, TASK-050) pela mesma
+    causa: sequência longa de TASKs consecutivas dentro do mesmo bloco
+    funcional tira o foco da contagem de checkpoint.** Mitigação que
+    funcionou na TASK-060: ao terminar QUALQUER TASK cujo número termine em
+    0, parar e conferir explicitamente se é um múltiplo de 10 a partir do
+    último checkpoint (não do zero) antes de seguir — não confiar em lembrar
+    a regra "de cabeça" no meio de uma sequência longa.
+14. **Nunca reportar testes pulados por Ollama indisponível como um fato
+    ambiental aceitável.** Ollama está instalado e disponível nesta máquina —
+    um skip significa que o serviço não está rodando *agora*, não que é
+    inacessível. Abrir o Ollama (o usuário confirmou que pode ser feito
+    livremente) e re-rodar a suíte antes de reportar "N testes passando".
+15. **Modelo de conhecimento com linhagem/versão (TASK-054) exige atenção em
+    limpeza de teste:** `root_id` agrupa todas as versões de um fato; ao
+    limpar dados de teste, sempre `DELETE ... WHERE root_id = %s`, nunca
+    `WHERE id = %s` — `NEW_VERSION`/`create_new_version` cria linhas novas
+    com `id` diferente na mesma linhagem, que ficariam órfãs.
+16. **Tabelas com FK para `knowledge`/`memories` precisam de `ON DELETE
+    CASCADE`** quando a remoção em teste (ou uso administrativo) da linha
+    pai é esperada — descoberto ao criar `knowledge_evidence` (TASK-056) sem
+    isso, quebrando a limpeza de testes que criavam evidências. Corrigido na
+    própria migration antes de commitar.
 
 ## Workflow que está sendo seguido
 
@@ -242,16 +269,17 @@ termina, sem precisar pedir); não são deletadas depois do merge.
 
 ## Próximos passos imediatos
 
-**TASK-052 — Criar modelo RAW/PROVISIONAL/CONFIRMED** (dependência: TASK-051
-concluída). Abre o bloco "Conhecimento" (TASK-052 a TASK-058, ver
-`docs/KNOWLEDGE.md` e `docs/BACKLOG.md`) — os três estágios de confiabilidade
-de um fato aprendido pelo agente, separado de memória (TASK-044+) e de
-contexto imediato (TASK-037+). TASK-053 (Knowledge Tool), TASK-054
-(versionamento), TASK-055 (escopo GLOBAL/APPLICATION), TASK-056
-(evidências/fontes), TASK-057 (promoção para CONFIRMED), TASK-058 (avaliação
-de utilidade pelo orquestrador) constroem em cima. **Próximo checkpoint de 10
-TASKs devido na TASK-060** — conferir a contagem explicitamente ao concluir
-qualquer TASK terminada em 0 (ver item 13 de "Armadilhas").
+**TASK-061 — Implementar reputação LOW/MEDIUM/HIGH** (dependência: TASK-060
+concluída). Continua o bloco "Fontes" (TASK-059 a TASK-066, ver
+`docs/TRUST_GUARDRAILS.md` e `docs/BACKLOG.md`): cada fonte cadastrada
+(`sources`, TASK-059) e classificada por tipo (TASK-060) ganha uma
+reputação `LOW`/`MEDIUM`/`HIGH`, provavelmente com um valor padrão inicial
+(a especificação não detalha qual — decisão a tomar na TASK). TASK-062
+(atualização de reputação), TASK-063 (histórico), TASK-064 (blacklist),
+TASK-065 (bloqueio automático) e TASK-066 (desbloqueio só por `ADMIN`)
+constroem em cima. **Próximo checkpoint de 10 TASKs devido na TASK-070** —
+conferir a contagem explicitamente ao concluir qualquer TASK terminada em 0
+(ver item 13 de "Armadilhas").
 
 ## Histórico de checkpoints
 
@@ -263,20 +291,13 @@ qualquer TASK terminada em 0 (ver item 13 de "Armadilhas").
   161/161 testes.
 - **2026-08-16 — TASK-030:** terceiro checkpoint — feito com atraso (deveria
   ter sido automático ao concluir a TASK-030, só rodou quando o usuário
-  perguntou pelo status). Bloco "Orquestração" completo: ciclo inteiro de
-  execução (planejamento, validação, execução por etapas, replanejamento,
-  `max_steps`, detecção de loop, cancelamento). 247/247 testes.
+  perguntou pelo status). Bloco "Orquestração" completo. 247/247 testes.
 - **2026-08-18 — TASK-040:** quarto checkpoint, no prazo. Bloco "Confiança e
-  guardrails" completo (confiança do modelo, volatilidade, Confidence Engine,
-  três guardrails de bloqueio isolados — LOW, VOLATILE não revalidada,
-  ambiguidade não resolvida). Bloco "Contexto" iniciado: `ContextManager` com
-  assunto principal, rastreamento de entidades/referências implícitas e
-  correção de contexto. 306/306 testes.
-- **2026-08-18 — TASK-050/TASK-051 (este checkpoint):** quinto checkpoint —
-  feito com atraso de uma TASK (deveria ter sido automático ao concluir a
-  TASK-050; só rodou ao concluir a TASK-051, quando a contagem foi refeita
-  manualmente). Bloco "Contexto" completo (detecção de troca de assunto,
-  monitor de janela + aviso em 80%). Bloco "Memória" completo (modelo
-  persistente, separação por dono, Memory Tool, busca estruturada,
-  relevância/frequência/last used, retenção, limite fixo de 500 por dono,
-  auditoria de remoção sem guardar conteúdo). 379/379 testes.
+  guardrails" completo; bloco "Contexto" iniciado. 306/306 testes.
+- **2026-08-18 — TASK-050/TASK-051:** quinto checkpoint — feito com atraso de
+  uma TASK. Blocos "Contexto" e "Memória" completos. 379/379 testes.
+- **2026-08-19 — TASK-060 (este checkpoint):** sexto checkpoint, no prazo
+  certo pela primeira vez desde o atraso da TASK-030. Bloco "Conhecimento"
+  completo (RAW/PROVISIONAL/CONFIRMED, versionamento, escopo, evidências,
+  promoção, utilidade); bloco "Fontes" iniciado (cadastro + tipo). 487/487
+  testes.
