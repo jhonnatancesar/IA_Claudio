@@ -21,18 +21,26 @@ Cadastro de fontes (PRIMARY/SECONDARY/UNKNOWN), reputação (LOW/MEDIUM/HIGH), h
   responsible=None)` (TASK-064) — mecânicos, gravam
   `BlacklistEntry`/`list_blacklist_entries` a cada chamada;
   `SourceBlacklistStateError` para bloquear já bloqueada/desbloquear não
-  bloqueada. Bloqueio automático (TASK-065) e "só ADMIN desbloqueia"
-  (TASK-066) não são desta TASK.
+  bloqueada. "Só ADMIN desbloqueia" (TASK-066) não é desta TASK.
 - `reputation_rule.py` (TASK-062) — `update_reputation(current,
   was_accurate)` (função pura: um degrau por vez,
   `HIGH↔MEDIUM↔LOW`) e `update_source_reputation(source_id,
   was_accurate)` — busca a fonte, calcula a nova reputação e só grava se
   mudar (histórico segue automaticamente via `set_source_reputation`).
+- `auto_block_rule.py` (TASK-065) — `is_eligible_for_auto_block
+  (reputation)` (função pura: hoje só `reputation == LOW`) e
+  `auto_block_after_validation(source_id, was_accurate)` — encadeia
+  `update_source_reputation` com `block_source` (`origin=AGENT`) quando
+  a reputação cai para `LOW`, sem bloquear de novo uma fonte já
+  bloqueada. Alerta no painel (seção 14/15) não é desta TASK — painel
+  ainda não existe.
 
 Testes em `tests/integration/test_source_registry_integration.py`,
 `tests/integration/test_reputation_rule_integration.py`,
-`tests/integration/test_source_blacklist_integration.py`
-(persistência/idempotência/tipo/reputação/atualização/histórico/blacklist
-reais) e `tests/unit/test_source_registry.py`/
-`tests/unit/test_reputation_rule.py`/`tests/unit/test_source_blacklist.py`
-(validação de campos vazios, enums, regra pura).
+`tests/integration/test_source_blacklist_integration.py`,
+`tests/integration/test_auto_block_rule_integration.py`
+(persistência/idempotência/tipo/reputação/atualização/histórico/blacklist/bloqueio
+automático reais) e `tests/unit/test_source_registry.py`/
+`tests/unit/test_reputation_rule.py`/`tests/unit/test_source_blacklist.py`/
+`tests/unit/test_auto_block_rule.py` (validação de campos vazios, enums,
+regras puras).

@@ -147,6 +147,19 @@ pode desbloquear é TASK-066, nenhuma das duas implementada aqui.
 `list_blacklist_entries(source_id)` lê o histórico, mais antigo
 primeiro.
 
+**Implementação (TASK-065):** `backend/app/sources/auto_block_rule.py` —
+`is_eligible_for_auto_block(reputation)` (função pura: hoje só
+`reputation == LOW`) e `auto_block_after_validation(source_id,
+was_accurate)`, que encadeia `update_source_reputation` (TASK-062) com
+`block_source` (TASK-064, `origin=AGENT`) quando a reputação resultante
+cai para `LOW` e a fonte ainda não está bloqueada — a especificação não
+detalha qual validação dispara o bloqueio automático, e a queda de
+reputação para `LOW` já construída na TASK-062 é o gatilho mais simples
+e defensável, sem exigir um sinal novo. Não bloqueia de novo uma fonte já
+bloqueada (evita `SourceBlacklistStateError`). "Bloqueio automático gera
+alerta no painel" não é implementado aqui — o painel ainda não existe
+(TASK-081 em diante).
+
 ## Guardrails de resposta
 
 - Resposta conclusiva é bloqueada quando a confiança final é `LOW` (TASK-034).

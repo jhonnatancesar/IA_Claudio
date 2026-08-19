@@ -254,11 +254,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-064** — concluída (blacklist de fontes,
   `block_source`/`unblock_source`/`list_blacklist_entries` — ver
   `docs/tasks/TASK-064.md`). Suíte completa: 522/522 testes aprovados.
+- **TASK-065** — concluída (bloqueio automático,
+  `backend/app/sources/auto_block_rule.py`,
+  `auto_block_after_validation` — ver `docs/tasks/TASK-065.md`). Suíte
+  completa: 529/529 testes aprovados.
 
-As demais 83 TASKs permanecem com status **Pendente**.
+As demais 82 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-065 — Implementar bloqueio
-automático**.
+Próxima TASK executável: **TASK-066 — Implementar desbloqueio somente
+ADMIN**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
