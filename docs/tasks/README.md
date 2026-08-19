@@ -226,11 +226,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/knowledge/promotion_rule.py`, `promote_to_confirmed` —
   ver `docs/tasks/TASK-057.md`). Suíte completa: 470/470 testes
   aprovados.
+- **TASK-058** — concluída (avaliação de utilidade pelo orquestrador,
+  `backend/app/knowledge/usefulness.py`, `is_useful_for_orchestrator` —
+  ver `docs/tasks/TASK-058.md`). Suíte completa: 471/471 testes
+  aprovados. **Com esta TASK, o bloco "Conhecimento" (TASK-052 a
+  TASK-058) está completo.**
 
-As demais 90 TASKs permanecem com status **Pendente**.
+As demais 89 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-058 — Implementar avaliação de
-utilidade pelo orquestrador**.
+Próxima TASK executável: **TASK-059 — Criar cadastro de fontes**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -30,6 +30,12 @@ Modelo RAW/PROVISIONAL/CONFIRMED, Knowledge Tool, versionamento, escopo GLOBAL/A
   regra e só então chama `advance_knowledge_status`;
   `KnowledgePromotionNotEligibleError` se não elegível, sem alterar
   nada. Promoção `RAW → PROVISIONAL` não é desta TASK.
+- `usefulness.py` (TASK-058) — `is_useful_for_orchestrator(knowledge,
+  is_relevant_to_objective)` (função pura): exige `CONFIRMED` +
+  relevância para o objetivo atual, recebida já avaliada por quem chama
+  (contextual, não deriva do `Knowledge`). Avaliação do orquestrador, não
+  uma operação da Knowledge Tool. Com esta TASK, o bloco "Conhecimento"
+  (TASK-052 a TASK-058) está completo.
 
 Testes em `tests/integration/test_knowledge_model_integration.py`,
 `tests/integration/test_knowledge_versioning_integration.py`,
@@ -39,4 +45,5 @@ Testes em `tests/integration/test_knowledge_model_integration.py`,
 (persistência/transições/versionamento/escopo/evidências/promoção reais)
 e `tests/unit/test_knowledge_model.py`/`tests/unit/test_knowledge_versioning.py`/
 `tests/unit/test_knowledge_scope.py`/`tests/unit/test_knowledge_evidence.py`/
-`tests/unit/test_knowledge_promotion_rule.py` (validação/regra pura).
+`tests/unit/test_knowledge_promotion_rule.py`/`tests/unit/test_knowledge_usefulness.py`
+(validação/regras puras).
