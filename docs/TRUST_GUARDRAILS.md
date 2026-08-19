@@ -99,6 +99,19 @@ ser usada, comportamento conservador correto para o não avaliado).
 *quando* rebaixar/elevar com base em dados corretos/errados apresentados
 é a atualização de reputação, TASK-062, não implementada aqui.
 
+**Implementação (TASK-062):**
+`backend/app/sources/reputation_rule.py` — `update_reputation(current,
+was_accurate)` (função pura): resultado incorreto rebaixa um degrau
+(`HIGH → MEDIUM → LOW`, permanece `LOW`); resultado correto eleva um
+degrau (`LOW → MEDIUM → HIGH`, permanece `HIGH`) — "avaliada
+dinamicamente" (seção 14/15) implica subida além de descida, e "um
+degrau por vez" é o critério mais simples e defensável, já que a
+especificação não detalha a magnitude do ajuste.
+`update_source_reputation(source_id, was_accurate)` busca a fonte,
+calcula a nova reputação e só grava (`set_source_reputation`, TASK-061)
+se o valor realmente mudar. Histórico de cada mudança é TASK-063, não
+implementado aqui.
+
 ## Fontes bloqueadas (blacklist)
 
 - Existe blacklist de fontes.
