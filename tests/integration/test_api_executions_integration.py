@@ -1,7 +1,7 @@
-"""Teste de integração: API local do Claudião (TASK-067, TASK-068,
-TASK-069, TASK-070) executando de verdade contra o PostgreSQL local —
-autenticação real de aplicação, validação de payload e execução síncrona
-via HTTP. Usa a fixture `postgres_dsn` (tests/integration/conftest.py) —
+"""Teste de integração: API local do Claudião (TASK-067 a TASK-073)
+executando de verdade contra o PostgreSQL local — autenticação real de
+aplicação, validação de payload, execução síncrona via HTTP e rastreio de
+consumo. Usa a fixture `postgres_dsn` (tests/integration/conftest.py) —
 pula automaticamente se o banco não estiver disponível.
 
 O `LocalLLMProvider`/modelo ativo são substituídos por fakes via
@@ -29,6 +29,7 @@ from app.llm.provider import (
     LocalLLMProvider,
     LocalLLMProviderError,
 )
+from app.usage.usage_model import list_usage_for_application
 
 _VALID_PAYLOAD = {
     "objective": "buscar o clima de hoje",
@@ -140,6 +141,11 @@ def test_create_execution_with_valid_payload(postgres_dsn, registered_applicatio
     assert data["status"] == "COMPLETED"
     assert data["result"] == "resposta pronta"
 
+    usage = list_usage_for_application(registered_application[0].id)
+    assert len(usage) == 1
+    assert usage[0].execution_id == data["execution_id"]
+    assert usage[0].status == "COMPLETED"
+
 
 def test_create_execution_generates_unique_execution_ids(
     postgres_dsn, registered_application, client
@@ -230,6 +236,10 @@ def test_create_execution_reports_model_completion_failure(
     assert body["success"] is False
     assert body["error"]["code"] == 3002
 
+    usage = list_usage_for_application(registered_application[0].id)
+    assert len(usage) == 1
+    assert usage[0].status == "FAILED"
+
 
 def test_create_execution_times_out_when_model_is_slower_than_timeout_seconds(
     postgres_dsn, registered_application, client
@@ -259,6 +269,10 @@ def test_create_execution_times_out_when_model_is_slower_than_timeout_seconds(
     # timeout configurado (0.05s), com folga generosa para o overhead do
     # próprio teste.
     assert elapsed < 0.5
+
+    usage = list_usage_for_application(registered_application[0].id)
+    assert len(usage) == 1
+    assert usage[0].status == "CANCELLED"
 
 
 def test_create_execution_completes_normally_when_faster_than_timeout_seconds(

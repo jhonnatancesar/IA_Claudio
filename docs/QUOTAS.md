@@ -29,3 +29,12 @@ para evolução futura (planos pagos completos ficam fora da V1 — ver
 
 TASK-108 a TASK-114: sistema de cotas, medição de tokens/requisições/volume,
 renovação diária, alertas 80/95%, bloqueio 100%.
+
+**Implementação (TASK-073):** antes do sistema de cotas completo existir,
+`POST /v1/executions` já grava o registro mínimo de que uma requisição
+aconteceu — `app.usage.usage_model.record_usage(application_id,
+execution_id, status)`, tabela `usage_records`
+(`backend/app/db/migrations/0015_usage_records.sql`). Cobre só "número de
+requisições" (via `COUNT(*)`); medição de tokens/volume, ciclo de
+renovação, avisos 80%/95% e bloqueio em 100% continuam TASK-108 a
+TASK-114, não implementados aqui. Ver `backend/app/usage/README.md`.

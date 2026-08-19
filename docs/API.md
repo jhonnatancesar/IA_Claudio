@@ -126,6 +126,17 @@ superior, sem `success`), inconsistente com o formato de erro já em uso
 desde a TASK-008. Ver `docs/ERROR_CATALOG.md`, "Formato padrão de
 resposta", para o contrato completo (erro e sucesso).
 
+**Implementação (TASK-073):** a cada desfecho de `POST /v1/executions`
+(sucesso, timeout, falha de modelo/ferramenta),
+`record_usage(application.id, execution.execution_id, status)`
+(`app.usage.usage_model`, `docs/QUOTAS.md`) grava uma linha em
+`usage_records` — o registro mínimo de que a aplicação consumiu uma
+requisição. Requisições rejeitadas antes de chegar à execução (401 de
+autenticação, 400 de validação) não geram registro, já que nunca chegam a
+criar uma `Execution`. Medição de tokens/volume, ciclo de renovação e
+aplicação de limites continuam TASK-108 a TASK-114, não implementados
+aqui — ver `docs/QUOTAS.md`.
+
 ## TASKs relacionadas
 
 TASK-067 a TASK-073: API local, validação de payload, execução síncrona, timeout,

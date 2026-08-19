@@ -11,12 +11,11 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-072** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-073** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
-"Memória", "Conhecimento" e "Fontes" completos; bloco "Aplicações" em
-andamento (API local, FastAPI, validação de payload, execução síncrona,
-timeout aplicado de fato e com formato de erro específico, resposta JSON
-final com envelope `"success"`).
+"Memória", "Conhecimento", "Fontes" e "Aplicações" completos (API local
+FastAPI, validação de payload, execução síncrona, timeout com erro
+específico, resposta JSON final e rastreio de consumo).
 Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
@@ -41,5 +40,5 @@ Ver
 
 ## Próxima TASK
 
-**TASK-073 — Implementar rastreio de consumo**
-([docs/tasks/TASK-073.md](docs/tasks/TASK-073.md)).
+**TASK-074 — Criar fila FIFO**
+([docs/tasks/TASK-074.md](docs/tasks/TASK-074.md)).

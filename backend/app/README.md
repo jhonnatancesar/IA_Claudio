@@ -19,11 +19,12 @@ Módulos do núcleo do Claudião, um por componente da arquitetura descrita em
 - `tools/` — Tool Registry (Memory, Knowledge, Web Search, File, Database, API Tool)
 - `queue/` — fila FIFO
 - `observability/` — logging, Execution Trace, métricas
-- `quotas/` — cotas de consumo
+- `usage/` — rastreio mínimo de consumo por aplicação (TASK-073, base de dados para `quotas/`)
+- `quotas/` — sistema de cotas completo: medição de tokens/volume, ciclo de renovação, alertas, bloqueio (TASK-108 a TASK-114)
 - `panel/` — painel web (read-only e administrativo)
 - `backup/` — backup e restore
 - `updater/` — atualização via Git e rollback
 - `db/` — persistência PostgreSQL e migrations
 
 Cada diretório tem um `README.md` próprio com a documentação e as TASKs
-correspondentes. Nenhum código foi implementado ainda.
+correspondentes. Ver `docs/HANDOFF.md` para o que já está implementado.

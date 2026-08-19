@@ -288,10 +288,16 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   em novo `backend/app/api/responses.py`, espelhando `build_error_response`
   — `{"success": true, "data": {...}}` — ver `docs/tasks/TASK-072.md`).
   Suíte completa: 567/567 testes aprovados.
+- **TASK-073** — concluída (rastreio de consumo, novo
+  `backend/app/usage/usage_model.py`, `record_usage`/
+  `list_usage_for_application`, tabela `usage_records` — ver
+  `docs/tasks/TASK-073.md`). Suíte completa: 571/571 testes aprovados.
+  **Com esta TASK, o bloco "Aplicações" (TASK-067 a TASK-073) está
+  completo.**
 
-As demais 75 TASKs permanecem com status **Pendente**.
+As demais 74 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-073 — Implementar rastreio de consumo**.
+Próxima TASK executável: **TASK-074 — Criar fila FIFO**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
