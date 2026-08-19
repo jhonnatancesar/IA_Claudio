@@ -9,7 +9,14 @@ import uuid
 import psycopg
 import pytest
 
-from app.sources.source_registry import get_source, get_source_by_identifier, register_source
+from app.sources.source_registry import (
+    SourceNotFoundError,
+    SourceType,
+    get_source,
+    get_source_by_identifier,
+    register_source,
+    set_source_type,
+)
 
 
 @pytest.fixture
@@ -57,3 +64,29 @@ def test_get_source_by_identifier_finds_registered_source(postgres_dsn, unique_i
 
     assert fetched is not None
     assert fetched.id == registered.id
+
+
+def test_register_source_defaults_to_unknown_type(postgres_dsn, unique_identifier):
+    source = register_source(unique_identifier)
+
+    assert source.source_type == SourceType.UNKNOWN
+
+
+def test_register_source_accepts_explicit_type(postgres_dsn, unique_identifier):
+    source = register_source(unique_identifier, source_type=SourceType.PRIMARY)
+
+    assert source.source_type == SourceType.PRIMARY
+
+
+def test_set_source_type_reclassifies_existing_source(postgres_dsn, unique_identifier):
+    source = register_source(unique_identifier)
+
+    updated = set_source_type(source.id, SourceType.SECONDARY)
+
+    assert updated.source_type == SourceType.SECONDARY
+    assert get_source(source.id).source_type == SourceType.SECONDARY
+
+
+def test_set_source_type_raises_for_unknown_id(postgres_dsn):
+    with pytest.raises(SourceNotFoundError):
+        set_source_type(uuid.uuid4(), SourceType.PRIMARY)

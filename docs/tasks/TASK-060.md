@@ -1,6 +1,6 @@
 # TASK-060 — Implementar PRIMARY/SECONDARY/UNKNOWN
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,20 @@ Testes unitários de fontes/reputação/blacklist para este comportamento espec�
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Criado schema
+`backend/app/db/migrations/0011_source_type.sql` (coluna `source_type`
+em `sources`, `CHECK` restringindo a `PRIMARY`/`SECONDARY`/`UNKNOWN`,
+padrão `UNKNOWN`), aplicado no PostgreSQL local real. Em
+`backend/app/sources/source_registry.py`: `SourceType` (enum),
+`register_source` aceita `source_type` opcional (padrão `UNKNOWN`),
+`set_source_type(source_id, source_type)` reclassifica uma fonte já
+registrada (`SourceNotFoundError` se não existir).
+
+Tipo e reputação são conceitos independentes — reputação de fato é
+TASK-061 em diante, não implementada aqui.
+
+5 testes novos (1 unitário de enum + 4 de integração real). Suíte
+completa: 487/487 testes aprovados.
