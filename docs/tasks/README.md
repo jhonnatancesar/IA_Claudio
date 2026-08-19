@@ -279,10 +279,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   compartilhado — código `APPLICATION_TIMEOUT_EXCEEDED`, `4009`, HTTP
   `504` — ver `docs/tasks/TASK-070.md`). Suíte completa: 562/562 testes
   aprovados.
+- **TASK-071** — concluída (erro de timeout com formato específico,
+  `_timeout_error_details` em `backend/app/api/executions.py` —
+  `current_step`/`active_tool` nos `details` de
+  `APPLICATION_TIMEOUT_EXCEEDED` — ver `docs/tasks/TASK-071.md`). Suíte
+  completa: 565/565 testes aprovados.
 
-As demais 77 TASKs permanecem com status **Pendente**.
+As demais 76 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-071 — Implementar erro de timeout**.
+Próxima TASK executável: **TASK-072 — Implementar resposta JSON final**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

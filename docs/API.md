@@ -100,9 +100,22 @@ execução") e a rota devolve `APPLICATION_TIMEOUT_EXCEEDED` (código 4009,
 HTTP 504, `docs/ERROR_CATALOG.md`). Se o orquestrador estiver entre
 etapas de um fluxo `USE_TOOL`, ele mesmo observa o cancelamento (o mesmo
 mecanismo cooperativo da TASK-030) e chama `execution.cancel(...)` — só
-uma thread por vez escreve em `execution`. O formato específico do erro
-(etapa atual/ferramenta ativa) é TASK-071, não implementado aqui — os
-`details` desta TASK trazem só `timeout_seconds`.
+uma thread por vez escreve em `execution`.
+
+**Implementação (TASK-071):** os `details` de `APPLICATION_TIMEOUT_EXCEEDED`
+agora trazem "etapa atual e ferramenta ativa", como a seção acima exige —
+`_timeout_error_details(execution, timeout_seconds)`
+(`backend/app/api/executions.py`), função pura testável isoladamente:
+`current_step` é `execution.step_count + 1` (1-indexado — a etapa que
+estava em andamento quando o prazo estourou); `active_tool` é o `tool` da
+última etapa já registrada em `execution.steps`, ou `None` se nenhuma
+etapa foi registrada ainda ou a última não usava ferramenta. Como nenhum
+`tool_executor` está configurado ainda (Tool Registry, TASK-088+), na
+prática hoje o endpoint real quase sempre reporta `current_step: 1` e
+`active_tool: null` (o timeout costuma travar na primeira chamada ao
+modelo, antes de qualquer etapa ser registrada) — o valor cresce em
+utilidade conforme fluxos com `USE_TOOL` passarem a existir de ponta a
+ponta.
 
 ## TASKs relacionadas
 

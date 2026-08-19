@@ -1,4 +1,4 @@
-"""Rota de execuções da API local (TASK-067, TASK-068, TASK-069, TASK-070).
+"""Rota de execuções da API local (TASK-067 a TASK-071).
 
 `POST /v1/executions`: ponto de entrada para uma aplicação externa pedir
 uma execução ao Claudião (`docs/API.md`, seções 24/25/26). Autentica a
@@ -39,10 +39,20 @@ quem ganha uma thread aqui é só o limite HTTP, nunca o laço do
 orquestrador em si); se a chamada travada terminar sozinha depois, ela
 também cancela/completa `execution` normalmente, só que tarde demais para
 influenciar a resposta HTTP já enviada — limitação inerente a cancelamento
-cooperativo e não-preemptivo, aceita conscientemente aqui. O formato
-específico do erro (etapa atual/ferramenta ativa nos `details`) é
-TASK-071, não implementado aqui — o erro desta TASK é o mínimo padronizado
-(`APPLICATION_TIMEOUT_EXCEEDED`, código 4009, HTTP 504).
+cooperativo e não-preemptivo, aceita conscientemente aqui.
+
+**Erro de timeout (TASK-071):** `APPLICATION_TIMEOUT_EXCEEDED` (código
+4009, HTTP 504) — os `details` trazem `timeout_seconds` (TASK-070) mais
+"etapa atual e ferramenta ativa" (`docs/API.md`, seção 26):
+`current_step` é `execution.step_count + 1` (a etapa que estava em
+andamento quando o prazo estourou, 1-indexada) e `active_tool` é o `tool`
+da última etapa já registrada em `execution.steps` (`None` se nenhuma
+etapa foi registrada ainda, ou se a última foi `RESPOND`). Como nenhum
+`tool_executor` está configurado ainda (Tool Registry, TASK-088+), na
+prática hoje `execution.steps` costuma estar vazia no momento do timeout
+(a única etapa em andamento é a primeira chamada ao modelo, ainda não
+registrada) — o valor cresce em utilidade conforme fluxos com `USE_TOOL`
+passarem a existir de verdade.
 """
 
 from __future__ import annotations
@@ -86,6 +96,28 @@ APPLICATION_TIMEOUT_EXCEEDED = register_error(
 )
 
 
+def _timeout_error_details(execution: Execution, timeout_seconds: float) -> dict:
+    """Monta os `details` de `APPLICATION_TIMEOUT_EXCEEDED` (TASK-071) —
+    "etapa atual e ferramenta ativa" (`docs/API.md`, seção 26). `execution`
+    é lida no exato momento do timeout, sem sincronização com a thread do
+    orquestrador (ver docstring do módulo) — melhor esforço, não garantia
+    atômica.
+
+    `current_step` (1-indexado) é a etapa que estava em andamento quando o
+    prazo estourou: `execution.step_count` etapas já foram registradas, a
+    próxima (`+ 1`) é a que travou. `active_tool` é o `tool` da última
+    etapa já registrada, ou `None` se nenhuma etapa foi registrada ainda
+    (comum hoje, já que nenhum `tool_executor` está configurado) ou se a
+    última etapa não usava ferramenta.
+    """
+    last_step = execution.steps[-1] if execution.steps else None
+    return {
+        "timeout_seconds": timeout_seconds,
+        "current_step": execution.step_count + 1,
+        "active_tool": last_step.tool if last_step is not None else None,
+    }
+
+
 @router.post("/v1/executions")
 def create_execution(
     payload: ExecutionRequest,
@@ -120,7 +152,8 @@ def create_execution(
     except FutureTimeoutError:
         cancellation_token.cancel(reason=_TIMEOUT_REASON)
         raise ClaudiaoError(
-            APPLICATION_TIMEOUT_EXCEEDED, details={"timeout_seconds": payload.timeout_seconds}
+            APPLICATION_TIMEOUT_EXCEEDED,
+            details=_timeout_error_details(execution, payload.timeout_seconds),
         ) from None
     except LocalLLMProviderError as exc:
         raise ClaudiaoError(MODEL_COMPLETION_FAILED, details={"reason": str(exc)}) from exc
