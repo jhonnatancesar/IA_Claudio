@@ -160,6 +160,18 @@ bloqueada (evita `SourceBlacklistStateError`). "Bloqueio automático gera
 alerta no painel" não é implementado aqui — o painel ainda não existe
 (TASK-081 em diante).
 
+**Implementação (TASK-066):** `backend/app/sources/unblock_rule.py` —
+`admin_unblock_source(source_id, role, responsible, reason)`, que
+reaproveita `app.auth.roles.require_admin` (TASK-010, mesmo código de
+erro `FORBIDDEN_ADMIN_ONLY`, 2001) em vez de duplicar lógica de
+autorização: "se o agente bloquear, ele não pode desbloquear sozinho —
+somente o `ADMIN`" — leitura aplicada como desbloqueio exigindo `ADMIN`
+sempre, não só quando foi o agente que bloqueou. Só então chama
+`unblock_source` (TASK-064, `origin=ADMIN`). Nenhuma checagem de papel
+existia antes desta TASK — `unblock_source` continua mecânico por si só;
+esta é a única forma "autorizada" de desbloquear. Com esta TASK, o bloco
+"Fontes" (TASK-059 a TASK-066) está completo.
+
 ## Guardrails de resposta
 
 - Resposta conclusiva é bloqueada quando a confiança final é `LOW` (TASK-034).
