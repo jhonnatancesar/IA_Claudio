@@ -263,10 +263,13 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `docs/tasks/TASK-066.md`). Suíte completa: 536/536 testes aprovados.
   **Com esta TASK, o bloco "Fontes" (TASK-059 a TASK-066) está
   completo.**
+- **TASK-067** — concluída (API local do Claudião, `backend/app/api/`,
+  FastAPI — DEC-009 — ver `docs/tasks/TASK-067.md`). Suíte completa:
+  543/543 testes aprovados.
 
-As demais 81 TASKs permanecem com status **Pendente**.
+As demais 80 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-067 — Criar API local do Claudião**.
+Próxima TASK executável: **TASK-068 — Criar validação de payload**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
