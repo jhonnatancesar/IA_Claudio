@@ -64,6 +64,31 @@ reaproveitando os códigos genéricos já existentes desde a fundação
 em vez de criar códigos novos só para isto. Montar a `ExecutionPolicy`
 de fato a partir do payload validado é TASK-069, não implementado aqui.
 
+**Implementação (TASK-069):** `POST /v1/executions` agora executa de
+fato, de forma síncrona: monta `ExecutionPolicy.for_application`
+(TASK-022) a partir dos campos já validados do payload
+(`timeout_seconds`/`web_search_allowed`/`max_steps`) e roda
+`ExecutionOrchestrator.run_until_response` (TASK-023/026) até uma
+resposta final — "a aplicação envia a requisição e espera o JSON final,
+sem eventos intermediários". `backend/app/api/dependencies.py`:
+`get_local_llm_provider`/`get_active_model`, dependências do FastAPI
+(substituíveis por fakes em teste via `app.dependency_overrides`, já que
+nenhum modelo Ollama real foi baixado). `get_active_model` lê
+`CLAUDIAO_ACTIVE_MODEL` (`config/.env.example`, já previsto desde a
+TASK-002) — se ausente, erro claro (`NO_ACTIVE_MODEL_CONFIGURED`, código
+3001) em vez de tentar completar com nome de modelo vazio.
+`LocalLLMProviderError`/`ToolExecutorNotConfiguredError` (falhas de
+runtime do orquestrador que não são `ClaudiaoError`) são convertidas para
+erros com código próprio (`3002`/`3003`) em vez de vazar como 500 não
+tratado.
+
+`timeout_seconds` é guardado na política mas ainda não é aplicado como
+limite de fato durante a execução (isso é TASK-070); estourar e reportar
+esse limite formalmente é TASK-071. O envelope de sucesso desta TASK é o
+mínimo (`execution_id`/`status`/`result`) — o contrato final formal
+(`"success": true`, à semelhança do `"success": false` de erro) e
+rastreio de consumo são TASK-072/TASK-073, não implementados aqui.
+
 ## TASKs relacionadas
 
 TASK-067 a TASK-073: API local, validação de payload, execução síncrona, timeout,

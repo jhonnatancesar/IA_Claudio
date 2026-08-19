@@ -1,6 +1,6 @@
 # TASK-069 — Implementar execução síncrona
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,32 @@ Testes unitários e de integração da API para aplicações (payload válido/in
 ## Documentação afetada
 
 `docs/API.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. `POST /v1/executions` agora executa de fato, de
+forma síncrona: monta `ExecutionPolicy.for_application` (TASK-022) a
+partir do payload já validado e roda
+`ExecutionOrchestrator.run_until_response` (TASK-023/026) até uma
+resposta final, na mesma resposta HTTP. Criado
+`backend/app/api/dependencies.py`: `get_local_llm_provider`/
+`get_active_model` como dependências do FastAPI (substituíveis por fakes
+em teste); `get_active_model` lê `CLAUDIAO_ACTIVE_MODEL`
+(`config/.env.example`, já previsto desde a TASK-002) e levanta
+`ClaudiaoError` (`NO_ACTIVE_MODEL_CONFIGURED`, código `3001`) se
+ausente. `LocalLLMProviderError`/`ToolExecutorNotConfiguredError` (falhas
+de runtime que não são `ClaudiaoError`) convertidas para erros com
+código próprio (`3002`/`3003`) em vez de vazar como 500 não tratado.
+Também corrigida uma lacuna na TASK-067: o código `2002` nunca tinha sido
+adicionado à tabela de `docs/ERROR_CATALOG.md`.
+
+`timeout_seconds` é guardado na política mas ainda não aplicado como
+limite de fato (TASK-070); estourar/reportar esse limite é TASK-071. O
+envelope de sucesso é o mínimo por ora — o contrato formal (`"success":
+true`) e rastreio de consumo são TASK-072/TASK-073.
+
+4 testes novos (2 unitários de `get_active_model`, sem tocar rede/banco +
+2 de integração real), além de atualizar os 7 testes de integração já
+existentes para usar `LocalLLMProvider` fake via
+`app.dependency_overrides`, já que nenhum modelo Ollama real foi baixado.
+Suíte completa: 560/560 testes aprovados.
