@@ -30,6 +30,20 @@ desta TASK. Exposta na Knowledge Tool como `operation:
 "PROMOTE_TO_CONFIRMED"` (distinta de `"ADVANCE"`, que continua sem
 julgamento).
 
+**Implementação (TASK-058):** `backend/app/knowledge/usefulness.py` —
+`is_useful_for_orchestrator(knowledge, is_relevant_to_objective)` (função
+pura), a etapa "AVALIO UTILIDADE" do fluxo: exige status `CONFIRMED` **e**
+`is_relevant_to_objective`. Relevância para o objetivo da execução atual é
+contextual (depende do pedido do usuário/aplicação) e não pode ser
+derivada só do `Knowledge` — por isso é recebida já avaliada por quem
+chama, mesmo padrão de `app.confidence.ambiguity_guardrail` (TASK-036).
+É uma avaliação do **orquestrador**, não uma ferramenta acionada pelo
+modelo — ao contrário de `promotion_rule.py` (TASK-057), não é exposta em
+`app.tools.knowledge_tool`. Onde o orquestrador de fato chama isso antes
+de "SALVO" é TASK-088 em diante (Tool Registry/ciclo real de execução),
+não implementado aqui. Com esta TASK, o bloco "Conhecimento" (TASK-052 a
+TASK-058) está completo.
+
 ## Versionamento
 
 Se um fato confirmado mudar, o sistema:

@@ -11,12 +11,9 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-057** concluídas — blocos "Fundação", "Segurança e
-identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto" e
-"Memória" completos; bloco "Conhecimento" em andamento (modelo
-RAW/PROVISIONAL/CONFIRMED, Knowledge Tool, versionamento, escopo
-GLOBAL/APPLICATION, evidências/confiança/volatilidade, regra de promoção
-para CONFIRMED). Ver
+**TASK-001** a **TASK-058** concluídas — blocos "Fundação", "Segurança e
+identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
+"Memória" e "Conhecimento" completos. Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
 ## Documentação
@@ -40,5 +37,5 @@ para CONFIRMED). Ver
 
 ## Próxima TASK
 
-**TASK-058 — Implementar avaliação de utilidade pelo orquestrador**
-([docs/tasks/TASK-058.md](docs/tasks/TASK-058.md)).
+**TASK-059 — Criar cadastro de fontes**
+([docs/tasks/TASK-059.md](docs/tasks/TASK-059.md)).
