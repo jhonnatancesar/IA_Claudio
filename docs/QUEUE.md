@@ -24,3 +24,17 @@ Ao entrar em modo de manutenção, todas as tarefas pendentes da fila são desca
 
 TASK-074 a TASK-077: criar fila FIFO, persistir no PostgreSQL, estados da fila,
 retenção/limpeza.
+
+**Implementação (TASK-074):** `backend/app/queue/queue_model.py` — só a
+fila em memória, no mesmo espírito do modelo de `Execution` (TASK-020):
+`QueueItemStatus` (`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, o conjunto
+acima), `QueueItem` (dataclass com transições validadas —
+`start()`/`complete()`/`fail(error)`, `InvalidQueueItemStateError` para
+transição inválida) e `FifoQueue` (`enqueue(payload)`/`dequeue()` em
+ordem de chegada, `QueueEmptyError` ao tirar de uma fila vazia).
+`dequeue()` já inicia o item (`PENDING` → `RUNNING`) antes de devolvê-lo.
+Sem retry automático: `fail()` não permite nova transição depois —
+testado explicitamente. Persistência no PostgreSQL (TASK-075), estados
+adicionais e retenção/limpeza (TASK-076/077) não são desta TASK; nenhuma
+TASK conecta esta fila a `POST /v1/executions`, que continua síncrono
+ponta a ponta (TASK-069).

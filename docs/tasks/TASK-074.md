@@ -1,6 +1,6 @@
 # TASK-074 — Criar fila FIFO
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,28 @@ Testes unitários e de integração da fila (estados, persistência, retenção)
 ## Documentação afetada
 
 `docs/QUEUE.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Criado o módulo `backend/app/queue/` — só a fila
+em memória, sem banco ainda (persistência real é TASK-075, escopo
+explícito da própria QUEUE.md/TASK-075). `queue_model.py`:
+`QueueItemStatus` (`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`, exatamente o
+conjunto de `docs/QUEUE.md`); `QueueItem` (dataclass com transições
+validadas — `start()`/`complete()`/`fail(error)`,
+`InvalidQueueItemStateError` para transição inválida — mesmo espírito do
+modelo de `Execution`, TASK-020); `FifoQueue` (`enqueue(payload)`/
+`dequeue()` em ordem FIFO, `QueueEmptyError` ao tirar de fila vazia).
+`dequeue()` já chama `start()` no item antes de devolvê-lo. Sem retry
+automático (seção 27): uma vez `FAILED`, o item não aceita nova
+transição — testado explicitamente.
+
+`payload` é genérico (`Any`) — a fila não precisa saber o que está
+enfileirando. Nenhuma TASK conecta esta fila a `POST /v1/executions`
+(que continua síncrono ponta a ponta, TASK-069) — não fazia parte do
+objetivo declarado.
+
+18 testes novos em `tests/unit/test_queue_model.py` (estados de
+`QueueItem`, transições inválidas, sem retry, ordem FIFO de `FifoQueue`,
+fila vazia, ciclo completo). Suíte completa: 589/589 testes aprovados,
+zero pulados (Ollama local verificado rodando antes da execução).
