@@ -21,7 +21,7 @@ Cadastro de fontes (PRIMARY/SECONDARY/UNKNOWN), reputação (LOW/MEDIUM/HIGH), h
   responsible=None)` (TASK-064) — mecânicos, gravam
   `BlacklistEntry`/`list_blacklist_entries` a cada chamada;
   `SourceBlacklistStateError` para bloquear já bloqueada/desbloquear não
-  bloqueada. "Só ADMIN desbloqueia" (TASK-066) não é desta TASK.
+  bloqueada. Nenhum dos dois checa quem está autorizado a chamar.
 - `reputation_rule.py` (TASK-062) — `update_reputation(current,
   was_accurate)` (função pura: um degrau por vez,
   `HIGH↔MEDIUM↔LOW`) e `update_source_reputation(source_id,
@@ -34,13 +34,20 @@ Cadastro de fontes (PRIMARY/SECONDARY/UNKNOWN), reputação (LOW/MEDIUM/HIGH), h
   a reputação cai para `LOW`, sem bloquear de novo uma fonte já
   bloqueada. Alerta no painel (seção 14/15) não é desta TASK — painel
   ainda não existe.
+- `unblock_rule.py` (TASK-066) — `admin_unblock_source(source_id, role,
+  responsible, reason)`: só desbloqueia se `role` for `ADMIN`
+  (`app.auth.roles.require_admin`, TASK-010, reaproveitado — mesmo
+  código de erro `FORBIDDEN_ADMIN_ONLY`), sem exceção mesmo quando foi o
+  agente que bloqueou. Com esta TASK, o bloco "Fontes" (TASK-059 a
+  TASK-066) está completo.
 
 Testes em `tests/integration/test_source_registry_integration.py`,
 `tests/integration/test_reputation_rule_integration.py`,
 `tests/integration/test_source_blacklist_integration.py`,
-`tests/integration/test_auto_block_rule_integration.py`
+`tests/integration/test_auto_block_rule_integration.py`,
+`tests/integration/test_unblock_rule_integration.py`
 (persistência/idempotência/tipo/reputação/atualização/histórico/blacklist/bloqueio
-automático reais) e `tests/unit/test_source_registry.py`/
+automático/desbloqueio ADMIN reais) e `tests/unit/test_source_registry.py`/
 `tests/unit/test_reputation_rule.py`/`tests/unit/test_source_blacklist.py`/
-`tests/unit/test_auto_block_rule.py` (validação de campos vazios, enums,
-regras puras).
+`tests/unit/test_auto_block_rule.py`/`tests/unit/test_unblock_rule.py`
+(validação de campos vazios, enums, regras puras).

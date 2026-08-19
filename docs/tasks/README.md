@@ -258,11 +258,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/sources/auto_block_rule.py`,
   `auto_block_after_validation` — ver `docs/tasks/TASK-065.md`). Suíte
   completa: 529/529 testes aprovados.
+- **TASK-066** — concluída (desbloqueio somente ADMIN,
+  `backend/app/sources/unblock_rule.py`, `admin_unblock_source` — ver
+  `docs/tasks/TASK-066.md`). Suíte completa: 536/536 testes aprovados.
+  **Com esta TASK, o bloco "Fontes" (TASK-059 a TASK-066) está
+  completo.**
 
-As demais 82 TASKs permanecem com status **Pendente**.
+As demais 81 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-066 — Implementar desbloqueio somente
-ADMIN**.
+Próxima TASK executável: **TASK-067 — Criar API local do Claudião**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
