@@ -13,14 +13,13 @@ estão resumidas aqui.
 
 ## Checkpoint atual
 
-**Data:** 2026-08-19 · **TASK:** TASK-060 · **TASKs concluídas:** 60 de 147
-(TASK-001 a TASK-060) · **Próxima TASK executável:** TASK-061 — Implementar
-reputação LOW/MEDIUM/HIGH.
+**Data:** 2026-08-19 · **TASK:** TASK-070 · **TASKs concluídas:** 70 de 147
+(TASK-001 a TASK-070) · **Próxima TASK executável:** TASK-071 — Implementar
+erro de timeout.
 
 Este checkpoint rodou no prazo certo (10 TASKs desde o checkpoint anterior,
-TASK-050/051) — os dois deslizes anteriores (TASK-030, TASK-050) não se
-repetiram desta vez, graças à mitigação do item 13 de "Armadilhas": conferir a
-contagem explicitamente ao concluir qualquer TASK terminada em 0.
+TASK-060) — sétimo checkpoint seguido no prazo desde que o item 13 de
+"Armadilhas" passou a ser aplicado (TASK-060).
 
 ## O que já existe (resumo, não repete `docs/tasks/`)
 
@@ -75,13 +74,31 @@ contagem explicitamente ao concluir qualquer TASK terminada em 0.
   evidência) e avaliação de utilidade pelo orquestrador
   (`is_useful_for_orchestrator`, não exposta como tool — é decisão do
   orquestrador, não do modelo).
-- **Bloco "Fontes" em andamento (TASK-059/TASK-060 concluídas, de TASK-059 a
-  TASK-066):** cadastro de fontes (`sources`, `register_source` idempotente
-  por `identifier`) e tipo `PRIMARY`/`SECONDARY`/`UNKNOWN`
-  (`set_source_type`). Faltam: reputação `LOW`/`MEDIUM`/`HIGH` e sua
-  atualização/histórico (TASK-061 a TASK-063), blacklist e (des)bloqueio
-  (TASK-064 a TASK-066).
-- **Testes:** 487/487 aprovados (unitários + integração real contra
+- **Bloco "Fontes" completo (TASK-059 a TASK-066):** cadastro de fontes
+  (`sources`, `register_source` idempotente por `identifier`), tipo
+  `PRIMARY`/`SECONDARY`/`UNKNOWN`, reputação `LOW`/`MEDIUM`/`HIGH` com
+  atualização em um degrau por vez (`reputation_rule.py`) e histórico de
+  auditoria, blacklist com origem `AGENT`/`ADMIN` e motivo obrigatório,
+  bloqueio automático quando a reputação cai para `LOW`
+  (`auto_block_rule.py`) e desbloqueio restrito a `ADMIN`
+  (`unblock_rule.py`, reaproveita `app.auth.roles.require_admin`).
+- **Bloco "Aplicações" em andamento (TASK-067 a TASK-070 concluídas, de
+  TASK-067 a TASK-073):** API local via FastAPI (`backend/app/api/`,
+  DEC-009) com `uvicorn` como servidor ASGI. `POST /v1/executions`
+  autentica por API key (`Authorization: Bearer`), valida o payload
+  (`ExecutionRequest`) e executa de fato via `ExecutionOrchestrator.
+  run_until_response`, de forma síncrona, com `timeout_seconds` aplicado
+  como limite de verdade (roda o orquestrador num worker de
+  `ThreadPoolExecutor`, `future.result(timeout=...)` retorna assim que o
+  prazo estoura mesmo com o modelo travado, cancela o `CancellationToken`
+  compartilhado — código de erro `APPLICATION_TIMEOUT_EXCEEDED`, `4009`,
+  HTTP `504`). Nenhum modelo Ollama real foi baixado ainda, então os
+  testes da API usam `LocalLLMProvider`/modelo ativo fakes via
+  `app.dependency_overrides`. Faltam: formato específico do erro de
+  timeout com etapa atual/ferramenta ativa (TASK-071), envelope de
+  sucesso formal `"success": true` (TASK-072), rastreio de consumo
+  (TASK-073).
+- **Testes:** 562/562 aprovados (unitários + integração real contra
   PostgreSQL e Ollama locais — **Ollama precisa estar rodando** para a suíte
   completa passar sem pular nada; abra o app se os testes de integração do
   Ollama pularem, não trate o skip como aceitável). Rodar com:
@@ -105,9 +122,10 @@ contagem explicitamente ao concluir qualquer TASK terminada em 0.
 | `context/` | Completo (TASK-037 a TASK-043) | `context_manager.py`, `context_window.py` |
 | `memory/` | Completo (TASK-044 a TASK-051) | `memory_model.py`, `retention_policy.py` |
 | `knowledge/` | Completo (TASK-052 a TASK-058) | `knowledge_model.py`, `promotion_rule.py`, `usefulness.py` |
-| `sources/` | Em andamento (TASK-059/060 de TASK-059 a TASK-066) | `source_registry.py` |
+| `sources/` | Completo (TASK-059 a TASK-066) | `source_registry.py`, `reputation_rule.py`, `auto_block_rule.py`, `unblock_rule.py` |
 | `tools/` | Em andamento (Memory/Knowledge Tools prontas; outras ferramentas são TASKs futuras) | `memory_tool.py`, `knowledge_tool.py` |
-| Demais módulos (`api/`, `panel/`, `queue/`, ...) | Só README.md, sem código | — |
+| `api/` | Em andamento (TASK-067 a TASK-070 de TASK-067 a TASK-073) | `app.py`, `auth.py`, `schemas.py`, `dependencies.py`, `executions.py` |
+| Demais módulos (`panel/`, `queue/`, ...) | Só README.md, sem código | — |
 
 ## Decisões técnicas já tomadas (ver `docs/DECISION_LOG.md` para o texto completo)
 
@@ -119,8 +137,10 @@ contagem explicitamente ao concluir qualquer TASK terminada em 0.
 - **DEC-007:** biblioteca de criptografia = **`cryptography`** (Fernet).
 - **DEC-008:** runtime **Ollama** instalado localmente (confirmado pelo
   usuário); SDK oficial `ollama` como client Python.
-- **Ainda em aberto** (`docs/OPEN_QUESTIONS.md`, item 1): framework web, ORM,
-  ferramenta de migration. Migrations hoje são SQL puro aplicado via `psql`
+- **DEC-009:** framework web = **FastAPI** (com `uvicorn` como servidor
+  ASGI), decidido via `AskUserQuestion` na TASK-067.
+- **Ainda em aberto** (`docs/OPEN_QUESTIONS.md`, item 1): ORM, ferramenta de
+  migration. Migrations hoje são SQL puro aplicado via `psql`
   (`backend/app/db/migrations/000N_*.sql`, numeração sequencial).
 - **Modelo LLM definitivo:** não escolhido, intencionalmente
   (`docs/OPEN_QUESTIONS.md`, item 3) — Ollama está instalado e rodando, mas
@@ -152,14 +172,14 @@ contagem explicitamente ao concluir qualquer TASK terminada em 0.
 - **Python:** 3.14.6 instalado nesta máquina, mas `requires-python >= 3.11` no
   `backend/pyproject.toml` — não assumir 3.14 especificamente em código novo.
 - **Dependências externas do backend:** `psycopg[binary]`, `cryptography`,
-  `ollama` (ver `backend/pyproject.toml`). Sem ambiente virtual criado ainda —
-  os pacotes foram instalados com `python -m pip install` direto no Python do
-  sistema.
+  `ollama`, `fastapi`, `uvicorn` (ver `backend/pyproject.toml`). Sem ambiente
+  virtual criado ainda — os pacotes foram instalados com `python -m pip
+  install` direto no Python do sistema.
 - **Instalar programas novos (`winget install ...` ou equivalente) exige
   perguntar ao usuário primeiro**, mesmo nesta máquina de dev/teste — usar
   serviços já instalados (abrir o Ollama, rodar o Postgres) é livre; instalar
   algo novo não é.
-- **Migrations aplicadas manualmente via `psql`** (0001 a 0011) — não há
+- **Migrations aplicadas manualmente via `psql`** (0001 a 0014) — não há
   script/comando único que reaplique todas; cada TASK que criou uma migration
   a aplicou na hora com `psql -h 127.0.0.1 -p 5432 -U claudiao_app -d claudiao
   -f backend/app/db/migrations/000N_*.sql`, usando `CLAUDIAO_POSTGRES_PASSWORD`
@@ -254,6 +274,28 @@ contagem explicitamente ao concluir qualquer TASK terminada em 0.
     pai é esperada — descoberto ao criar `knowledge_evidence` (TASK-056) sem
     isso, quebrando a limpeza de testes que criavam evidências. Corrigido na
     própria migration antes de commitar.
+17. **Registrar um código de erro em `register_error()` não atualiza
+    `docs/ERROR_CATALOG.md` sozinho** — já aconteceu duas vezes (código
+    `2002` na TASK-067, só documentado na TASK-069; códigos `4006`/`4007`/
+    `4008` das TASK-034/035/036, só documentados na TASK-070). Ao registrar
+    qualquer erro novo, conferir se a tabela de `docs/ERROR_CATALOG.md` já
+    tem TODOS os códigos existentes no catálogo real
+    (`backend/app/errors/catalog.py`), não só o que a TASK atual está
+    adicionando.
+18. **Cancelamento cooperativo (`CancellationToken`, TASK-030) não é
+    preemptivo** — só é observado no início de cada `run_step`, antes de
+    chamar o modelo. Para aplicar um limite de tempo de verdade num fluxo de
+    uma única etapa `RESPOND` (o caso comum), onde não há um segundo `run_step`
+    para checar o token, é preciso um limite externo à checagem cooperativa —
+    a TASK-070 resolveu isso rodando `run_until_response` num worker de
+    `ThreadPoolExecutor` e usando `future.result(timeout=...)` na thread da
+    requisição HTTP. Isso preserva "sem threads/async" do lado do
+    orquestrador (só uma thread por vez escreve em `Execution` — a thread da
+    requisição para de tocar `execution` assim que segue pelo caminho de
+    timeout) enquanto dá um limite real e testável sem depender de timing
+    exato entre threads (o teste de timeout usa um provider fake que dorme
+    muito mais que o timeout configurado, então o resultado nunca é
+    ambíguo).
 
 ## Workflow que está sendo seguido
 
@@ -269,17 +311,20 @@ termina, sem precisar pedir); não são deletadas depois do merge.
 
 ## Próximos passos imediatos
 
-**TASK-061 — Implementar reputação LOW/MEDIUM/HIGH** (dependência: TASK-060
-concluída). Continua o bloco "Fontes" (TASK-059 a TASK-066, ver
-`docs/TRUST_GUARDRAILS.md` e `docs/BACKLOG.md`): cada fonte cadastrada
-(`sources`, TASK-059) e classificada por tipo (TASK-060) ganha uma
-reputação `LOW`/`MEDIUM`/`HIGH`, provavelmente com um valor padrão inicial
-(a especificação não detalha qual — decisão a tomar na TASK). TASK-062
-(atualização de reputação), TASK-063 (histórico), TASK-064 (blacklist),
-TASK-065 (bloqueio automático) e TASK-066 (desbloqueio só por `ADMIN`)
-constroem em cima. **Próximo checkpoint de 10 TASKs devido na TASK-070** —
-conferir a contagem explicitamente ao concluir qualquer TASK terminada em 0
-(ver item 13 de "Armadilhas").
+**TASK-071 — Implementar erro de timeout** (dependência: TASK-070
+concluída). Continua o bloco "Aplicações" (TASK-067 a TASK-073, ver
+`docs/API.md` e `docs/BACKLOG.md`): a TASK-070 já aplica `timeout_seconds`
+como limite de verdade e devolve um erro padronizado mínimo
+(`APPLICATION_TIMEOUT_EXCEEDED`, código `4009`, `details={"timeout_seconds":
+...}`) — falta o formato **específico** que a especificação pede ("registra
+etapa atual e ferramenta ativa", `docs/API.md` seção 26): enriquecer os
+`details` desse erro com a última etapa registrada em `execution`
+(`execution.steps[-1]`, se houver) e a ferramenta ativa no momento do
+cancelamento. TASK-072 (envelope de sucesso formal `"success": true`) e
+TASK-073 (rastreio de consumo) constroem em cima depois. **Próximo
+checkpoint de 10 TASKs devido na TASK-080** — conferir a contagem
+explicitamente ao concluir qualquer TASK terminada em 0 (ver item 13 de
+"Armadilhas").
 
 ## Histórico de checkpoints
 
@@ -296,8 +341,13 @@ conferir a contagem explicitamente ao concluir qualquer TASK terminada em 0
   guardrails" completo; bloco "Contexto" iniciado. 306/306 testes.
 - **2026-08-18 — TASK-050/TASK-051:** quinto checkpoint — feito com atraso de
   uma TASK. Blocos "Contexto" e "Memória" completos. 379/379 testes.
-- **2026-08-19 — TASK-060 (este checkpoint):** sexto checkpoint, no prazo
-  certo pela primeira vez desde o atraso da TASK-030. Bloco "Conhecimento"
-  completo (RAW/PROVISIONAL/CONFIRMED, versionamento, escopo, evidências,
-  promoção, utilidade); bloco "Fontes" iniciado (cadastro + tipo). 487/487
-  testes.
+- **2026-08-19 — TASK-060:** sexto checkpoint, no prazo certo pela primeira
+  vez desde o atraso da TASK-030. Bloco "Conhecimento" completo
+  (RAW/PROVISIONAL/CONFIRMED, versionamento, escopo, evidências, promoção,
+  utilidade); bloco "Fontes" iniciado (cadastro + tipo). 487/487 testes.
+- **2026-08-19 — TASK-070 (este checkpoint):** sétimo checkpoint, no prazo.
+  Bloco "Fontes" completo (reputação, histórico, blacklist, bloqueio
+  automático, desbloqueio só `ADMIN`); bloco "Aplicações" iniciado (API
+  FastAPI local — DEC-009 —, autenticação, validação de payload, execução
+  síncrona real, timeout aplicado de fato via `ThreadPoolExecutor` +
+  `future.result(timeout=...)`). 562/562 testes.
