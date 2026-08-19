@@ -116,3 +116,20 @@ Para o código do provider, escolhido o **SDK oficial `ollama`** (pacote
 mesma categoria de DEC-006/DEC-007: técnica, de baixo risco, sem alternativa
 melhor (reimplementar o cliente HTTP à mão não traria vantagem), registrada
 por transparência.
+
+## DEC-009 — Framework web: FastAPI
+
+**Data:** 2026-08-19
+
+A TASK-067 (criar API local do Claudião) é o ponto identificado em
+`docs/OPEN_QUESTIONS.md` (item 1) onde o framework web precisava ser
+escolhido — pedido explicitamente ao usuário via pergunta de múltipla
+escolha (não é decisão técnica de baixo risco como DEC-006/007: define a
+camada de entrada de todas as aplicações externas). O usuário escolheu
+**FastAPI** (com `uvicorn` como servidor ASGI) entre as opções
+apresentadas (FastAPI, Flask, só `http.server` da biblioteca padrão) —
+tipagem via Pydantic, validação de payload nativa (aproveitada a partir
+da TASK-068), documentação automática. Dependências novas: `fastapi` e
+`uvicorn` (`backend/pyproject.toml`).
+
+`docs/OPEN_QUESTIONS.md`, item 1, atualizado para refletir a resolução.

@@ -31,6 +31,23 @@ Fonte: seções 24, 25 e 26 da especificação mestre.
 
 Formato de sucesso e de erro seguem o contrato descrito em `ERROR_CATALOG.md`.
 
+**Implementação (TASK-067):** `backend/app/api/` — FastAPI (`app.py`,
+`DEC-009`), com `uvicorn` como servidor ASGI (nenhuma das duas rodada em
+produção ainda; só a aplicação FastAPI existe). `auth.py`:
+`get_current_application(authorization)`, dependência que extrai a API
+key do header `Authorization: Bearer <api_key>` e reaproveita
+`app.auth.api_keys.authenticate_application` (TASK-011) — nunca
+reimplementa a verificação. Levanta `ClaudiaoError` (`INVALID_API_KEY`,
+código 2002, 401) se ausente/malformada/desconhecida; um handler global
+em `app.py` converte qualquer `ClaudiaoError` de uma rota para o formato
+JSON de erro padrão do projeto (TASK-008), em vez do formato default do
+FastAPI. `executions.py`: `POST /v1/executions`, autentica e cria uma
+`Execution` (TASK-020) nova, devolvendo `execution_id`/`status`
+(`PENDING`) — corpo da requisição aceito como objeto JSON genérico, sem
+validação de schema (isso é TASK-068); a execução nunca é processada de
+fato aqui (TASK-069), nem tem timeout (TASK-070/071), nem o formato final
+de resposta de sucesso (TASK-072), nem rastreio de consumo (TASK-073).
+
 ## TASKs relacionadas
 
 TASK-067 a TASK-073: API local, validação de payload, execução síncrona, timeout,

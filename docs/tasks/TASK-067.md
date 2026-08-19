@@ -1,6 +1,6 @@
 # TASK-067 — Criar API local do Claudião
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,28 @@ Testes unitários e de integração da API para aplicações (payload válido/in
 ## Documentação afetada
 
 `docs/API.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Framework web era decisão em aberto
+(`docs/OPEN_QUESTIONS.md`, item 1) — perguntado ao usuário, que escolheu
+**FastAPI** (`docs/DECISION_LOG.md`, DEC-009); `fastapi`/`uvicorn`
+adicionados a `backend/pyproject.toml` (já estavam instalados no
+Python do sistema).
+
+Criado `backend/app/api/`: `app.py` (aplicação FastAPI, handler global
+convertendo `ClaudiaoError` para o formato JSON de erro padrão do
+projeto, TASK-008), `auth.py` (`get_current_application`, autentica via
+header `Authorization: Bearer <api_key>`, reaproveitando
+`app.auth.api_keys.authenticate_application`, TASK-011; código de erro
+`2002`), `executions.py` (`POST /v1/executions`, autentica e cria uma
+`Execution` nova, TASK-020, devolvendo `execution_id`/`status`).
+
+Payload aceito como objeto JSON genérico, sem validação de schema
+(TASK-068); execução nunca processada de fato (TASK-069); sem timeout
+(TASK-070/071), sem formato final de resposta de sucesso (TASK-072), sem
+rastreio de consumo (TASK-073) — nenhuma dessas TASKs implementada aqui.
+
+7 testes novos (3 unitários de extração de token, sem tocar o banco + 4
+de integração real via `TestClient`, autenticação e criação de execução
+reais). Suíte completa: 543/543 testes aprovados.

@@ -14,9 +14,11 @@ Claudião.
 
 **Status:** **parcialmente resolvido.** Na TASK-005, o usuário escolheu **Python**
 como linguagem do backend (`docs/DECISION_LOG.md`, DEC-005) — primeira TASK que
-exigia código de aplicação real. Framework web, ORM e ferramenta de migration
-**continuam em aberto**, a decidir quando a TASK que precisar deles chegar (ex.:
-TASK-067, API local; a persistência de TASK-004 usa SQL puro via `psql`, sem ORM).
+exigia código de aplicação real. Na TASK-067, o usuário escolheu **FastAPI**
+(`docs/DECISION_LOG.md`, DEC-009) como framework web para a API local
+(`backend/app/api/`). ORM e ferramenta de migration **continuam em aberto** —
+a persistência de TASK-004 em diante usa SQL puro via `psql`, sem ORM, e
+segue assim até haver motivo concreto para mudar.
 
 ## 2. Hardware definitivo
 
