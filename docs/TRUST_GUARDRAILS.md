@@ -79,8 +79,16 @@ local (`backend/app/db/migrations/0010_sources.sql`, tabela `sources`,
 (`ON CONFLICT ... DO UPDATE ... RETURNING`, para devolver a linha
 existente em vez de só ignorar o conflito) — registrar a mesma fonte de
 novo reaproveita o cadastro, não duplica. Só a identidade da fonte — tipo
-`PRIMARY`/`SECONDARY`/`UNKNOWN` (TASK-060), reputação (TASK-061 em
-diante) e blacklist (TASK-064 em diante) não são desta TASK.
+(TASK-060), reputação (TASK-061 em diante) e blacklist (TASK-064 em
+diante) não eram desta TASK.
+
+**Implementação (TASK-060):** `SourceType` (`PRIMARY`/`SECONDARY`/
+`UNKNOWN`) em `Source`/`register_source` — `UNKNOWN` por padrão (uma
+fonte recém-registrada ainda não foi classificada). `set_source_type
+(source_id, source_type)` reclassifica uma fonte já existente
+(`SourceNotFoundError` se não existir). Tipo e reputação são conceitos
+independentes — uma fonte `PRIMARY` não é automaticamente `HIGH`;
+reputação de fato é TASK-061 em diante.
 
 ## Fontes bloqueadas (blacklist)
 

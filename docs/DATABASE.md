@@ -88,11 +88,14 @@ lê/grava nelas.
 `description`, `created_at`), TASK-056. Ver `docs/KNOWLEDGE.md` para o
 módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 
-## Fontes (TASK-059)
+## Fontes (TASK-059, TASK-060)
 
 `backend/app/db/migrations/0010_sources.sql` — tabela `sources` (`id`,
-`identifier` único, `created_at`). Ver `docs/TRUST_GUARDRAILS.md` para o
-módulo (`app.sources.source_registry`) que lê/grava nela.
+`identifier` único, `created_at`).
+`backend/app/db/migrations/0011_source_type.sql` — coluna `source_type`
+(`PRIMARY`/`SECONDARY`/`UNKNOWN`, padrão `UNKNOWN`), TASK-060. Ver
+`docs/TRUST_GUARDRAILS.md` para o módulo (`app.sources.source_registry`)
+que lê/grava nela.
 
 Os demais domínios de dados (histórico de fontes, blacklist,
 conversas, resumos, execuções, fila, auditoria, cotas, atualizações,

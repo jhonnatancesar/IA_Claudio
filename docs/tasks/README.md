@@ -234,11 +234,17 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-059** — concluída (cadastro de fontes,
   `backend/app/sources/source_registry.py`, `register_source` — ver
   `docs/tasks/TASK-059.md`). Suíte completa: 482/482 testes aprovados.
+- **TASK-060** — concluída (tipo de fonte PRIMARY/SECONDARY/UNKNOWN,
+  `SourceType`/`set_source_type` — ver `docs/tasks/TASK-060.md`). Suíte
+  completa: 487/487 testes aprovados.
 
-As demais 88 TASKs permanecem com status **Pendente**.
+**Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-060, a `main` local foi
+enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 
-Próxima TASK executável: **TASK-060 — Implementar
-PRIMARY/SECONDARY/UNKNOWN**.
+As demais 87 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-061 — Implementar reputação
+LOW/MEDIUM/HIGH**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
