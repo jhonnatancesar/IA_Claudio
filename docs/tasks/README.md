@@ -241,10 +241,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 **Checkpoint de 10 TASKs (AGENTS.md):** com a TASK-060, a `main` local foi
 enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 
-As demais 87 TASKs permanecem com status **Pendente**.
+- **TASK-061** — concluída (reputação LOW/MEDIUM/HIGH,
+  `SourceReputation`/`set_source_reputation` — ver
+  `docs/tasks/TASK-061.md`). Suíte completa: 492/492 testes aprovados.
 
-Próxima TASK executável: **TASK-061 — Implementar reputação
-LOW/MEDIUM/HIGH**.
+As demais 86 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-062 — Implementar atualização de
+reputação**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

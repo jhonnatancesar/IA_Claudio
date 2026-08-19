@@ -90,6 +90,15 @@ fonte recém-registrada ainda não foi classificada). `set_source_type
 independentes — uma fonte `PRIMARY` não é automaticamente `HIGH`;
 reputação de fato é TASK-061 em diante.
 
+**Implementação (TASK-061):** `SourceReputation` (`LOW`/`MEDIUM`/`HIGH`)
+em `Source`/`register_source` — `MEDIUM` por padrão (fonte sem histórico
+ainda não merece confiança alta nem baixa; `MEDIUM` já implica aviso ao
+ser usada, comportamento conservador correto para o não avaliado).
+`set_source_reputation(source_id, reputation)` só aplica a troca
+*mecânica* (`SourceNotFoundError` se não existir) — a regra que decide
+*quando* rebaixar/elevar com base em dados corretos/errados apresentados
+é a atualização de reputação, TASK-062, não implementada aqui.
+
 ## Fontes bloqueadas (blacklist)
 
 - Existe blacklist de fontes.
