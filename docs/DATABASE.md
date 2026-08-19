@@ -105,10 +105,21 @@ módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 `reason`, `created_at`), TASK-064. Ver `docs/TRUST_GUARDRAILS.md` para o
 módulo (`app.sources.source_registry`) que lê/grava nelas.
 
-Os demais domínios de dados (histórico de fontes, blacklist,
-conversas, resumos, execuções, fila, auditoria, cotas, atualizações,
-backups) ainda não têm schema — cada um ganha o seu na TASK do bloco funcional
-correspondente, conforme `docs/BACKLOG.md`.
+## Rastreio de consumo (TASK-073)
+
+`backend/app/db/migrations/0015_usage_records.sql` — tabela
+`usage_records` (`id`, `application_id` com `ON DELETE CASCADE`,
+`execution_id` — texto, sem FK, já que `Execution` ainda não é
+persistida em tabela própria —, `status`, `created_at`), índice em
+`application_id`. Ver `docs/QUOTAS.md` e `backend/app/usage/README.md`
+para o módulo (`app.usage.usage_model`) que lê/grava nela — só o registro
+mínimo de consumo; o sistema de cotas completo (medição de tokens/volume,
+ciclo, alertas, bloqueio) é TASK-108 a TASK-114.
+
+Os demais domínios de dados (conversas, resumos, execuções, fila,
+auditoria, cotas completas, atualizações, backups) ainda não têm schema —
+cada um ganha o seu na TASK do bloco funcional correspondente, conforme
+`docs/BACKLOG.md`.
 
 ## TASKs relacionadas
 

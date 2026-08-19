@@ -20,7 +20,7 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   em teste. `get_active_model` lê `CLAUDIAO_ACTIVE_MODEL`
   (`config/.env.example`); código de erro `3001`
   (`NO_ACTIVE_MODEL_CONFIGURED`) se ausente.
-- `executions.py` (TASK-067 a TASK-072) — `POST /v1/executions`:
+- `executions.py` (TASK-067 a TASK-073) — `POST /v1/executions`:
   autentica, valida o payload contra `ExecutionRequest` e executa de
   fato, de forma síncrona, via `ExecutionOrchestrator.run_until_response`
   (TASK-069) — monta `ExecutionPolicy.for_application` a partir do
@@ -37,16 +37,20 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   `current_step` (`execution.step_count + 1`, 1-indexado) e `active_tool`
   (`tool` da última etapa já registrada, ou `None`). A resposta de
   sucesso (TASK-072) usa `build_success_response`.
+  Ao chegar a qualquer desfecho (sucesso, timeout, falha de
+  modelo/ferramenta), grava rastreio de consumo (TASK-073):
+  `record_usage(application.id, execution.execution_id, status)`
+  (`app.usage.usage_model`).
 - `responses.py` (TASK-072) — `build_success_response(data)`: monta
   `{"success": true, "data": data}`, espelhando `build_error_response`
   (TASK-008, `app.errors.response`) do lado do sucesso.
 
 Testes em `tests/integration/test_api_executions_integration.py`
-(autenticação/validação/execução síncrona real e timeout reais via
-`fastapi.testclient.TestClient`, com `LocalLLMProvider` fake — nenhum
-modelo Ollama real foi baixado), `tests/unit/test_api_executions.py`
-(`_timeout_error_details` isolada, sem tocar rede/banco),
-`tests/unit/test_api_responses.py` (`build_success_response` isolada) e
-`tests/unit/test_api_auth.py`/`tests/unit/test_api_schemas.py`/
+(autenticação/validação/execução síncrona real, timeout e rastreio de
+consumo reais via `fastapi.testclient.TestClient`, com `LocalLLMProvider`
+fake — nenhum modelo Ollama real foi baixado), `tests/unit/
+test_api_executions.py` (`_timeout_error_details` isolada, sem tocar
+rede/banco), `tests/unit/test_api_responses.py` (`build_success_response`
+isolada) e `tests/unit/test_api_auth.py`/`tests/unit/test_api_schemas.py`/
 `tests/unit/test_api_dependencies.py` (extração do token, validação de
 schema, leitura de `CLAUDIAO_ACTIVE_MODEL`, sem tocar o banco).

@@ -1,4 +1,4 @@
-"""Rota de execuções da API local (TASK-067 a TASK-072).
+"""Rota de execuções da API local (TASK-067 a TASK-073).
 
 `POST /v1/executions`: ponto de entrada para uma aplicação externa pedir
 uma execução ao Claudião (`docs/API.md`, seções 24/25/26). Autentica a
@@ -58,6 +58,18 @@ mesmo envelope `{"success": bool, ...}` do erro (`docs/ERROR_CATALOG.md`,
 ..., "status": ..., "result": ...}}`. Antes desta TASK a resposta de
 sucesso era o dict cru (`execution_id`/`status`/`result` no nível
 superior, sem `success`), inconsistente com o formato de erro.
+
+**Rastreio de consumo (TASK-073):** toda vez que a execução chega a um
+desfecho (sucesso, timeout ou falha de modelo/ferramenta),
+`record_usage(application.id, execution.execution_id, status)`
+(`app.usage.usage_model`) grava uma linha em `usage_records` — quem
+consumiu a requisição, qual execução e o status final. Só o registro
+mínimo (seção 28 da especificação mestre, `docs/QUOTAS.md`): medir
+tokens/volume, ciclo de renovação e aplicar limites são o sistema de
+cotas completo, TASK-108 a TASK-114, não implementados aqui. Requisições
+rejeitadas antes de chegar aqui (401 de autenticação, 400 de validação de
+payload) nunca criam uma `Execution` e por isso não geram registro de
+consumo.
 """
 
 from __future__ import annotations
@@ -76,9 +88,10 @@ from app.errors.catalog import ErrorDomain, register_error
 from app.errors.response import ClaudiaoError
 from app.llm.provider import LocalLLMProvider, LocalLLMProviderError
 from app.orchestrator.cancellation import CancellationToken
-from app.orchestrator.execution import Execution
+from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.orchestrator import ExecutionOrchestrator, ToolExecutorNotConfiguredError
 from app.policies.execution_policy import ExecutionPolicy
+from app.usage.usage_model import record_usage
 
 router = APIRouter()
 
@@ -157,15 +170,23 @@ def create_execution(
         step = future.result(timeout=payload.timeout_seconds)
     except FutureTimeoutError:
         cancellation_token.cancel(reason=_TIMEOUT_REASON)
+        # `execution.status` pode ainda não ter sido atualizada pela thread
+        # do orquestrador neste exato instante (ver docstring do módulo) —
+        # o resultado lógico do timeout é sempre CANCELLED, então gravamos
+        # esse valor em vez de arriscar ler um `RUNNING` desatualizado.
+        record_usage(application.id, execution.execution_id, ExecutionStatus.CANCELLED.value)
         raise ClaudiaoError(
             APPLICATION_TIMEOUT_EXCEEDED,
             details=_timeout_error_details(execution, payload.timeout_seconds),
         ) from None
     except LocalLLMProviderError as exc:
+        record_usage(application.id, execution.execution_id, execution.status.value)
         raise ClaudiaoError(MODEL_COMPLETION_FAILED, details={"reason": str(exc)}) from exc
     except ToolExecutorNotConfiguredError as exc:
+        record_usage(application.id, execution.execution_id, execution.status.value)
         raise ClaudiaoError(TOOL_NOT_AVAILABLE, details={"reason": str(exc)}) from exc
 
+    record_usage(application.id, execution.execution_id, execution.status.value)
     return build_success_response(
         {
             "execution_id": execution.execution_id,
