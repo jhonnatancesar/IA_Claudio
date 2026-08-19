@@ -88,7 +88,13 @@ lê/grava nelas.
 `description`, `created_at`), TASK-056. Ver `docs/KNOWLEDGE.md` para o
 módulo (`app.knowledge.knowledge_model`) que lê/grava nelas.
 
-Os demais domínios de dados (fontes, histórico de fontes, blacklist,
+## Fontes (TASK-059)
+
+`backend/app/db/migrations/0010_sources.sql` — tabela `sources` (`id`,
+`identifier` único, `created_at`). Ver `docs/TRUST_GUARDRAILS.md` para o
+módulo (`app.sources.source_registry`) que lê/grava nela.
+
+Os demais domínios de dados (histórico de fontes, blacklist,
 conversas, resumos, execuções, fila, auditoria, cotas, atualizações,
 backups) ainda não têm schema — cada um ganha o seu na TASK do bloco funcional
 correspondente, conforme `docs/BACKLOG.md`.

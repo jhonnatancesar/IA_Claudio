@@ -70,6 +70,18 @@ Tipos de fonte: `PRIMARY / SECONDARY / UNKNOWN`. Confiabilidade: `LOW / MEDIUM /
 - Quando houver pesquisa, o usuário vê as fontes e uma avaliação geral da evidência em
   `LOW/MEDIUM/HIGH`.
 
+**Implementação (TASK-059):** `backend/app/sources/source_registry.py` —
+`Source` (dataclass: `id`, `identifier`, `created_at`),
+`register_source(identifier)`, `get_source(source_id)`,
+`get_source_by_identifier(identifier)`. Persistência real no PostgreSQL
+local (`backend/app/db/migrations/0010_sources.sql`, tabela `sources`,
+`identifier` único). `register_source` é idempotente por `identifier`
+(`ON CONFLICT ... DO UPDATE ... RETURNING`, para devolver a linha
+existente em vez de só ignorar o conflito) — registrar a mesma fonte de
+novo reaproveita o cadastro, não duplica. Só a identidade da fonte — tipo
+`PRIMARY`/`SECONDARY`/`UNKNOWN` (TASK-060), reputação (TASK-061 em
+diante) e blacklist (TASK-064 em diante) não são desta TASK.
+
 ## Fontes bloqueadas (blacklist)
 
 - Existe blacklist de fontes.
