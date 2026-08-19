@@ -1,6 +1,6 @@
 # TASK-063 — Criar histórico de reputação
 
-Status: Pendente
+Status: **Concluída em 2026-08-19**
 
 ## Objetivo
 
@@ -29,3 +29,20 @@ Testes unitários de fontes/reputação/blacklist para este comportamento espec�
 ## Documentação afetada
 
 `docs/TRUST_GUARDRAILS.md`, `docs/tasks/README.md`, `docs/DECISION_LOG.md` (se a TASK gerar decisão nova)
+
+## Encerramento
+
+Concluída em 2026-08-19. Criado schema
+`backend/app/db/migrations/0013_source_reputation_history.sql` (tabela
+`source_reputation_history`: `source_id` com `ON DELETE CASCADE`,
+`previous_reputation`, `new_reputation`, `changed_at`), aplicado no
+PostgreSQL local real. `set_source_reputation`
+(`backend/app/sources/source_registry.py`) agora grava, na mesma
+transação, uma linha de histórico sempre que a reputação muda de fato —
+chamar com o mesmo valor já vigente não grava nada. Nova
+`ReputationHistoryEntry`/`list_reputation_history(source_id)` lê o
+histórico, mais antigo primeiro. `update_source_reputation` (TASK-062)
+ganha histórico automaticamente, sem mudança própria.
+
+6 testes novos, todos de integração real (persistência de histórico e
+não gravação em no-op). Suíte completa: 508/508 testes aprovados.

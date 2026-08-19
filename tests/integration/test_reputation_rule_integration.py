@@ -10,7 +10,12 @@ import psycopg
 import pytest
 
 from app.sources.reputation_rule import update_source_reputation
-from app.sources.source_registry import SourceNotFoundError, SourceReputation, register_source
+from app.sources.source_registry import (
+    SourceNotFoundError,
+    SourceReputation,
+    list_reputation_history,
+    register_source,
+)
 
 
 @pytest.fixture
@@ -53,6 +58,25 @@ def test_update_source_reputation_stays_low_on_repeated_inaccuracy(
     updated = update_source_reputation(source.id, was_accurate=False)
 
     assert updated.reputation == SourceReputation.LOW
+
+
+def test_update_source_reputation_records_history_via_rule(postgres_dsn, unique_identifier):
+    source = register_source(unique_identifier, reputation=SourceReputation.HIGH)
+
+    update_source_reputation(source.id, was_accurate=False)
+
+    history = list_reputation_history(source.id)
+    assert len(history) == 1
+    assert history[0].previous_reputation == SourceReputation.HIGH
+    assert history[0].new_reputation == SourceReputation.MEDIUM
+
+
+def test_update_source_reputation_no_op_does_not_record_history(postgres_dsn, unique_identifier):
+    source = register_source(unique_identifier, reputation=SourceReputation.LOW)
+
+    update_source_reputation(source.id, was_accurate=False)  # já LOW, permanece LOW
+
+    assert list_reputation_history(source.id) == []
 
 
 def test_update_source_reputation_raises_for_unknown_id(postgres_dsn):

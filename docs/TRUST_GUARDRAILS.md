@@ -109,8 +109,18 @@ degrau por vez" é o critério mais simples e defensável, já que a
 especificação não detalha a magnitude do ajuste.
 `update_source_reputation(source_id, was_accurate)` busca a fonte,
 calcula a nova reputação e só grava (`set_source_reputation`, TASK-061)
-se o valor realmente mudar. Histórico de cada mudança é TASK-063, não
-implementado aqui.
+se o valor realmente mudar.
+
+**Implementação (TASK-063):** `set_source_reputation` agora grava, na
+mesma transação, uma linha em `source_reputation_history`
+(`backend/app/db/migrations/0013_source_reputation_history.sql`) sempre
+que a reputação muda de fato — "o sistema mantém base de reputação de
+fontes... registrada para reutilização futura" (seção 14/15). Chamar
+`set_source_reputation` com o mesmo valor já vigente não grava nada
+(não houve mudança real, incluindo quando `update_source_reputation`,
+TASK-062, decide não chamar por já não haver mudança).
+`list_reputation_history(source_id)` lê o histórico, mais antigo
+primeiro.
 
 ## Fontes bloqueadas (blacklist)
 

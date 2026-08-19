@@ -248,10 +248,13 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/sources/reputation_rule.py`, `update_source_reputation` —
   ver `docs/tasks/TASK-062.md`). Suíte completa: 502/502 testes
   aprovados.
+- **TASK-063** — concluída (histórico de reputação,
+  `ReputationHistoryEntry`/`list_reputation_history` — ver
+  `docs/tasks/TASK-063.md`). Suíte completa: 508/508 testes aprovados.
 
-As demais 85 TASKs permanecem com status **Pendente**.
+As demais 84 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-063 — Criar histórico de reputação**.
+Próxima TASK executável: **TASK-064 — Criar blacklist**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
