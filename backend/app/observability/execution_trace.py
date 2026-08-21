@@ -57,6 +57,20 @@ simplificações feitas (documentadas para não parecerem esquecidas):
   conhecida, registrada aqui no mesmo espírito da lacuna de retenção de
   logs já anotada em `docs/OBSERVABILITY.md`) — inventar esse esquema
   não é desta TASK.
+
+Esta TASK (TASK-079) conecta o trace ao `ExecutionOrchestrator` de
+verdade (`app.orchestrator.orchestrator`, parâmetro `trace` opcional em
+`run_step`/`run_until_response`, mesmo padrão de `cancellation_token`,
+TASK-030) e acrescenta o que faltava para "tempos" ter granularidade
+real: `step_durations` (tempo de cada chamada ao modelo, alinhado por
+índice com `steps` — `step_durations[i]` é a duração da etapa
+`steps[i]`) e `tool_durations` (tempo de cada execução de ferramenta,
+alinhado por índice com `tools_used` — só etapas `USE_TOOL` geram
+entrada aqui, já que só elas chamam uma ferramenta de verdade).
+Registro de erros (`record_error`, já existente desde a TASK-078) **não**
+foi conectado ao orquestrador aqui — o título desta TASK é
+especificamente "ferramentas/passos/tempos", não erros; a conexão fica
+disponível para quando for pedida.
 """
 
 from __future__ import annotations
@@ -80,6 +94,8 @@ class ExecutionTrace:
     started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     finished_at: datetime | None = None
     steps: list[ModelStep] = field(default_factory=list)
+    step_durations: list[float] = field(default_factory=list)
+    tool_durations: list[float] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     error_codes: list[int] = field(default_factory=list)
     usage: dict[str, Any] | None = None
@@ -127,10 +143,23 @@ class ExecutionTrace:
             return None
         return (self.finished_at - self.started_at).total_seconds()
 
-    def add_step(self, step: ModelStep) -> None:
+    def add_step(self, step: ModelStep, duration_seconds: float | None = None) -> None:
         """Registra mais uma etapa (`ModelStep`) do ciclo do
-        orquestrador."""
+        orquestrador, com o tempo que a chamada ao modelo levou
+        (TASK-079) — `step_durations[i]` corresponde a `steps[i]`.
+        `duration_seconds=None` fica de fora de `step_durations` (não
+        entra um `None` na lista) — usado por chamadores que não medem
+        tempo."""
         self.steps.append(step)
+        if duration_seconds is not None:
+            self.step_durations.append(duration_seconds)
+
+    def record_tool_execution(self, duration_seconds: float) -> None:
+        """Registra o tempo que a execução de uma ferramenta levou
+        (TASK-079) — `tool_durations[i]` corresponde a `tools_used[i]`:
+        chame isto, na ordem, uma vez para cada etapa `USE_TOOL` que
+        chegou a executar a ferramenta de verdade."""
+        self.tool_durations.append(duration_seconds)
 
     def record_error(self, error: str, code: int | None = None) -> None:
         """Registra um erro (mensagem, mais o código do catálogo se

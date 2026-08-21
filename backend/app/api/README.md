@@ -1,6 +1,6 @@
 # API para aplicações
 
-Documentação: docs/API.md. TASKs: TASK-067 a TASK-073.
+Documentação: docs/API.md. TASKs: TASK-067 a TASK-073, TASK-079.
 
 Camada de entrada HTTP usada por aplicações externas: autenticação por API key, validação de payload, execução síncrona, timeout, resposta JSON final e rastreio de consumo.
 
@@ -20,7 +20,7 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   em teste. `get_active_model` lê `CLAUDIAO_ACTIVE_MODEL`
   (`config/.env.example`); código de erro `3001`
   (`NO_ACTIVE_MODEL_CONFIGURED`) se ausente.
-- `executions.py` (TASK-067 a TASK-073) — `POST /v1/executions`:
+- `executions.py` (TASK-067 a TASK-073, TASK-079) — `POST /v1/executions`:
   autentica, valida o payload contra `ExecutionRequest` e executa de
   fato, de forma síncrona, via `ExecutionOrchestrator.run_until_response`
   (TASK-069) — monta `ExecutionPolicy.for_application` a partir do
@@ -40,7 +40,13 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   Ao chegar a qualquer desfecho (sucesso, timeout, falha de
   modelo/ferramenta), grava rastreio de consumo (TASK-073):
   `record_usage(application.id, execution.execution_id, status)`
-  (`app.usage.usage_model`).
+  (`app.usage.usage_model`). Um `ExecutionTrace` (TASK-079,
+  `app.observability.execution_trace`) é criado a cada requisição e
+  passado para `run_until_response`, que o popula de verdade com
+  etapas/ferramentas/tempos reais; `trace.finish(...)` fecha o ciclo nos
+  desfechos seguros de tocar (não no timeout, mesma razão de
+  `execution.status` lá). O trace não é persistido nem devolvido na
+  resposta.
 - `responses.py` (TASK-072) — `build_success_response(data)`: monta
   `{"success": true, "data": data}`, espelhando `build_error_response`
   (TASK-008, `app.errors.response`) do lado do sucesso.

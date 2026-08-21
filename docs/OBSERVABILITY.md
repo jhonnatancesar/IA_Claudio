@@ -55,10 +55,26 @@ plano separado da sequência de etapas decidida reativamente
 (`app.llm.prompt`, TASK-018); `orchestrator_rules_version` fica `None`
 por padrão — não existe hoje nenhum esquema de versionamento para "as
 regras do orquestrador" (lacuna conhecida, registrada aqui, mesmo
-espírito da lacuna de retenção de logs já anotada acima). Ainda não
-conectado ao `ExecutionOrchestrator` de verdade (isso é TASK-079,
-"registrar ferramentas/passos/tempos") nem persistido no PostgreSQL
-(nenhuma TASK do bloco pede isso explicitamente ainda).
+espírito da lacuna de retenção de logs já anotada acima).
+
+**Implementação (TASK-079):** o trace agora é conectado ao
+`ExecutionOrchestrator` de verdade — `run_step`/`run_until_response`
+(`app.orchestrator.orchestrator`) ganharam um parâmetro `trace:
+ExecutionTrace | None = None`, mesmo padrão de `cancellation_token`
+(TASK-030), repassado também por `plan_initial_step`
+(`app.orchestrator.planner`) e `replan`
+(`app.orchestrator.replanner`). Cada chamada ao modelo e cada execução de
+ferramenta são cronometradas de verdade e registradas: `step_durations`
+(novo campo, alinhado por índice com `steps`) e `tool_durations` (novo
+campo, alinhado por índice com `tools_used` — só etapas `USE_TOOL` que
+chegaram a executar geram entrada). `POST /v1/executions`
+(`backend/app/api/executions.py`) cria um `ExecutionTrace` a cada
+requisição e passa para `run_until_response` — o trace é populado de
+verdade durante a execução real, mas não é persistido nem devolvido na
+resposta HTTP (nenhuma TASK do bloco pede isso ainda). Registro de erros
+(`record_error`, já existente desde a TASK-078) **não** foi conectado —
+fora do escopo literal desta TASK ("ferramentas/passos/tempos", não
+erros).
 
 ## Métricas
 

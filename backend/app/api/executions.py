@@ -1,4 +1,4 @@
-"""Rota de execuções da API local (TASK-067 a TASK-073).
+"""Rota de execuções da API local (TASK-067 a TASK-073, TASK-079).
 
 `POST /v1/executions`: ponto de entrada para uma aplicação externa pedir
 uma execução ao Claudião (`docs/API.md`, seções 24/25/26). Autentica a
@@ -70,6 +70,21 @@ cotas completo, TASK-108 a TASK-114, não implementados aqui. Requisições
 rejeitadas antes de chegar aqui (401 de autenticação, 400 de validação de
 payload) nunca criam uma `Execution` e por isso não geram registro de
 consumo.
+
+**Execution Trace (TASK-079):** um `ExecutionTrace`
+(`app.observability.execution_trace`) é criado junto com `execution` e
+passado para `run_until_response` — o orquestrador registra nele cada
+etapa e o tempo de cada chamada ao modelo/ferramenta, de verdade
+(TASK-079 conectou o parâmetro `trace` ao `ExecutionOrchestrator`).
+`trace.finish(...)` é chamado nos desfechos que a thread principal pode
+tocar com segurança (sucesso, falha de modelo/ferramenta — mesma razão
+de `execution.status` no timeout: a thread do orquestrador pode ainda
+estar escrevendo em `trace`, então o caminho de timeout não o toca).
+Erros não são registrados no trace ainda (`record_error` existe
+desde a TASK-078, mas não foi conectado aqui — fora do escopo literal
+"ferramentas/passos/tempos"). O trace não é persistido nem devolvido na
+resposta HTTP — nenhuma TASK do bloco "Observabilidade inicial" pede
+isso ainda.
 """
 
 from __future__ import annotations
@@ -87,6 +102,7 @@ from app.auth.api_keys import Application
 from app.errors.catalog import ErrorDomain, register_error
 from app.errors.response import ClaudiaoError
 from app.llm.provider import LocalLLMProvider, LocalLLMProviderError
+from app.observability.execution_trace import ExecutionTrace
 from app.orchestrator.cancellation import CancellationToken
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.orchestrator import ExecutionOrchestrator, ToolExecutorNotConfiguredError
@@ -158,6 +174,12 @@ def create_execution(
     orchestrator = ExecutionOrchestrator(provider, policy)
     execution = Execution.new(origin=application.name)
     cancellation_token = CancellationToken()
+    trace = ExecutionTrace.new(
+        execution_id=execution.execution_id,
+        origin=application.name,
+        requester=application.name,
+        objective=payload.objective,
+    )
 
     future = _TIMEOUT_POOL.submit(
         orchestrator.run_until_response,
@@ -165,6 +187,7 @@ def create_execution(
         payload.objective,
         model,
         cancellation_token,
+        trace,
     )
     try:
         step = future.result(timeout=payload.timeout_seconds)
@@ -174,6 +197,8 @@ def create_execution(
         # do orquestrador neste exato instante (ver docstring do módulo) —
         # o resultado lógico do timeout é sempre CANCELLED, então gravamos
         # esse valor em vez de arriscar ler um `RUNNING` desatualizado.
+        # `trace` não é tocado por este thread pelo mesmo motivo (a thread
+        # do orquestrador pode ainda estar escrevendo nele).
         record_usage(application.id, execution.execution_id, ExecutionStatus.CANCELLED.value)
         raise ClaudiaoError(
             APPLICATION_TIMEOUT_EXCEEDED,
@@ -181,12 +206,15 @@ def create_execution(
         ) from None
     except LocalLLMProviderError as exc:
         record_usage(application.id, execution.execution_id, execution.status.value)
+        trace.finish(result=None)
         raise ClaudiaoError(MODEL_COMPLETION_FAILED, details={"reason": str(exc)}) from exc
     except ToolExecutorNotConfiguredError as exc:
         record_usage(application.id, execution.execution_id, execution.status.value)
+        trace.finish(result=None)
         raise ClaudiaoError(TOOL_NOT_AVAILABLE, details={"reason": str(exc)}) from exc
 
     record_usage(application.id, execution.execution_id, execution.status.value)
+    trace.finish(result=step.reason)
     return build_success_response(
         {
             "execution_id": execution.execution_id,

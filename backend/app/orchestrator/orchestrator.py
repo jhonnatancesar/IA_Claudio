@@ -1,6 +1,7 @@
 """`ExecutionOrchestrator` (TASK-023), com validação de plano (TASK-025),
 execução por etapas (TASK-026), aplicação de `max_steps` (TASK-028),
-detecção de loop (TASK-029) e cancelamento (TASK-030).
+detecção de loop (TASK-029), cancelamento (TASK-030) e registro em
+Execution Trace (TASK-079).
 
 Liga as peças já construídas — `LocalLLMProvider` (TASK-014/015), composição
 de prompt (TASK-019), protocolo e sua validação sintática (TASK-016/017), a
@@ -12,10 +13,19 @@ resposta final, um loop ser detectado, o limite de `max_steps`
 (`ExecutionPolicy`, TASK-022) ser atingido, ou a execução ser cancelada.
 
 Replanejamento é `app.orchestrator.replanner` (TASK-027, módulo separado).
+
+`trace: ExecutionTrace | None` (TASK-079) é um parâmetro opcional a mais em
+`run_step`/`run_until_response`, mesmo padrão de `cancellation_token`
+(TASK-030) — quando fornecido, cada etapa e cada execução de ferramenta são
+registradas nele com o tempo que levaram (`ExecutionTrace.add_step`/
+`record_tool_execution`, `app.observability.execution_trace`). `None` por
+padrão: nada muda para quem já chamava sem `trace` (todos os testes/
+chamadores anteriores à TASK-079).
 """
 
 from __future__ import annotations
 
+import time
 from typing import Callable
 
 from app.errors.catalog import ErrorDomain, register_error
@@ -24,6 +34,7 @@ from app.llm.prompt_composer import StepRecord, compose_prompt
 from app.llm.protocol import Action, ModelStep
 from app.llm.protocol_validator import validate_step
 from app.llm.provider import CompletionRequest, LocalLLMProvider, LocalLLMProviderError
+from app.observability.execution_trace import ExecutionTrace
 from app.orchestrator.cancellation import CancellationToken, ExecutionCancelledError
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.loop_detector import DEFAULT_REPEAT_THRESHOLD, LOOP_DETECTED, detect_loop
@@ -71,6 +82,7 @@ class ExecutionOrchestrator:
         objective: str,
         model: str,
         cancellation_token: CancellationToken | None = None,
+        trace: ExecutionTrace | None = None,
     ) -> ModelStep:
         """Executa um passo real do ciclo do orquestrador.
 
@@ -84,7 +96,12 @@ class ExecutionOrchestrator:
         plano contra a execução e a política (`app.orchestrator.plan_validator`,
         TASK-025); registra a etapa em `execution`. Se a etapa for `RESPOND`,
         conclui a execução usando `reason` como resultado (o protocolo,
-        TASK-016, não define um campo de resposta final separado).
+        TASK-016, não define um campo de resposta final separado). Se
+        `trace` for fornecido (TASK-079), a etapa também é registrada nele
+        junto com o tempo que a chamada ao modelo levou
+        (`ExecutionTrace.add_step`) — só quando a etapa é aceita de fato
+        (depois de `validate_step`/`validate_plan` passarem), não quando o
+        modelo responde algo inválido.
 
         Qualquer falha — do runtime (`LocalLLMProviderError`), do
         protocolo/plano (`ClaudiaoError`), o limite de `max_steps` da
@@ -116,11 +133,13 @@ class ExecutionOrchestrator:
         prompt = compose_prompt(execution.execution_id, objective, history)
         request = CompletionRequest(prompt=prompt, model=model)
 
+        call_started_at = time.monotonic()
         try:
             response = self.provider.complete(request)
         except LocalLLMProviderError as exc:
             execution.fail(str(exc))
             raise
+        call_duration_seconds = time.monotonic() - call_started_at
 
         try:
             step = validate_step(response.text)
@@ -130,6 +149,8 @@ class ExecutionOrchestrator:
             raise
 
         execution.add_step(step)
+        if trace is not None:
+            trace.add_step(step, duration_seconds=call_duration_seconds)
 
         if step.action == Action.RESPOND:
             execution.complete(step.reason)
@@ -149,6 +170,7 @@ class ExecutionOrchestrator:
         objective: str,
         model: str,
         cancellation_token: CancellationToken | None = None,
+        trace: ExecutionTrace | None = None,
     ) -> ModelStep:
         """Executa etapas em sequência (seção 6 da especificação mestre:
         "Executa uma etapa" → "Resultado volta para o modelo" → "Modelo
@@ -167,18 +189,23 @@ class ExecutionOrchestrator:
         diretamente quanto por aqui — `cancellation_token` é checado no
         início de cada etapa, então cancelar entre uma chamada de ferramenta
         e a próxima etapa interrompe o ciclo antes da próxima chamada ao
-        modelo.
+        modelo. `trace` (TASK-079) é repassado a `run_step` a cada etapa; o
+        tempo de cada execução de ferramenta bem-sucedida também é
+        registrado nele (`ExecutionTrace.record_tool_execution`).
         """
         while True:
-            step = self.run_step(execution, objective, model, cancellation_token)
+            step = self.run_step(execution, objective, model, cancellation_token, trace)
             if step.action == Action.RESPOND:
                 return step
 
+            tool_started_at = time.monotonic()
             try:
                 observation = self._execute_tool(step)
             except Exception as exc:
                 execution.fail(str(exc))
                 raise
+            if trace is not None:
+                trace.record_tool_execution(time.monotonic() - tool_started_at)
             execution.set_last_observation(observation)
 
     def _execute_tool(self, step: ModelStep) -> str:

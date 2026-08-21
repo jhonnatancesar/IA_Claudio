@@ -6,6 +6,7 @@ import pytest
 
 from app.errors.response import ClaudiaoError
 from app.llm.provider import CompletionRequest, CompletionResponse, LocalLLMProvider
+from app.observability.execution_trace import ExecutionTrace
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.orchestrator import ExecutionOrchestrator
 from app.orchestrator.replanner import CannotReplanFinishedExecutionError, replan
@@ -151,3 +152,27 @@ def test_replan_new_plan_goes_through_plan_validation():
 
     with pytest.raises(ClaudiaoError):
         replan(orchestrator, old_execution, objective="pergunta", model="qualquer")
+
+
+def test_replan_forwards_trace_to_new_plan():
+    old_execution = Execution.new(origin="chat")
+    old_execution.start()
+
+    class _DynamicProvider(LocalLLMProvider):
+        def complete(self, request: CompletionRequest) -> CompletionResponse:
+            import re
+
+            match = re.search(r"Execução atual: ([0-9a-f-]{36})", request.prompt)
+            return CompletionResponse(text=_respond_json(match.group(1)), model=request.model)
+
+        def is_available(self) -> bool:
+            return True
+
+    orchestrator = _orchestrator(_DynamicProvider())
+    trace = ExecutionTrace.new(
+        execution_id="trace-placeholder", origin="chat", requester="chat", objective="pergunta nova"
+    )
+
+    replan(orchestrator, old_execution, objective="pergunta nova", model="qualquer", trace=trace)
+
+    assert trace.step_count == 1
