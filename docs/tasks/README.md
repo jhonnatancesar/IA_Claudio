@@ -377,12 +377,20 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `docs/tasks/TASK-088.md`). Suíte completa: 742/742 testes aprovados.
   **Com esta TASK, o bloco "Web" (TASK-088 a TASK-094) começa.**
 
-As demais 59 TASKs permanecem com status **Pendente**.
+- **TASK-089** — concluída (primeiro provider concreto de busca web,
+  novo `backend/app/web_search/providers/searxng_provider.py` —
+  `SearXNGSearchProvider` contra SearXNG local via Docker, `DEC-012`,
+  decisão pedida ao usuário via `AskUserQuestion` em três rodadas
+  depois de descartar DuckDuckGo por proteção anti-bot real e API
+  oficial vazia para buscas genéricas — ver `docs/tasks/TASK-089.md`).
+  Suíte completa: 754/754 testes aprovados.
 
-Próxima TASK executável: **TASK-089 — Implementar primeiro provider de
-busca**. Com o marco do primeiro Claudião utilizável certificado
-(TASK-087), o restante da V1 (TASK-088 a TASK-147) completa o escopo —
-ver `docs/V1_SCOPE.md`.
+As demais 58 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-090 — Implementar abertura de página**.
+Com o marco do primeiro Claudião utilizável certificado (TASK-087), o
+restante da V1 (TASK-088 a TASK-147) completa o escopo — ver
+`docs/V1_SCOPE.md`.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

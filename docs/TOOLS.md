@@ -34,6 +34,16 @@ search(query, max_results, purpose)
 `LocalLLMProvider` (TASK-014). Só a interface; nenhum provider concreto
 ainda (TASK-089).
 
+**Implementação (TASK-089):** `backend/app/web_search/providers/
+searxng_provider.py` — `SearXNGSearchProvider`, primeiro provider
+concreto, contra uma instância local do **SearXNG** (metasearch engine
+open-source, `DEC-012`) rodando via Docker
+(`docker run ... searxng/searxng`, porta 8888, JSON habilitado em
+`config/searxng/settings.yml`). Escolhido depois de testar de verdade e
+descartar DuckDuckGo: scraping HTML bloqueado por proteção anti-bot real
+(não contornável), API oficial de Instant Answer vazia para buscas
+genéricas do dia a dia.
+
 Purposes possíveis: `GENERAL_RESEARCH`, `ENTITY_VERIFICATION`,
 `CURRENT_INFORMATION`, `PRODUCT_IDENTITY` e outros futuros.
 

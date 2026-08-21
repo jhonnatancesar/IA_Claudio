@@ -18,6 +18,17 @@ local.
   Cadastro no catálogo fixo de ferramentas e conexão com o
   `ExecutionOrchestrator` continuam em aberto para as próximas TASKs do
   bloco "Web"/"APIs e arquivos" — não implementados aqui.
+- `providers/searxng_provider.py` (TASK-089) — `SearXNGSearchProvider`,
+  primeira implementação concreta, contra uma instância local do SearXNG
+  (`DEC-012`, `docs/DECISION_LOG.md`) rodando via Docker
+  (`docker run ... searxng/searxng`, porta 8888). `search()` chama
+  `GET /search?format=json`; `is_available()` checa `GET /healthz`. Via
+  `urllib.request` (biblioteca padrão), `self._fetch` injetável para
+  teste, mesmo padrão de `OllamaProvider._client` (TASK-015). Config em
+  `config/searxng/settings.yml` (gerada pelo container, não versionada).
 
-Testes em `tests/unit/test_web_search_provider.py` (sem rede real — TASK-089
-é a primeira implementação concreta).
+Testes em `tests/unit/test_web_search_provider.py` (interface, sem rede
+real) e `tests/unit/test_searxng_provider.py` (provider concreto, com
+`_fetch` mockado) e `tests/integration/test_searxng_provider_integration.py`
+(contra a instância SearXNG local de verdade, via fixture
+`searxng_provider` em `tests/conftest.py` — pula se indisponível).

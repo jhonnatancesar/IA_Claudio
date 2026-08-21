@@ -16,6 +16,10 @@ secrets/
 *.p12
 *.pfx
 
+# Config gerada pelo container local do SearXNG (TASK-089) — secret_key
+# própria da instância, não é código do projeto
+config/searxng/
+
 # Chave mestra de criptografia (fora do PostgreSQL por decisão da especificação, seção 32)
 master.key
 *.master-key
