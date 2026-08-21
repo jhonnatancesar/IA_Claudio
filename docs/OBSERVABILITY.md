@@ -91,6 +91,31 @@ erros).
 
 As métricas aparecem no painel administrativo (ver `PANEL.md`).
 
+**Implementação (TASK-080):** `backend/app/observability/metrics.py` —
+funções puras, agregando sobre uma coleção de `ExecutionTrace`
+(TASK-078/079) ou, para consumo, de `UsageRecord` (TASK-073); nenhuma
+delas lê o banco sozinha. `success_rate` (taxa de sucesso —
+`result is not None`), `average_duration_seconds` (tempo médio, só
+execuções finalizadas), `average_step_count` (número de passos),
+`tool_usage_counts` (frequência de uso por ferramenta) e
+`request_count_by_status` (consumo — número de requisições por status,
+via `UsageRecord`) têm fonte de dado real hoje. `failure_counts_by_error_code`
+existe e está correta, mas hoje sempre devolve `{}` na prática — nada
+ainda chama `ExecutionTrace.record_error` (TASK-079 deliberadamente não
+conectou isso).
+
+**Lacunas conhecidas** (registradas para não parecerem esquecidas, mesmo
+espírito da lacuna de retenção de logs acima): "uso correto/incorreto de
+ferramentas" (só a frequência é medida, não a correção — exigiria saber
+se `validate_plan` rejeitou a etapa), "falhas por ferramenta/provider",
+"respostas bloqueadas por baixa confiança" (os guardrails de confiança,
+TASK-034/035/036, não estão acoplados ao orquestrador real ainda —
+HANDOFF.md, item 11 — isso é TASK-088 em diante), "replanejamentos" (
+`replan()` não incrementa nenhum contador observável) e "erros por
+provider" — nenhuma tem hoje uma fonte de dado real; construir essa
+coleta é trabalho de conexão futuro (mesmo tipo de trabalho que a
+TASK-079 fez para etapas/tempos), não desta TASK.
+
 ## TASKs relacionadas
 
 TASK-078 a TASK-083: Execution Trace, registro de ferramentas/passos/tempos, métricas
