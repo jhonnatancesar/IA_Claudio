@@ -183,3 +183,54 @@ Executado `ollama pull qwen3:8b` (5.2GB) e configurado
 especificação mestre é explícita que a escolha definitiva vem de testes
 sistemáticos, não desta validação pontual. `docs/OPEN_QUESTIONS.md`,
 item 3, atualizado para refletir isso sem marcar como resolvido.
+
+## DEC-012 — Primeiro provider de busca: SearXNG local via Docker
+
+**Data:** 2026-08-21
+
+A TASK-089 ("implementar primeiro provider de busca") exigia escolher um
+fornecedor real por trás de `WebSearchProvider` (TASK-088) —
+`docs/TOOLS.md` deixa a abstração genérica, mas a implementação concreta
+precisa de um serviço de verdade. Pedido ao usuário via `AskUserQuestion`,
+com quatro opções apresentadas na primeira pergunta: DuckDuckGo (sem API
+key), Brave Search API, Google Custom Search JSON API, ou outro. O usuário
+escolheu DuckDuckGo.
+
+Antes de implementar, testado de verdade contra o DuckDuckGo: o endpoint
+de scraping HTML (`html.duckduckgo.com/html/`) retornou uma página de
+desafio anti-bot (`anomaly.js`) em vez de resultados — contornar isso
+seria bypass de bot-detection, fora de cogitação por regra de segurança
+não negociável. A alternativa oficial sem key, a "Instant Answer API"
+(`api.duckduckgo.com`), não tem esse bloqueio, mas devolveu vazio para
+três queries genéricas reais testadas ("melhor receita de bolo de
+chocolate", "notícias de hoje sobre economia brasil", "claudião agente
+ia") — só funciona bem para tópicos tipo enciclopédia (ex.: "python
+programming language" retorna um resumo da Wikipédia).
+
+Achado reportado ao usuário, com uma segunda pergunta: manter DuckDuckGo
+mesmo com a limitação, trocar para Brave/Google (API paga/com key), ou
+outro. O usuário escolheu **SearXNG local (self-hosted)** — metasearch
+engine open-source que agrega vários motores de busca de verdade sem
+exigir API key paga de terceiro.
+
+Pedida uma terceira confirmação sobre *como* instalar (esta máquina já
+exige aprovação prévia para instalar software novo, prática pedida pelo
+usuário desde a TASK-058): instalação nativa sem Docker
+(alinhada com `CLAUDE.md`: "execução direta no sistema operacional, sem
+Docker como requisito") vs. Docker vs. instância já existente. O usuário
+escolheu **Docker**. Docker Desktop já estava instalado nesta máquina
+(não instalado nesta TASK, só iniciado — estava parado) — rodado
+`docker run -d --name claudiao-searxng -p 8888:8080 -v
+"C:\IA\config\searxng:/etc/searxng" ... searxng/searxng:latest`, com
+`search.formats: [html, json]` habilitado explicitamente em
+`config/searxng/settings.yml` (config gerada pelo container, não
+versionada — mesmo princípio de `config/.env`). Validado com buscas reais
+antes de implementar o provider: resultados genéricos corretos tanto em
+inglês quanto nas mesmas queries em português que tinham falhado no
+DuckDuckGo.
+
+Isso é uma exceção pontual ao princípio "sem Docker como requisito" da
+arquitetura da V1 (que é sobre o **núcleo** do Claudião — PostgreSQL,
+backend — não sobre todo serviço auxiliar de terceiro que ele consome);
+o núcleo continua rodando direto no SO. Escolha específica de fornecedor
+de busca — não uma mudança de arquitetura do próprio Claudião.

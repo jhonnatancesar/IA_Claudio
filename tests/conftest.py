@@ -20,6 +20,10 @@ import pytest
 
 from app.db.connection import build_dsn_from_env
 from app.llm.providers.ollama_provider import DEFAULT_HOST, OllamaProvider
+from app.web_search.providers.searxng_provider import (
+    DEFAULT_BASE_URL as SEARXNG_DEFAULT_BASE_URL,
+    SearXNGSearchProvider,
+)
 
 _ENV_FILE = Path(__file__).resolve().parent.parent / "config" / ".env"
 _REQUIRED_VARS = (
@@ -70,4 +74,14 @@ def ollama_provider():
     provider = OllamaProvider(host=DEFAULT_HOST)
     if not provider.is_available():
         pytest.skip("Ollama local indisponível — pulando teste de integração.")
+    return provider
+
+
+@pytest.fixture
+def searxng_provider():
+    """`SearXNGSearchProvider` contra uma instância local acessível (TASK-089,
+    `docker run ... searxng/searxng`), ou pula o teste."""
+    provider = SearXNGSearchProvider(base_url=SEARXNG_DEFAULT_BASE_URL)
+    if not provider.is_available():
+        pytest.skip("SearXNG local indisponível — pulando teste de integração.")
     return provider
