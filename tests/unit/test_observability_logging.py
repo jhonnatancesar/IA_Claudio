@@ -14,12 +14,34 @@ import pytest
 from app.observability import logging_config
 
 
+_POSTGRES_ENV_VARS = (
+    "CLAUDIAO_POSTGRES_HOST",
+    "CLAUDIAO_POSTGRES_PORT",
+    "CLAUDIAO_POSTGRES_DB",
+    "CLAUDIAO_POSTGRES_USER",
+    "CLAUDIAO_POSTGRES_PASSWORD",
+)
+
+
 @pytest.fixture(autouse=True)
 def _reset_logging_state(monkeypatch, tmp_path):
-    """Isola cada teste: log dir próprio e estado 'configurado' resetado."""
+    """Isola cada teste: log dir próprio e estado 'configurado' resetado.
+
+    Também limpa `CLAUDIAO_POSTGRES_*` (TASK-087, bug real descoberto ao
+    rodar a suíte com essas variáveis já exportadas no processo — algo
+    que nunca tinha acontecido antes desta TASK): sem isso,
+    `configure_logging()` pode anexar o `PostgresLogHandler` de verdade
+    (`attach_postgres_handler`, TASK-006) dependendo só do ambiente de
+    quem invocou o `pytest`, tornando `len(root.handlers)` no-determinístico
+    — estes testes cobrem só o logger raiz local em arquivo (TASK-005), o
+    handler do PostgreSQL tem seus próprios testes em
+    `tests/unit/test_postgres_log_handler.py`/
+    `tests/integration/test_postgres_log_handler_integration.py`."""
     monkeypatch.setenv("CLAUDIAO_LOG_DIR", str(tmp_path))
     monkeypatch.delenv("CLAUDIAO_LOG_LEVEL", raising=False)
     monkeypatch.delenv("CLAUDIAO_LOG_FILE", raising=False)
+    for var in _POSTGRES_ENV_VARS:
+        monkeypatch.delenv(var, raising=False)
     importlib.reload(logging_config)
     yield
     logging.getLogger("claudiao").handlers.clear()

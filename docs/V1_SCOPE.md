@@ -43,6 +43,29 @@ Itens que compõem o mínimo utilizável:
 
 A partir da TASK-087, o Claudião é considerado **utilizável em produção controlada**.
 
+**Marco certificado (TASK-087):** todos os itens acima estão
+implementados, testados e foram validados de ponta a ponta contra
+serviços reais (PostgreSQL local, Ollama local com modelo `qwen3:8b`
+baixado — `docs/DECISION_LOG.md`, DEC-011), não só contra fakes/mocks:
+servidor real (`uvicorn app.api.app:app`) → `GET /health` reportando
+`healthy: true` de verdade → aplicação de teste criada via
+`scripts/chat.py create-application` → mensagem real enviada via
+`scripts/chat.py chat` → execução completa com resposta real do modelo
+(~52s, dentro do timeout de aplicação, TASK-070) → resultado conferido
+em `usage_records` (consumo), `execution_traces` (execuções) e `GET
+/panel` (painel), todos consistentes entre si. O caminho de rejeição
+(timeout real de aplicação, `APPLICATION_TIMEOUT_EXCEEDED`/4009) também
+foi exercitado de verdade numa tentativa inicial com timeout curto
+demais para o modelo, confirmando que o mecanismo de timeout (TASK-070)
+funciona contra um modelo real lento, não só contra fakes rápidos nos
+testes. Cenário fixo de regressão que reproduz essa validação (sem
+depender de execução manual):
+`tests/scenarios/test_minimum_usable_scenario.py::test_scenario_real_model_completes_a_real_objective`
+— pula automaticamente se `CLAUDIAO_ACTIVE_MODEL` não estiver
+configurado, para continuar portátil em quem clonar o repositório sem
+modelo baixado. Suíte completa: 735/735 testes aprovados (0 pulados)
+quando `config/.env` está carregado no processo do `pytest`.
+
 **Implementação (TASK-084):** `scripts/chat.py` — "chat simples de
 terminal para teste". Cliente HTTP puro de `POST /v1/executions`
 (biblioteca padrão, `urllib.request`, sem dependência nova) — não é uma

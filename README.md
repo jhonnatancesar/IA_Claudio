@@ -10,14 +10,19 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 
 ## Status
 
-Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-086** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-087** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
-"Memória", "Conhecimento", "Fontes", "Aplicações", "Fila" e
-"Observabilidade inicial" completos; bloco "Marco utilizável inicial" em
-andamento (`scripts/chat.py`; `GET /health`; primeiros cenários fixos de
-regressão em `tests/scenarios/` — falta só validar com aplicação real,
-TASK-087, para fechar o marco de primeiro Claudião utilizável).
+"Memória", "Conhecimento", "Fontes", "Aplicações", "Fila",
+"Observabilidade inicial" e "Marco utilizável inicial" completos.
+
+**O Claudião é considerado utilizável em produção controlada a partir da
+TASK-087** — validado de ponta a ponta contra serviços reais (PostgreSQL
+local, Ollama local com modelo `qwen3:8b`, provisório —
+`docs/DECISION_LOG.md`, DEC-011): servidor real, health check saudável,
+aplicação de teste criada via `scripts/chat.py`, execução completa com
+resposta real do modelo, resultado conferido em consumo, execuções e
+painel. Ver `docs/V1_SCOPE.md`.
+
 Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
@@ -37,11 +42,11 @@ Ver
 
 ## Marcos
 
-- **TASK-087** — primeiro Claudião utilizável em produção controlada.
+- **TASK-087** — primeiro Claudião utilizável em produção controlada. **Atingido.**
 - **TASK-147** — V1 completa.
 
 ## Próxima TASK
 
-**TASK-087 — Validar primeiro uso com aplicação real**
-([docs/tasks/TASK-087.md](docs/tasks/TASK-087.md)) — marco: primeiro
-Claudião utilizável.
+**TASK-088** — ver [docs/tasks/README.md](docs/tasks/README.md) e
+[docs/V1_SCOPE.md](docs/V1_SCOPE.md) para o restante do escopo da V1
+(TASK-088 a TASK-147).

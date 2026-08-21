@@ -16,6 +16,7 @@ def test_log_record_is_persisted_in_logs_table(postgres_dsn):
     logger = logging.getLogger("claudiao.test.integration")
     logger.handlers.clear()
     logger.setLevel(logging.INFO)
+    logger.propagate = False
     attached = attach_postgres_handler(logger, dsn=postgres_dsn)
     assert attached is True
 
@@ -43,6 +44,7 @@ def test_list_recent_logs_reads_real_persisted_entry(postgres_dsn):
     logger = logging.getLogger("claudiao.test.integration.list")
     logger.handlers.clear()
     logger.setLevel(logging.INFO)
+    logger.propagate = False
     attach_postgres_handler(logger, dsn=postgres_dsn)
 
     marker = "teste TASK-083 list_recent_logs " + re.sub(r"\D", "", str(id(logger)))

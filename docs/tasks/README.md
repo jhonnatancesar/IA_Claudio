@@ -353,11 +353,27 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `tests/scenarios/test_minimum_usable_scenario.py`; `tests/integration/
   conftest.py` movido para `tests/conftest.py` — ver
   `docs/tasks/TASK-086.md`). Suíte completa: 734/734 testes aprovados.
+- **TASK-087** — concluída (**marco: primeiro Claudião utilizável em
+  produção controlada**. Modelo `qwen3:8b` baixado via `ollama pull`
+  — `DEC-011`, decisão pedida ao usuário via `AskUserQuestion` — e
+  configurado em `CLAUDIAO_ACTIVE_MODEL`; validação real de ponta a
+  ponta com servidor/PostgreSQL/Ollama reais, sem fakes: health check
+  saudável, aplicação criada via `scripts/chat.py`, execução completa
+  com resposta real do modelo (~52s), conferida em `usage_records`/
+  `execution_traces`/painel; caminho de timeout real também exercitado.
+  Novo cenário fixo `test_scenario_real_model_completes_a_real_objective`
+  em `tests/scenarios/test_minimum_usable_scenario.py`. Bug real
+  encontrado e corrigido em 3 testes de logging que assumiam
+  incorretamente que `CLAUDIAO_POSTGRES_*` nunca estaria presente na
+  coleta do pytest — ver `docs/tasks/TASK-087.md`). Suíte completa:
+  735/735 testes aprovados (0 pulados) com `config/.env` carregado;
+  734 aprovados + 1 pulado sem ele (portabilidade esperada).
 
-As demais 61 TASKs permanecem com status **Pendente**.
+As demais 60 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-087 — Validar primeiro uso com aplicação real**
-— marco: primeiro Claudião utilizável.
+Próxima TASK executável: **TASK-088**. Com o marco do primeiro Claudião
+utilizável certificado (TASK-087), o restante da V1 (TASK-088 a
+TASK-147) completa o escopo — ver `docs/V1_SCOPE.md`.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
