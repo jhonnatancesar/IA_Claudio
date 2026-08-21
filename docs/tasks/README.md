@@ -344,10 +344,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   cliente HTTP puro de `POST /v1/executions`, `create-application`/`chat`
   — ver `docs/tasks/TASK-084.md`). Suíte completa: 718/718 testes
   aprovados.
+- **TASK-085** — concluída (health check inicial, novo
+  `backend/app/observability/health_check.py`, `GET /health`
+  (`backend/app/api/health.py`), rodado também no `lifespan` de
+  inicialização — ver `docs/tasks/TASK-085.md`). Suíte completa:
+  732/732 testes aprovados.
 
-As demais 63 TASKs permanecem com status **Pendente**.
+As demais 62 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-085 — Criar health check inicial**.
+Próxima TASK executável: **TASK-086 — Criar suíte mínima de testes críticos**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
