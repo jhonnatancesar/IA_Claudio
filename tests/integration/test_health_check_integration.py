@@ -1,6 +1,6 @@
 """Teste de integração: health check (TASK-085) contra o PostgreSQL e o
 Ollama locais de verdade. Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não
+(tests/conftest.py) — pula automaticamente se o banco não
 estiver disponível. As checagens de `modelo/runtime` exigem o Ollama
 local rodando (mesma regra de todo o projeto — nunca aceitar isso como
 "pulado").

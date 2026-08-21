@@ -1,6 +1,6 @@
 """Teste de integração: transições de estado da fila aplicadas direto a
 um item já persistido (TASK-076), contra o PostgreSQL local. Usa a
-fixture `postgres_dsn` (tests/integration/conftest.py) — pula
+fixture `postgres_dsn` (tests/conftest.py) — pula
 automaticamente se o banco não estiver disponível.
 """
 

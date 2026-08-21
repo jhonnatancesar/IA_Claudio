@@ -1,6 +1,6 @@
 """Teste de integração: escreve de verdade na tabela `logs` do PostgreSQL local
 (TASK-006). Requer um PostgreSQL configurado (TASK-003/TASK-004) — a fixture
-`postgres_dsn` (tests/integration/conftest.py) pula automaticamente se as
+`postgres_dsn` (tests/conftest.py) pula automaticamente se as
 credenciais não estiverem disponíveis nem no ambiente nem em `config/.env`.
 """
 

@@ -1,6 +1,6 @@
 """Teste de integração: persiste e transiciona conhecimento de verdade no
 PostgreSQL local (TASK-052). Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não
+(tests/conftest.py) — pula automaticamente se o banco não
 estiver disponível.
 """
 

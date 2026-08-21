@@ -1,5 +1,5 @@
 """Teste de integração: persiste e lê memórias de verdade no PostgreSQL
-local (TASK-044). Usa a fixture `postgres_dsn` (tests/integration/conftest.py)
+local (TASK-044). Usa a fixture `postgres_dsn` (tests/conftest.py)
 — pula automaticamente se o banco não estiver disponível.
 """
 

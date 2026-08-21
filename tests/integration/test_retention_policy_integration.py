@@ -1,6 +1,6 @@
 """Teste de integração: política de retenção (TASK-049) removendo de
 verdade no PostgreSQL local. Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não
+(tests/conftest.py) — pula automaticamente se o banco não
 estiver disponível.
 """
 

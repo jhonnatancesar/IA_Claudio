@@ -2,7 +2,7 @@
 `fastapi.testclient.TestClient`, e o `run_health_check` chamado de
 verdade no evento de inicialização do FastAPI (`lifespan`,
 `app.api.app`). Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não
+(tests/conftest.py) — pula automaticamente se o banco não
 estiver disponível.
 """
 

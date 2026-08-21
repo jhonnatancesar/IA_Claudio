@@ -1,5 +1,5 @@
 """Teste de integração: plan_initial_step + OllamaProvider real (TASK-024).
-Usa a fixture `ollama_provider` (tests/integration/conftest.py) — pula
+Usa a fixture `ollama_provider` (tests/conftest.py) — pula
 automaticamente se o Ollama não estiver acessível.
 
 Sem modelo baixado nesta máquina (docs/OPEN_QUESTIONS.md, item 3), então
