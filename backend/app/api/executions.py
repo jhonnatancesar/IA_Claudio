@@ -1,4 +1,4 @@
-"""Rota de execuções da API local (TASK-067 a TASK-073, TASK-079).
+"""Rota de execuções da API local (TASK-067 a TASK-073, TASK-079, TASK-082).
 
 `POST /v1/executions`: ponto de entrada para uma aplicação externa pedir
 uma execução ao Claudião (`docs/API.md`, seções 24/25/26). Autentica a
@@ -82,9 +82,14 @@ de `execution.status` no timeout: a thread do orquestrador pode ainda
 estar escrevendo em `trace`, então o caminho de timeout não o toca).
 Erros não são registrados no trace ainda (`record_error` existe
 desde a TASK-078, mas não foi conectado aqui — fora do escopo literal
-"ferramentas/passos/tempos"). O trace não é persistido nem devolvido na
-resposta HTTP — nenhuma TASK do bloco "Observabilidade inicial" pede
-isso ainda.
+"ferramentas/passos/tempos"). O trace não é devolvido na resposta HTTP.
+
+**Persistência do Execution Trace (TASK-082, `DEC-010`):**
+`save_execution_trace(trace)` (`app.observability.execution_trace`) é
+chamado logo depois de `trace.finish(...)`, nos mesmos desfechos seguros
+de tocar (sucesso, falha de modelo/ferramenta — não no timeout). Grava
+o resumo do trace em `execution_traces`, usado pelo painel
+(`app.panel.routes`) para mostrar execuções passadas.
 """
 
 from __future__ import annotations
@@ -102,7 +107,7 @@ from app.auth.api_keys import Application
 from app.errors.catalog import ErrorDomain, register_error
 from app.errors.response import ClaudiaoError
 from app.llm.provider import LocalLLMProvider, LocalLLMProviderError
-from app.observability.execution_trace import ExecutionTrace
+from app.observability.execution_trace import ExecutionTrace, save_execution_trace
 from app.orchestrator.cancellation import CancellationToken
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.orchestrator import ExecutionOrchestrator, ToolExecutorNotConfiguredError
@@ -207,14 +212,17 @@ def create_execution(
     except LocalLLMProviderError as exc:
         record_usage(application.id, execution.execution_id, execution.status.value)
         trace.finish(result=None)
+        save_execution_trace(trace)
         raise ClaudiaoError(MODEL_COMPLETION_FAILED, details={"reason": str(exc)}) from exc
     except ToolExecutorNotConfiguredError as exc:
         record_usage(application.id, execution.execution_id, execution.status.value)
         trace.finish(result=None)
+        save_execution_trace(trace)
         raise ClaudiaoError(TOOL_NOT_AVAILABLE, details={"reason": str(exc)}) from exc
 
     record_usage(application.id, execution.execution_id, execution.status.value)
     trace.finish(result=step.reason)
+    save_execution_trace(trace)
     return build_success_response(
         {
             "execution_id": execution.execution_id,

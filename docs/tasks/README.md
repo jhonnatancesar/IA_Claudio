@@ -329,10 +329,16 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `backend/app/panel/routes.py`, `GET /panel` mostrando a fila real —
   ver `docs/tasks/TASK-081.md`). Suíte completa: 676/676 testes
   aprovados.
+- **TASK-082** — concluída (execuções no painel; Execution Trace
+  persistido no PostgreSQL — `DEC-010`, decisão pedida ao usuário via
+  `AskUserQuestion` — tabela `execution_traces`,
+  `save_execution_trace`/`get_execution_trace`/`list_execution_traces`
+  — ver `docs/tasks/TASK-082.md`). Suíte completa: 688/688 testes
+  aprovados.
 
-As demais 66 TASKs permanecem com status **Pendente**.
+As demais 65 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-082 — Mostrar execuções no painel**.
+Próxima TASK executável: **TASK-083 — Mostrar erros/logs/consumo**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -23,7 +23,8 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   em teste. `get_active_model` lê `CLAUDIAO_ACTIVE_MODEL`
   (`config/.env.example`); código de erro `3001`
   (`NO_ACTIVE_MODEL_CONFIGURED`) se ausente.
-- `executions.py` (TASK-067 a TASK-073, TASK-079) — `POST /v1/executions`:
+- `executions.py` (TASK-067 a TASK-073, TASK-079, TASK-082) — `POST
+  /v1/executions`:
   autentica, valida o payload contra `ExecutionRequest` e executa de
   fato, de forma síncrona, via `ExecutionOrchestrator.run_until_response`
   (TASK-069) — monta `ExecutionPolicy.for_application` a partir do
@@ -48,8 +49,9 @@ Camada de entrada HTTP usada por aplicações externas: autenticação por API k
   passado para `run_until_response`, que o popula de verdade com
   etapas/ferramentas/tempos reais; `trace.finish(...)` fecha o ciclo nos
   desfechos seguros de tocar (não no timeout, mesma razão de
-  `execution.status` lá). O trace não é persistido nem devolvido na
-  resposta.
+  `execution.status` lá), seguido de `save_execution_trace(trace)`
+  (TASK-082, `DEC-010`) — grava o resumo em `execution_traces`, usado
+  pelo painel (`app.panel.routes`) para mostrar execuções passadas.
 - `responses.py` (TASK-072) — `build_success_response(data)`: monta
   `{"success": true, "data": data}`, espelhando `build_error_response`
   (TASK-008, `app.errors.response`) do lado do sucesso.

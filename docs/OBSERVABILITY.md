@@ -70,11 +70,27 @@ campo, alinhado por índice com `tools_used` — só etapas `USE_TOOL` que
 chegaram a executar geram entrada). `POST /v1/executions`
 (`backend/app/api/executions.py`) cria um `ExecutionTrace` a cada
 requisição e passa para `run_until_response` — o trace é populado de
-verdade durante a execução real, mas não é persistido nem devolvido na
-resposta HTTP (nenhuma TASK do bloco pede isso ainda). Registro de erros
-(`record_error`, já existente desde a TASK-078) **não** foi conectado —
-fora do escopo literal desta TASK ("ferramentas/passos/tempos", não
-erros).
+verdade durante a execução real. Registro de erros (`record_error`, já
+existente desde a TASK-078) **não** foi conectado — fora do escopo
+literal desta TASK ("ferramentas/passos/tempos", não erros).
+
+**Implementação (TASK-082, `DEC-010`):** o Execution Trace agora é
+persistido no PostgreSQL — decisão pedida explicitamente ao usuário
+(`docs/DECISION_LOG.md`, DEC-010), já que a especificação mestre nunca
+exige isso para o trace (diferente da fila, seção 27). Tabela
+`execution_traces` (`backend/app/db/migrations/0017_execution_traces.sql`)
+guarda só o **resumo** — `step_count`/`tools_used` (não cada `ModelStep`
+com seus parâmetros, nem `step_durations`/`tool_durations` individuais);
+`errors`/`error_codes`/`usage`/`orchestrator_rules_version` continuam
+sem fonte de dado real. `save_execution_trace`/`get_execution_trace`/
+`list_execution_traces` (`app.observability.execution_trace`) —
+`ExecutionTraceRecord` é o modelo de leitura, separado de
+`ExecutionTrace`, para não fingir que campos nunca gravados vieram do
+banco. `POST /v1/executions` chama `save_execution_trace` logo depois
+de `trace.finish(...)`, nos mesmos desfechos seguros de tocar (não no
+timeout). O painel (`app.panel.routes`, TASK-081) usa
+`list_execution_traces` para mostrar "Execuções" — `execution_id`/
+`requester`/`objective`/status (derivado)/`result`/`duration_seconds`.
 
 ## Métricas
 
