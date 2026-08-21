@@ -301,10 +301,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `save_queue_item`/`get_queue_item`/`list_queue_items`, tabela
   `queue_items` — ver `docs/tasks/TASK-075.md`). Suíte completa:
   597/597 testes aprovados.
+- **TASK-076** — concluída (estados da fila aplicados a um item já
+  persistido, `start_queue_item`/`complete_queue_item`/
+  `fail_queue_item`/`list_queue_items_by_status` — ver
+  `docs/tasks/TASK-076.md`). Suíte completa: 610/610 testes aprovados.
 
-As demais 72 TASKs permanecem com status **Pendente**.
+As demais 71 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-076 — Criar estados da fila**.
+Próxima TASK executável: **TASK-077 — Implementar retenção/limpeza**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

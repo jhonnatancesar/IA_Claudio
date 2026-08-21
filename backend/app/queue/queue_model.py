@@ -26,9 +26,20 @@ memória, sem chamar o banco sozinhas; quem quiser durabilidade chama
 `fail`), mesmo padrão de `app.usage.usage_model.record_usage` (TASK-073):
 função explícita chamada por quem processa o item, não um efeito colateral
 escondido dentro do método de transição. `payload` precisa ser
-JSON-serializável para ser persistido (guardado como `jsonb`) — estados
-adicionais/histórico de transições (TASK-076) e retenção/limpeza
-(TASK-077) não são desta TASK.
+JSON-serializável para ser persistido (guardado como `jsonb`).
+
+Esta TASK (TASK-076) acrescenta `start_queue_item`/`complete_queue_item`/
+`fail_queue_item`: transições de estado aplicadas direto a um item já
+persistido, a partir só do `item_id` — para quando quem processa a fila
+não tem mais o objeto `QueueItem` original em memória (ex.: carregado de
+novo via `get_queue_item`/`list_queue_items`, outro processo, outra
+requisição). Cada uma carrega o item do banco, reaplica a mesma
+validação de transição de `QueueItem.start`/`complete`/`fail`
+(TASK-074, `InvalidQueueItemStateError` — nenhuma regra nova, só
+reaproveitada) e grava com `save_queue_item`. `QueueItemNotFoundError`
+se `item_id` não existir. `list_queue_items_by_status(status)` filtra a
+listagem por estado. Retenção/limpeza é TASK-077, não implementada
+aqui.
 """
 
 from __future__ import annotations
@@ -216,3 +227,63 @@ def list_queue_items() -> list[QueueItem]:
         ).fetchall()
 
     return [_queue_item_from_row(row) for row in rows]
+
+
+def list_queue_items_by_status(status: QueueItemStatus) -> list[QueueItem]:
+    """Lista os itens persistidos com um `status` específico, em ordem
+    FIFO (`created_at` crescente) — ex.: todos os `PENDING` esperando
+    processamento."""
+    with connect() as conn:
+        rows = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM queue_items "
+            "WHERE status = %s ORDER BY created_at ASC",
+            (status.value,),
+        ).fetchall()
+
+    return [_queue_item_from_row(row) for row in rows]
+
+
+class QueueItemNotFoundError(ValueError):
+    """Levantado quando um `item_id` não corresponde a nenhum item
+    persistido."""
+
+
+def _load_persisted_item(item_id: str) -> QueueItem:
+    item = get_queue_item(item_id)
+    if item is None:
+        raise QueueItemNotFoundError(f"item não encontrado: {item_id!r}")
+    return item
+
+
+def start_queue_item(item_id: str) -> QueueItem:
+    """`PENDING` → `RUNNING` (TASK-076) num item já persistido, a partir
+    só do `item_id`. Levanta `QueueItemNotFoundError` se não existir,
+    `InvalidQueueItemStateError` se a transição não for válida (mesma
+    regra de `QueueItem.start`, TASK-074)."""
+    item = _load_persisted_item(item_id)
+    item.start()
+    save_queue_item(item)
+    return item
+
+
+def complete_queue_item(item_id: str) -> QueueItem:
+    """`RUNNING` → `COMPLETED` (TASK-076) num item já persistido, a
+    partir só do `item_id`. Levanta `QueueItemNotFoundError` se não
+    existir, `InvalidQueueItemStateError` se a transição não for válida
+    (mesma regra de `QueueItem.complete`, TASK-074)."""
+    item = _load_persisted_item(item_id)
+    item.complete()
+    save_queue_item(item)
+    return item
+
+
+def fail_queue_item(item_id: str, error: str) -> QueueItem:
+    """Qualquer estado não-terminal → `FAILED` (TASK-076) num item já
+    persistido, a partir só do `item_id`, registrando `error`. Levanta
+    `QueueItemNotFoundError` se não existir, `InvalidQueueItemStateError`
+    se a transição não for válida (mesma regra de `QueueItem.fail`,
+    TASK-074) — sem retry automático (seção 27)."""
+    item = _load_persisted_item(item_id)
+    item.fail(error)
+    save_queue_item(item)
+    return item
