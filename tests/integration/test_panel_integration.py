@@ -1,7 +1,7 @@
 """Teste de integração: painel web read-only (TASK-081 a TASK-083)
 executando de verdade contra o PostgreSQL local, via
 `fastapi.testclient.TestClient`. Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não
+(tests/conftest.py) — pula automaticamente se o banco não
 estiver disponível.
 """
 

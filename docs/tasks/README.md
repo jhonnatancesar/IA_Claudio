@@ -349,10 +349,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   (`backend/app/api/health.py`), rodado também no `lifespan` de
   inicialização — ver `docs/tasks/TASK-085.md`). Suíte completa:
   732/732 testes aprovados.
+- **TASK-086** — concluída (suíte mínima de testes críticos, novo
+  `tests/scenarios/test_minimum_usable_scenario.py`; `tests/integration/
+  conftest.py` movido para `tests/conftest.py` — ver
+  `docs/tasks/TASK-086.md`). Suíte completa: 734/734 testes aprovados.
 
-As demais 62 TASKs permanecem com status **Pendente**.
+As demais 61 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-086 — Criar suíte mínima de testes críticos**.
+Próxima TASK executável: **TASK-087 — Validar primeiro uso com aplicação real**
+— marco: primeiro Claudião utilizável.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

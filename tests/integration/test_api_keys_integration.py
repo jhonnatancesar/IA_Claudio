@@ -1,6 +1,6 @@
 """Teste de integração: cria e autentica aplicações de verdade no PostgreSQL
 local (TASK-011). Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não estiver
+(tests/conftest.py) — pula automaticamente se o banco não estiver
 disponível.
 """
 

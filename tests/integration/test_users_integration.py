@@ -1,5 +1,5 @@
 """Teste de integração: cria e autentica usuários de verdade no PostgreSQL local
-(TASK-009). Usa a fixture `postgres_dsn` (tests/integration/conftest.py) — pula
+(TASK-009). Usa a fixture `postgres_dsn` (tests/conftest.py) — pula
 automaticamente se o banco não estiver disponível.
 """
 

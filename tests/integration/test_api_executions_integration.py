@@ -1,7 +1,7 @@
 """Teste de integração: API local do Claudião (TASK-067 a TASK-073)
 executando de verdade contra o PostgreSQL local — autenticação real de
 aplicação, validação de payload, execução síncrona via HTTP e rastreio de
-consumo. Usa a fixture `postgres_dsn` (tests/integration/conftest.py) —
+consumo. Usa a fixture `postgres_dsn` (tests/conftest.py) —
 pula automaticamente se o banco não estiver disponível.
 
 O `LocalLLMProvider`/modelo ativo são substituídos por fakes via

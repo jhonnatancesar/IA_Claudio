@@ -1,5 +1,5 @@
 """Teste de integração: ExecutionOrchestrator + OllamaProvider real
-(TASK-023). Usa a fixture `ollama_provider` (tests/integration/conftest.py) —
+(TASK-023). Usa a fixture `ollama_provider` (tests/conftest.py) —
 pula automaticamente se o Ollama não estiver acessível.
 
 Sem modelo baixado nesta máquina (docs/OPEN_QUESTIONS.md, item 3), então este

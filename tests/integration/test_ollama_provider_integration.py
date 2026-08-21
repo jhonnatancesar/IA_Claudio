@@ -1,5 +1,5 @@
 """Teste de integração: OllamaProvider contra o Ollama local de verdade
-(TASK-015). Usa a fixture `ollama_provider` (tests/integration/conftest.py) —
+(TASK-015). Usa a fixture `ollama_provider` (tests/conftest.py) —
 pula automaticamente se o Ollama não estiver acessível.
 
 Nenhum modelo foi baixado nesta máquina (docs/OPEN_QUESTIONS.md, item 3), então

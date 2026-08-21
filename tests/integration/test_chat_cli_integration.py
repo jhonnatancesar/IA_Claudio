@@ -4,7 +4,7 @@ verdade para `POST /v1/executions` (`fastapi.testclient.TestClient`,
 com `LocalLLMProvider` fake, mesmo padrão de
 `tests/integration/test_api_executions_integration.py`) e a resposta
 real é interpretada por `chat.format_response`. Usa a fixture
-`postgres_dsn` (tests/integration/conftest.py) — pula automaticamente
+`postgres_dsn` (tests/conftest.py) — pula automaticamente
 se o banco não estiver disponível.
 """
 

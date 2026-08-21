@@ -192,11 +192,13 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
   app (ou inicie o serviço) e re-rode a suíte antes de reportar resultados.
 - **Credenciais reais:** `config/.env` (na raiz do repo, **nunca versionado** —
   confirme com `git check-ignore -v config/.env` se tiver dúvida). Os testes de
-  integração (`tests/integration/`) carregam esse arquivo automaticamente via
-  `tests/integration/conftest.py` se as variáveis não estiverem no ambiente do
-  processo, e pulam (não falham) se o serviço não estiver acessível — mesmo
-  padrão para PostgreSQL (`postgres_dsn`) e Ollama (`ollama_provider`), mas
-  ver o aviso acima sobre não aceitar esse pulo passivamente.
+  integração/cenário (`tests/integration/`, `tests/scenarios/`) carregam esse
+  arquivo automaticamente via `tests/conftest.py` (movido de
+  `tests/integration/conftest.py` na TASK-086, para alcançar `tests/scenarios/`
+  também) se as variáveis não estiverem no ambiente do processo, e pulam (não
+  falham) se o serviço não estiver acessível — mesmo padrão para PostgreSQL
+  (`postgres_dsn`) e Ollama (`ollama_provider`), mas ver o aviso acima sobre
+  não aceitar esse pulo passivamente.
 - **Python:** 3.14.6 instalado nesta máquina, mas `requires-python >= 3.11` no
   `backend/pyproject.toml` — não assumir 3.14 especificamente em código novo.
 - **Dependências externas do backend:** `psycopg[binary]`, `cryptography`,

@@ -1,6 +1,6 @@
 """Teste de integração: retenção/limpeza da fila (TASK-077) contra o
 PostgreSQL local. Usa a fixture `postgres_dsn`
-(tests/integration/conftest.py) — pula automaticamente se o banco não
+(tests/conftest.py) — pula automaticamente se o banco não
 estiver disponível.
 """
 
