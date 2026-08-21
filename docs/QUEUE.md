@@ -63,4 +63,17 @@ Cada função carrega o item, reaplica a mesma validação de transição de
 regra nova) e grava com `save_queue_item` (TASK-075).
 `QueueItemNotFoundError` se `item_id` não existir.
 `list_queue_items_by_status(status)` filtra a listagem por estado (ex.:
-todos os `PENDING`). Retenção/limpeza (TASK-077) não é desta TASK.
+todos os `PENDING`).
+
+**Implementação (TASK-077):** `delete_queue_item(item_id)` (mesmo
+módulo, mecânico, idempotente) e `app.queue.retention_policy` —
+`is_eligible_for_retention_removal(item, now, max_age_days=7.0)`/
+`apply_retention_policy(now, max_age_days=7.0)` (função pura + aplicação
+real, mesma separação mecânico/regra de `app.memory.retention_policy`,
+TASK-049). Só itens em estado terminal (`COMPLETED`/`FAILED`) são
+elegíveis, contados a partir de `finished_at` — um item `PENDING`/
+`RUNNING`, mesmo antigo, nunca é removido (ainda é trabalho em aberto).
+`DEFAULT_MAX_AGE_DAYS = 7.0` — bem mais curto que os 180 dias da memória,
+já que um item de fila é trabalho de processamento já concluído, não
+conhecimento de longo prazo. Com esta TASK, o bloco "Fila" (TASK-074 a
+TASK-077) está completo.
