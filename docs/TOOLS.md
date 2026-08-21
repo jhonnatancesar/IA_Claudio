@@ -27,6 +27,13 @@ Google, Firecrawl, Exa, Parallel ou outro fornecedor.
 search(query, max_results, purpose)
 ```
 
+**Implementação (TASK-088):** `backend/app/web_search/provider.py` —
+`WebSearchProvider` (classe abstrata, `search()`/`is_available()`),
+`SearchRequest`/`SearchResponse`/`SearchResult` (dataclasses frozen),
+`SearchPurpose`, `WebSearchProviderError` — mesmo padrão de
+`LocalLLMProvider` (TASK-014). Só a interface; nenhum provider concreto
+ainda (TASK-089).
+
 Purposes possíveis: `GENERAL_RESEARCH`, `ENTITY_VERIFICATION`,
 `CURRENT_INFORMATION`, `PRODUCT_IDENTITY` e outros futuros.
 

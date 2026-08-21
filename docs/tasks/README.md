@@ -369,11 +369,20 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   735/735 testes aprovados (0 pulados) com `config/.env` carregado;
   734 aprovados + 1 pulado sem ele (portabilidade esperada).
 
-As demais 60 TASKs permanecem com status **Pendente**.
+- **TASK-088** — concluída (interface `WebSearchProvider`, novo
+  `backend/app/web_search/provider.py` — `SearchRequest`/
+  `SearchResponse`/`SearchResult`/`SearchPurpose`/
+  `WebSearchProviderError`, mesmo padrão de `LocalLLMProvider`
+  (TASK-014); só a interface, sem provider concreto — ver
+  `docs/tasks/TASK-088.md`). Suíte completa: 742/742 testes aprovados.
+  **Com esta TASK, o bloco "Web" (TASK-088 a TASK-094) começa.**
 
-Próxima TASK executável: **TASK-088**. Com o marco do primeiro Claudião
-utilizável certificado (TASK-087), o restante da V1 (TASK-088 a
-TASK-147) completa o escopo — ver `docs/V1_SCOPE.md`.
+As demais 59 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-089 — Implementar primeiro provider de
+busca**. Com o marco do primeiro Claudião utilizável certificado
+(TASK-087), o restante da V1 (TASK-088 a TASK-147) completa o escopo —
+ver `docs/V1_SCOPE.md`.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
