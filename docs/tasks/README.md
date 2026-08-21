@@ -311,10 +311,13 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `DEFAULT_MAX_AGE_DAYS = 7.0` — ver `docs/tasks/TASK-077.md`). Suíte
   completa: 624/624 testes aprovados. **Com esta TASK, o bloco "Fila"
   (TASK-074 a TASK-077) está completo.**
+- **TASK-078** — concluída (Execution Trace, novo
+  `backend/app/observability/execution_trace.py`, `ExecutionTrace` — ver
+  `docs/tasks/TASK-078.md`). Suíte completa: 640/640 testes aprovados.
 
-As demais 70 TASKs permanecem com status **Pendente**.
+As demais 69 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-078 — Criar Execution Trace**.
+Próxima TASK executável: **TASK-079 — Registrar ferramentas/passos/tempos**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

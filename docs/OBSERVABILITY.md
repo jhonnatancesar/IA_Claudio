@@ -40,6 +40,26 @@ Cada execução tem um Execution Trace com: `execution_id`, origem, usuário/apl
 horário, duração, intenção, plano, etapas, ferramentas, erros, códigos, consumo,
 número de passos, resultado, versão do prompt e versão das regras do orquestrador.
 
+**Implementação (TASK-078):** `backend/app/observability/execution_trace.py`
+— `ExecutionTrace` (dataclass, mesmo espírito do modelo de `Execution`,
+TASK-020): `execution_id`/`origin`/`requester`/`objective`/`started_at`/
+`finished_at`/`steps`/`errors`/`error_codes`/`usage`/`result`/
+`prompt_version`/`orchestrator_rules_version` armazenados;
+`step_count`/`tools_used`/`duration_seconds` são propriedades derivadas
+de `steps`/`started_at`/`finished_at`, nunca guardadas em duplicidade.
+`add_step(step)`/`record_error(error, code=None)`/`finish(result=None)`
+registram o ciclo de vida. "Plano" e "etapas" da especificação viraram um
+único campo (`steps`) — o orquestrador desta V1 não mantém um objeto de
+plano separado da sequência de etapas decidida reativamente
+(`docs/ARCHITECTURE.md`). `prompt_version` reaproveita `PROMPT_VERSION`
+(`app.llm.prompt`, TASK-018); `orchestrator_rules_version` fica `None`
+por padrão — não existe hoje nenhum esquema de versionamento para "as
+regras do orquestrador" (lacuna conhecida, registrada aqui, mesmo
+espírito da lacuna de retenção de logs já anotada acima). Ainda não
+conectado ao `ExecutionOrchestrator` de verdade (isso é TASK-079,
+"registrar ferramentas/passos/tempos") nem persistido no PostgreSQL
+(nenhuma TASK do bloco pede isso explicitamente ainda).
+
 ## Métricas
 
 - taxa de sucesso
