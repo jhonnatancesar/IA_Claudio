@@ -39,7 +39,19 @@ nesta máquina de desenvolvimento (`docs/DECISION_LOG.md`, DEC-008), e o
 Nenhum modelo foi puxado (`ollama pull`); a escolha do modelo continua
 inteiramente em aberto.
 
-**Status:** aberto, intencionalmente adiado.
+**Atualização (TASK-087):** para validar o marco do primeiro Claudião
+utilizável com uma resposta real (não só `LocalLLMProvider` fake), o
+usuário autorizou baixar um modelo agora e escolheu explicitamente
+`qwen3:8b` (`docs/DECISION_LOG.md`, DEC-011). `ollama pull qwen3:8b`
+executado e `CLAUDIAO_ACTIVE_MODEL=qwen3:8b` configurado em
+`config/.env` (não versionado). Isso **não** é a escolha definitiva —
+continua valendo "o modelo definitivo será escolhido por testes, não
+por chute" — é só o modelo provisório usado para viabilizar a
+validação com resposta real desta TASK, podendo mudar depois sem
+exigir nova infraestrutura.
+
+**Status:** parcialmente resolvido (modelo provisório em uso); escolha
+definitiva continua aberta.
 
 ## 4. Valor exato do limite fixo de memória por usuário/aplicação
 

@@ -8,6 +8,14 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   configura o logger raiz `claudiao` lendo `CLAUDIAO_LOG_LEVEL`/`CLAUDIAO_LOG_DIR`/
   `CLAUDIAO_LOG_FILE` do ambiente (DEBUG desativado por padrão); `get_logger(nome)`
   retorna um logger filho (`claudiao.<nome>`). Rotação por tamanho (10 MB, 5 backups).
+  Lacuna conhecida (TASK-085/TASK-087): o estado "configurado" é uma flag
+  de módulo (`_configured`), decidida na primeira chamada de
+  `get_logger()` em qualquer lugar do processo — se
+  `CLAUDIAO_POSTGRES_*` já estiver no ambiente nesse instante (ex.:
+  `config/.env` carregado antes de subir o processo), o handler do
+  PostgreSQL é anexado ao logger raiz para o resto da execução; testes
+  que dependem de um número fixo de handlers isolam isso explicitamente
+  (`tests/unit/test_observability_logging.py`).
 - `postgres_log_handler.py` (TASK-006, TASK-083) — `PostgresLogHandler`
   grava cada `LogRecord` na tabela `logs`
   (`backend/app/db/migrations/0002_logs.sql`). `configure_logging()`

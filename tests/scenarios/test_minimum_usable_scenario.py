@@ -28,19 +28,26 @@ crítico de rejeição:
    primeira barreira real, não um teatro que algo poderia contornar.
 
 Testes explícitos contra alucinação e uso incorreto de ferramentas
-(`docs/TESTING.md`) **não** estão aqui — exigem um modelo Ollama real
-baixado (alucinação, `docs/OPEN_QUESTIONS.md` item 3) e o Tool Registry
-(uso de ferramentas, TASK-088 em diante), nenhum dos dois existe ainda.
-São TASK-142/TASK-144, dedicadas, mais adiante no backlog
-(`docs/TESTING.md`) — não desta TASK.
+(`docs/TESTING.md`) **não** estão aqui — exigiriam avaliar a qualidade
+do conteúdo de uma resposta real (alucinação) e o Tool Registry (uso de
+ferramentas, TASK-088 em diante), que ainda não existe. São TASK-142/
+TASK-144, dedicadas, mais adiante no backlog (`docs/TESTING.md`) — não
+desta TASK.
 
-`LocalLLMProvider`/modelo ativo substituídos por fake via
+Os dois primeiros cenários usam `LocalLLMProvider`/modelo ativo fake via
 `app.dependency_overrides`, mesmo padrão de
-`tests/integration/test_api_executions_integration.py` — nenhum modelo
-Ollama real foi baixado nesta máquina ainda.
+`tests/integration/test_api_executions_integration.py` — não dependem
+de um modelo real baixado, então sempre rodam. O terceiro
+(`test_scenario_real_model_completes_a_real_objective`, TASK-087) usa o
+`OllamaProvider` de verdade contra `CLAUDIAO_ACTIVE_MODEL` de verdade
+(`qwen3:8b` nesta máquina, `DEC-011`, `docs/DECISION_LOG.md`) — pula se
+`CLAUDIAO_ACTIVE_MODEL` não estiver configurado (esta TASK é a primeira
+vez que fica, então essa checagem é o que faz o teste continuar
+portátil para quem clonar o repositório sem o modelo baixado).
 """
 
 import json
+import os
 import re
 import uuid
 
@@ -52,6 +59,7 @@ from app.api.app import app
 from app.api.dependencies import get_active_model, get_local_llm_provider
 from app.auth.api_keys import create_application
 from app.llm.provider import CompletionRequest, CompletionResponse, LocalLLMProvider
+from app.llm.providers.ollama_provider import OllamaProvider
 from app.observability.execution_trace import list_execution_traces
 from app.usage.usage_model import list_usage_for_application
 
@@ -168,3 +176,48 @@ def test_scenario_unauthenticated_request_is_rejected_before_any_side_effect(
     assert not any(
         "essa mensagem nunca deveria ser processada" == t.objective for t in traces
     )
+
+
+def test_scenario_real_model_completes_a_real_objective(postgres_dsn, registered_application):
+    """Cenário do marco TASK-087 (`docs/V1_SCOPE.md`): nenhum fake — modelo
+    Ollama real (`CLAUDIAO_ACTIVE_MODEL`), `OllamaProvider` real,
+    `TestClient` **sem** `app.dependency_overrides`. Demora de verdade
+    (minutos em CPU, dependendo do modelo/hardware) — é o único teste da
+    suíte que genuinamente completa com um modelo, de propósito."""
+    active_model = os.environ.get("CLAUDIAO_ACTIVE_MODEL")
+    if not active_model:
+        pytest.skip(
+            "CLAUDIAO_ACTIVE_MODEL não configurado — pulando validação com "
+            "modelo Ollama real (docs/OPEN_QUESTIONS.md, item 3)."
+        )
+    if not OllamaProvider().is_available():
+        pytest.skip("Ollama local indisponível — pulando validação com modelo real.")
+
+    _, api_key = registered_application
+    execution_id = None
+    try:
+        response = TestClient(app).post(
+            "/v1/executions",
+            json={
+                "objective": "qual é a capital da frança? responda em uma frase curta.",
+                "usage_type": "chat",
+                "web_search_allowed": False,
+                "timeout_seconds": 180,
+            },
+            headers={"Authorization": f"Bearer {api_key}"},
+        )
+
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["success"] is True
+        execution_id = body["data"]["execution_id"]
+        assert body["data"]["status"] == "COMPLETED"
+        result = body["data"]["result"]
+        assert isinstance(result, str)
+        assert result.strip() != ""
+    finally:
+        if execution_id is not None:
+            with psycopg.connect(postgres_dsn) as conn:
+                conn.execute(
+                    "DELETE FROM execution_traces WHERE execution_id = %s", (execution_id,)
+                )

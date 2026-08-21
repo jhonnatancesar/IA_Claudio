@@ -156,3 +156,30 @@ etapas ou duração; (b) persistir o `ExecutionTrace` inteiro numa tabela
 nova. O usuário escolheu **(b)** — persistir o Execution Trace numa
 tabela nova (`execution_traces`), para um painel mais rico (objetivo,
 resultado, duração, número de etapas, ferramentas usadas).
+
+## DEC-011 — Primeiro modelo Ollama baixado: `qwen3:8b` (provisório)
+
+**Data:** 2026-08-21
+
+A TASK-087 (marco do primeiro Claudião utilizável) exigia validar o
+fluxo completo com uma resposta real de modelo, não só com
+`LocalLLMProvider` fake (como todos os testes até aqui). Isso esbarrou
+em `docs/OPEN_QUESTIONS.md`, item 3 ("o modelo definitivo será escolhido
+por testes, não por chute") — nenhum modelo havia sido baixado.
+
+Pedido explicitamente ao usuário via pergunta de múltipla escolha (não é
+decisão técnica de baixo risco: baixar ~5GB e escolher, mesmo que
+provisoriamente, qual modelo o `CLAUDIAO_ACTIVE_MODEL` aponta). Duas
+opções apresentadas: (a) certificar o marco sem modelo real, validando
+só até a fronteira do `LocalLLMProvider`; (b) baixar um modelo agora
+para validar com resposta real. O usuário escolheu **(b)**, e ao ser
+perguntado qual modelo baixar, escolheu explicitamente **`qwen3:8b`**
+(maior que as opções sugeridas de referência, `llama3.2:3b/1b` ou
+`qwen2.5:3b`).
+
+Executado `ollama pull qwen3:8b` (5.2GB) e configurado
+`CLAUDIAO_ACTIVE_MODEL=qwen3:8b` em `config/.env` (não versionado). Esta
+é uma escolha **provisória**, não a decisão definitiva de modelo — a
+especificação mestre é explícita que a escolha definitiva vem de testes
+sistemáticos, não desta validação pontual. `docs/OPEN_QUESTIONS.md`,
+item 3, atualizado para refletir isso sem marcar como resolvido.
