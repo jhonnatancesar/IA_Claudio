@@ -13,13 +13,19 @@ estão resumidas aqui.
 
 ## Checkpoint atual
 
-**Data:** 2026-08-21 · **TASK:** TASK-080 · **TASKs concluídas:** 80 de 147
-(TASK-001 a TASK-080) · **Próxima TASK executável:** TASK-081 — Criar
-painel web read-only.
+**Data:** 2026-08-21 · **TASK:** TASK-090 · **TASKs concluídas:** 90 de 147
+(TASK-001 a TASK-090) · **Próxima TASK executável:** TASK-091 —
+Implementar normalização HTML/text/JSON/XML.
 
 Este checkpoint rodou no prazo certo (10 TASKs desde o checkpoint anterior,
-TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
+TASK-080) — nono checkpoint seguido no prazo desde que o item 13 de
 "Armadilhas" passou a ser aplicado (TASK-060).
+
+**Marco do primeiro Claudião utilizável atingido nesta janela (TASK-087,
+`docs/V1_SCOPE.md`).** A partir da TASK-087, o Claudião é considerado
+**utilizável em produção controlada** — validado de ponta a ponta com
+serviços reais (PostgreSQL, Ollama com modelo `qwen3:8b` baixado), não só
+com fakes/mocks.
 
 ## O que já existe (resumo, não repete `docs/tasks/`)
 
@@ -107,38 +113,79 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
   limpeza (`app.queue.retention_policy`, só itens terminais mais antigos
   que 7 dias). Nenhuma TASK conecta esta fila a `POST /v1/executions`,
   que continua síncrono ponta a ponta.
-- **Bloco "Observabilidade inicial" em andamento (TASK-078 a TASK-080
-  concluídas, de TASK-078 a TASK-083):** `ExecutionTrace`
-  (`backend/app/observability/execution_trace.py`) conectado de verdade
-  ao `ExecutionOrchestrator` — `trace` opcional em `run_step`/
-  `run_until_response` (mesmo padrão de `cancellation_token`), registrando
-  etapas e o tempo real de cada chamada ao modelo/ferramenta
-  (`step_durations`/`tool_durations`). `POST /v1/executions` cria e
-  popula um trace real por requisição (não persistido, não devolvido na
-  resposta). `backend/app/observability/metrics.py`: 5 métricas com dado
-  real (`success_rate`/`average_duration_seconds`/`average_step_count`/
-  `tool_usage_counts`/`request_count_by_status`) + 5 lacunas conhecidas
-  documentadas explicitamente (uso correto/incorreto de ferramentas,
-  falhas por ferramenta/provider, respostas bloqueadas por confiança,
-  replanejamentos, erros por provider — nenhuma tem fonte de dado real
-  ainda). Registro de erros no trace (`record_error`, já existe desde a
-  TASK-078) deliberadamente não conectado. Falta: painel web read-only
-  (TASK-081/082/083).
-- **Testes:** 668/668 aprovados (unitários + integração real contra
-  PostgreSQL e Ollama locais — **Ollama precisa estar rodando** para a suíte
-  completa passar sem pular nada; abra o app se os testes de integração do
-  Ollama pularem, não trate o skip como aceitável). Rodar com:
+- **Bloco "Observabilidade inicial" completo (TASK-078 a TASK-083):**
+  `ExecutionTrace` (`backend/app/observability/execution_trace.py`)
+  conectado de verdade ao `ExecutionOrchestrator` — `trace` opcional em
+  `run_step`/`run_until_response` (mesmo padrão de `cancellation_token`),
+  registrando etapas e o tempo real de cada chamada ao modelo/ferramenta.
+  `POST /v1/executions` cria, popula e agora também **persiste** um
+  resumo do trace por requisição — `execution_traces`
+  (`save_execution_trace`/`get_execution_trace`/`list_execution_traces`,
+  `DEC-010`: decisão pedida ao usuário via `AskUserQuestion` na TASK-082,
+  já que a especificação não define isso; só o resumo, não `steps`/
+  `errors`/`usage` completos). `backend/app/observability/metrics.py`: 5
+  métricas com dado real + 5 lacunas conhecidas documentadas (sem mudança
+  desde o checkpoint anterior). `backend/app/panel/routes.py`: `GET
+  /panel`, sem autenticação (deliberado — é o painel read-only, regras de
+  auth do painel administrativo são TASK-115+), cinco seções: Fila,
+  Execuções, Erros, Logs recentes, Consumo. `backend/app/observability/
+  health_check.py` (TASK-085): `run_health_check()`, `GET /health`
+  (HTTP 200/503, sem auth), rodado no `lifespan` de inicialização.
+- **Bloco "Marco utilizável inicial" completo (TASK-084 a TASK-087):**
+  `scripts/chat.py` (TASK-084) — CLI HTTP puro (`urllib.request`, sem
+  dependência nova) com `create-application`/`chat`, usa a API exatamente
+  como qualquer aplicação externa. Primeiros cenários fixos de regressão
+  (TASK-086, `tests/scenarios/test_minimum_usable_scenario.py`).
+  **TASK-087 é o marco oficial do primeiro Claudião utilizável** — ver
+  destaque no topo deste documento. `DEC-011`: modelo `qwen3:8b` baixado
+  (`ollama pull`), `CLAUDIAO_ACTIVE_MODEL=qwen3:8b` em `config/.env`
+  (provisório, não é a escolha definitiva). Validação real de ponta a
+  ponta sem fakes: servidor real → health check saudável → aplicação
+  criada via CLI → mensagem real → execução completa (~52s) → conferida
+  em `usage_records`/`execution_traces`/painel. Bug real de logging
+  encontrado e corrigido nesta TASK (ver "Armadilhas", item 21).
+- **Bloco "Web" em andamento (TASK-088 a TASK-090 concluídas, de
+  TASK-088 a TASK-094):** `backend/app/web_search/provider.py`
+  (TASK-088) — `WebSearchProvider` (ABC), `SearchRequest`/
+  `SearchResponse`/`SearchResult`/`SearchPurpose`, mesmo padrão de
+  `LocalLLMProvider`. `providers/searxng_provider.py` (TASK-089) —
+  `SearXNGSearchProvider`, primeiro provider concreto, contra uma
+  instância local do **SearXNG** rodando via **Docker** (`DEC-012`: três
+  rodadas de `AskUserQuestion` — DuckDuckGo pedido primeiro mas
+  descartado depois de testar de verdade contra proteção anti-bot real e
+  API oficial vazia para buscas genéricas; SearXNG local escolhido na
+  sequência). `page_fetcher.py` (TASK-090) — `open_page(url)`, função
+  simples via `urllib.request` (sem fornecedor a abstrair), não segue
+  links do conteúdo da página. Falta: normalização por tipo de conteúdo
+  (TASK-091), extração de referências (TASK-092), política de PDF seguro
+  (TASK-093), integração com reputação de fontes (TASK-094). Cadastro no
+  catálogo fixo de ferramentas e conexão com o `ExecutionOrchestrator`
+  continuam em aberto (TASK-095+).
+- **Testes:** 764/764 aprovados (unitários + integração real contra
+  PostgreSQL, Ollama e SearXNG locais — **Ollama precisa estar rodando**
+  para a suíte completa passar sem pular nada; abra o app se os testes de
+  integração do Ollama pularem, não trate o skip como aceitável. O mesmo
+  vale para o container `claudiao-searxng`, TASK-089 — `docker start
+  claudiao-searxng` se não estiver rodando). Rodar com:
   ```
   python -m pytest tests/ -v --basetemp=".pytest_tmp"
   ```
   (o `--basetemp` local é necessário neste ambiente — ver "Armadilhas" abaixo.)
+  Com `config/.env` carregado no processo (`set -a && source
+  ../config/.env && set +a`, a partir de `backend/`), o cenário de modelo
+  real (TASK-087) também roda: 735/735 nesse modo específico (contagem
+  menor que 764 porque isso foi medido no checkpoint da TASK-087, antes
+  das TASK-088/089/090 — a suíte cresceu desde então; rodar de novo para
+  o número atual).
 
 ## Mapa de código (backend/app/)
 
 | Módulo | Status | Arquivos |
 |---|---|---|
 | `errors/` | Implementado (TASK-007/008) | `catalog.py`, `response.py` |
-| `observability/` | Em andamento (TASK-005/006, TASK-078 a TASK-080 de TASK-078 a TASK-083) | `logging_config.py`, `postgres_log_handler.py`, `execution_trace.py`, `metrics.py` |
+| `observability/` | Completo (TASK-005/006, TASK-078 a TASK-085) | `logging_config.py`, `postgres_log_handler.py`, `execution_trace.py`, `metrics.py`, `health_check.py` |
+| `panel/` | Completo (TASK-081 a TASK-083) | `routes.py` |
+| `web_search/` | Em andamento (TASK-088 a TASK-090, de TASK-088 a TASK-094) | `provider.py`, `providers/searxng_provider.py`, `page_fetcher.py` |
 | `db/` | Implementado (várias TASKs) | `connection.py`, `migrations/000N_*.sql` (0001–0016) |
 | `auth/` | Completo (TASK-009 a TASK-013) | `password.py`, `users.py`, `roles.py`, `api_keys.py`, `crypto.py`, `master_key.py` |
 | `llm/` | Completo (TASK-014 a TASK-019) | `provider.py`, `providers/ollama_provider.py`, `protocol.py`, `protocol_validator.py`, `prompt.py`, `prompt_composer.py` |
@@ -153,7 +200,7 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
 | `api/` | Completo (TASK-067 a TASK-073, TASK-079) | `app.py`, `auth.py`, `schemas.py`, `dependencies.py`, `executions.py`, `responses.py` |
 | `usage/` | Completo (TASK-073) | `usage_model.py` |
 | `queue/` | Completo (TASK-074 a TASK-077) | `queue_model.py`, `retention_policy.py` |
-| Demais módulos (`panel/`, `quotas/`, ...) | Só README.md, sem código | — |
+| Demais módulos (`quotas/`, `updater/`, `backup/`, ...) | Só README.md, sem código | — |
 
 ## Decisões técnicas já tomadas (ver `docs/DECISION_LOG.md` para o texto completo)
 
@@ -167,12 +214,24 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
   usuário); SDK oficial `ollama` como client Python.
 - **DEC-009:** framework web = **FastAPI** (com `uvicorn` como servidor
   ASGI), decidido via `AskUserQuestion` na TASK-067.
+- **DEC-010:** Execution Trace **persistido** no PostgreSQL (tabela nova
+  `execution_traces`, só o resumo) — decidido via `AskUserQuestion` na
+  TASK-082.
+- **DEC-011:** primeiro modelo Ollama baixado = **`qwen3:8b`**
+  (provisório, não definitivo) — decidido via `AskUserQuestion` na
+  TASK-087, para viabilizar a validação real do marco utilizável.
+- **DEC-012:** primeiro provider de busca = **SearXNG local via Docker**
+  — decidido via `AskUserQuestion` (três rodadas) na TASK-089, depois de
+  testar e descartar DuckDuckGo na prática (bloqueio anti-bot real + API
+  oficial vazia para buscas genéricas).
 - **Ainda em aberto** (`docs/OPEN_QUESTIONS.md`, item 1): ORM, ferramenta de
   migration. Migrations hoje são SQL puro aplicado via `psql`
   (`backend/app/db/migrations/000N_*.sql`, numeração sequencial).
-- **Modelo LLM definitivo:** não escolhido, intencionalmente
-  (`docs/OPEN_QUESTIONS.md`, item 3) — Ollama está instalado e rodando, mas
-  nenhum modelo foi puxado (`ollama pull`).
+- **Modelo LLM definitivo:** ainda não escolhido de forma definitiva
+  (`docs/OPEN_QUESTIONS.md`, item 3) — `qwen3:8b` está em uso como
+  escolha provisória (`DEC-011`) desde a TASK-087, só para viabilizar
+  validação real; a escolha definitiva continua exigindo testes
+  sistemáticos, não esta validação pontual.
 - **Limite fixo de memória (TASK-050):** `MAX_MEMORIES_PER_OWNER = 500`,
   escolhido em código sem exigir decisão de arquitetura formal (mesmo
   espírito de `DEFAULT_MAX_STEPS`, TASK-028) — não é um `DEC-0XX` no
@@ -185,11 +244,26 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
   Banco `claudiao`, dono: role de aplicação `claudiao_app` (sem privilégio de
   superusuário). Superusuário `postgres` existe só para administração.
 - **Ollama** instalado via `winget` (serviço em `http://localhost:11434`).
-  **Nenhum modelo baixado** — `OllamaProvider` funciona, mas `complete()`
-  levanta `LocalLLMProviderError` para qualquer modelo, já que nenhum existe
-  localmente ainda. **O usuário mantém o app Ollama aberto e pediu para
-  nunca deixar testes passarem "pulados" por ele estar fechado** — abra o
-  app (ou inicie o serviço) e re-rode a suíte antes de reportar resultados.
+  **Modelo `qwen3:8b` baixado** desde a TASK-087 (`ollama pull qwen3:8b`,
+  5.2GB, `DEC-011`) — `CLAUDIAO_ACTIVE_MODEL=qwen3:8b` em `config/.env`.
+  `OllamaProvider` funciona contra esse modelo de verdade; respostas reais
+  levam dezenas de segundos em CPU (~52s observado). **O usuário mantém o
+  app Ollama aberto e pediu para nunca deixar testes passarem "pulados"
+  por ele estar fechado** — abra o app (ou inicie o serviço) e re-rode a
+  suíte antes de reportar resultados.
+- **Docker Desktop** instalado nesta máquina (não foi instalado pela IA —
+  já estava presente; só foi *iniciado* na TASK-089, já que não estava
+  rodando). Executável real:
+  `C:\Users\User\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe`
+  — `where docker`/PATH podem não resolver de primeira num shell novo;
+  `docker --version`/`docker info` já funcionam direto neste ambiente.
+  Container `claudiao-searxng` (imagem `searxng/searxng:latest`, porta
+  `8888`, `--restart unless-stopped`) roda uma instância local do SearXNG
+  (`DEC-012`) usada pelo `SearXNGSearchProvider` (TASK-089) — config em
+  `config/searxng/settings.yml` (gerada pelo container, não versionada,
+  `search.formats: [html, json]` habilitado manualmente pois vem
+  desligado por padrão). Se o container não estiver rodando:
+  `docker start claudiao-searxng`.
 - **Credenciais reais:** `config/.env` (na raiz do repo, **nunca versionado** —
   confirme com `git check-ignore -v config/.env` se tiver dúvida). Os testes de
   integração/cenário (`tests/integration/`, `tests/scenarios/`) carregam esse
@@ -204,7 +278,9 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
 - **Dependências externas do backend:** `psycopg[binary]`, `cryptography`,
   `ollama`, `fastapi`, `uvicorn` (ver `backend/pyproject.toml`). Sem ambiente
   virtual criado ainda — os pacotes foram instalados com `python -m pip
-  install` direto no Python do sistema.
+  install` direto no Python do sistema. Nenhuma dependência nova para
+  `web_search/` (TASK-088 a TASK-090) — tudo via `urllib.request`
+  (biblioteca padrão).
 - **Instalar programas novos (`winget install ...` ou equivalente) exige
   perguntar ao usuário primeiro**, mesmo nesta máquina de dev/teste — usar
   serviços já instalados (abrir o Ollama, rodar o Postgres) é livre; instalar
@@ -347,6 +423,38 @@ TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
     futura de conexão, mesmo tipo de trabalho que a TASK-079 fez para
     etapas/tempos) nem simplesmente pular a métrica sem registrar por
     quê. Mesmo espírito do item 11, generalizado para métricas.
+21. **`logging_config.py` decide "já configurado" (`_configured`, flag de
+    módulo) na primeira chamada de `get_logger()` de todo o processo —
+    inclusive durante a *coleta* do pytest** (ex.: ao importar
+    `health_check.py`). Em execução normal da suíte isso nunca dá
+    problema, porque `CLAUDIAO_POSTGRES_*` só existe depois, via fixture
+    `postgres_dsn` (por teste) — mas com `config/.env` carregado no
+    ambiente do processo *antes* do `pytest` (necessário para o cenário
+    de modelo real da TASK-087 rodar em vez de pular), o handler do
+    PostgreSQL é anexado ao logger raiz já na coleta e fica assim para o
+    resto da execução, quebrando testes que assumiam "só existe 1
+    handler" ou que um logger de teste próprio não teria entrega
+    duplicada via propagação. Corrigido isolando `CLAUDIAO_POSTGRES_*`
+    explicitamente nos testes afetados (`monkeypatch.delenv`,
+    `logger.propagate = False`) — não a fonte do problema em si, que
+    continua sendo uma fragilidade conhecida de `logging_config.py`
+    (TASK-005). Se criar mais testes de logging, isolar essas variáveis
+    de propósito, não assumir que o ambiente do processo está "limpo".
+22. **Bypass de proteção anti-bot é uma linha que não se cruza, mesmo sob
+    pressão de "só preciso que funcione".** Na TASK-089, o endpoint de
+    scraping HTML do DuckDuckGo retornou um desafio `anomaly.js` em vez
+    de resultados — a resposta correta foi reportar o achado ao usuário e
+    pedir direção (não tentar emular browser/resolver o desafio), o que
+    levou à escolha de SearXNG como alternativa legítima. Vale para
+    qualquer TASK futura que toque scraping de terceiros.
+23. **Docker Desktop neste ambiente não fica no PATH nem em `C:\Program
+    Files\Docker`** — o executável real é
+    `C:\Users\User\AppData\Local\Programs\DockerDesktop\Docker
+    Desktop.exe` (instalação por usuário, não por máquina). `docker
+    --version`/`docker info` já resolvem direto num shell novo mesmo
+    com o Docker Desktop fechado (só falham na conexão com o daemon,
+    "failed to connect... dockerDesktopLinuxEngine") — iniciar o app e
+    aguardar ~20s antes de repetir o comando resolve.
 
 ## Workflow que está sendo seguido
 
@@ -362,22 +470,24 @@ termina, sem precisar pedir); não são deletadas depois do merge.
 
 ## Próximos passos imediatos
 
-**TASK-081 — Criar painel web read-only** (dependência: TASK-080
-concluída). Continua o bloco "Observabilidade inicial" (TASK-078 a
-TASK-083, ver `docs/OBSERVABILITY.md` e `docs/BACKLOG.md`): o Execution
-Trace (TASK-078/079) e as métricas básicas (TASK-080) já existem e têm
-dado real — falta a superfície web read-only que os expõe. TASK-082
-("Mostrar execuções no painel") e TASK-083 ("Mostrar erros/logs/consumo")
-constroem em cima depois — provavelmente vão precisar decidir COMO os
-traces chegam ao painel, já que `ExecutionTrace` hoje só existe durante a
-duração de uma requisição HTTP (não é persistido, TASK-078/079
-deliberadamente não fizeram isso). Isso pode exigir uma decisão de
-arquitetura nova (armazenar traces em algum lugar — tabela própria?
-reaproveitar `logs`?) que talvez precise de `AskUserQuestion`, já que não
-há TASK numerada explícita para "persistir Execution Trace" no backlog
-entre TASK-078 e TASK-083. **Próximo checkpoint de 10 TASKs devido na
-TASK-090** — conferir a contagem explicitamente ao concluir qualquer
-TASK terminada em 0 (ver item 13 de "Armadilhas").
+**TASK-091 — Implementar normalização HTML/text/JSON/XML** (dependência:
+TASK-090 concluída). Continua o bloco "Web" (TASK-088 a TASK-094, ver
+`docs/TOOLS.md` e `docs/BACKLOG.md`): `WebSearchProvider` (TASK-088),
+`SearXNGSearchProvider` (TASK-089) e `open_page` (TASK-090) já existem —
+falta normalizar o conteúdo bruto (`PageContent.body`) por tipo antes de
+qualquer uso real. TASK-092 (extração de referências) e TASK-093
+(política de PDF seguro) constroem em cima. Nenhuma decisão de
+arquitetura nova esperada para TASK-091 (só transformar bytes já obtidos,
+sem escolha de fornecedor envolvida) — mas confirmar lendo o próprio
+`docs/tasks/TASK-091.md` antes de assumir isso. **Próximo checkpoint de
+10 TASKs devido na TASK-100** — conferir a contagem explicitamente ao
+concluir qualquer TASK terminada em 0 (ver item 13 de "Armadilhas").
+
+Lembrete de sequenciamento: ao terminar qualquer TASK, anunciar
+proativamente número + título da próxima TASK pendente — mas só começar
+a executá-la quando o usuário pedir explicitamente (não é mais "IA
+executa sozinho a próxima", isso foi corrigido depois de um mal-entendido
+nesta janela).
 
 ## Histórico de checkpoints
 
@@ -404,10 +514,19 @@ TASK terminada em 0 (ver item 13 de "Armadilhas").
   — DEC-009 —, autenticação, validação de payload, execução síncrona
   real, timeout aplicado de fato via `ThreadPoolExecutor` +
   `future.result(timeout=...)`). 562/562 testes.
-- **2026-08-21 — TASK-080 (este checkpoint):** oitavo checkpoint, no
-  prazo. Bloco "Aplicações" completo (erro de timeout específico,
-  resposta JSON final com envelope `success`, rastreio de consumo); bloco
-  "Fila" completo (FIFO persistida, estados, retenção/limpeza); bloco
-  "Observabilidade inicial" iniciado (Execution Trace conectado de
-  verdade ao orquestrador — etapas/ferramentas/tempos reais —, métricas
-  básicas com 5 lacunas conhecidas documentadas). 668/668 testes.
+- **2026-08-21 — TASK-080:** oitavo checkpoint, no prazo. Bloco
+  "Aplicações" completo (erro de timeout específico, resposta JSON final
+  com envelope `success`, rastreio de consumo); bloco "Fila" completo
+  (FIFO persistida, estados, retenção/limpeza); bloco "Observabilidade
+  inicial" iniciado (Execution Trace conectado de verdade ao
+  orquestrador — etapas/ferramentas/tempos reais —, métricas básicas com
+  5 lacunas conhecidas documentadas). 668/668 testes.
+- **2026-08-21 — TASK-090 (este checkpoint):** nono checkpoint, no prazo.
+  Bloco "Observabilidade inicial" completo (painel web read-only —
+  Fila/Execuções/Erros/Logs/Consumo —, Execution Trace persistido —
+  `DEC-010` —, health check inicial); bloco "Marco utilizável inicial"
+  completo — **TASK-087, marco oficial do primeiro Claudião utilizável,
+  atingido nesta janela**, com modelo `qwen3:8b` baixado (`DEC-011`) e
+  validação real de ponta a ponta sem fakes; bloco "Web" iniciado
+  (`WebSearchProvider`, `SearXNGSearchProvider` contra SearXNG local via
+  Docker — `DEC-012` —, `open_page`). 764/764 testes.
