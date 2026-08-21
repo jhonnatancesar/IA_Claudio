@@ -340,10 +340,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `list_recent_usage_records` — ver `docs/tasks/TASK-083.md`). Suíte
   completa: 707/707 testes aprovados. **Com esta TASK, o bloco
   "Observabilidade inicial" (TASK-078 a TASK-083) está completo.**
+- **TASK-084** — concluída (CLI/chat de teste, novo `scripts/chat.py` —
+  cliente HTTP puro de `POST /v1/executions`, `create-application`/`chat`
+  — ver `docs/tasks/TASK-084.md`). Suíte completa: 718/718 testes
+  aprovados.
 
-As demais 64 TASKs permanecem com status **Pendente**.
+As demais 63 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-084 — Criar CLI/chat de teste**.
+Próxima TASK executável: **TASK-085 — Criar health check inicial**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
