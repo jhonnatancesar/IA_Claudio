@@ -27,8 +27,21 @@ local.
   teste, mesmo padrão de `OllamaProvider._client` (TASK-015). Config em
   `config/searxng/settings.yml` (gerada pelo container, não versionada).
 
+- `page_fetcher.py` (TASK-090) — `open_page(url, timeout=10.0) ->
+  PageContent` (url/final_url/status_code/content_type/body bruto),
+  `PageFetchError`. Função simples (`urllib.request`, sem dependência
+  nova) — abrir uma página não tem fornecedor para abstrair, diferente da
+  busca. Não segue links do conteúdo da página, só abre a `url` recebida
+  (`docs/TOOLS.md`: "Lê somente aquela página"). Sem normalização por tipo
+  de conteúdo (TASK-091), sem extração de referências (TASK-092), sem
+  política de PDF seguro (TASK-093).
+
 Testes em `tests/unit/test_web_search_provider.py` (interface, sem rede
-real) e `tests/unit/test_searxng_provider.py` (provider concreto, com
-`_fetch` mockado) e `tests/integration/test_searxng_provider_integration.py`
+real), `tests/unit/test_searxng_provider.py` (provider concreto, com
+`_fetch` mockado), `tests/unit/test_page_fetcher.py` (`open_page`, com
+`urlopen` mockado), `tests/integration/test_searxng_provider_integration.py`
 (contra a instância SearXNG local de verdade, via fixture
-`searxng_provider` em `tests/conftest.py` — pula se indisponível).
+`searxng_provider` em `tests/conftest.py` — pula se indisponível) e
+`tests/integration/test_page_fetcher_integration.py` (`open_page` contra
+a mesma instância local, em vez da internet pública — pula se
+indisponível).

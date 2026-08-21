@@ -385,12 +385,19 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   oficial vazia para buscas genéricas — ver `docs/tasks/TASK-089.md`).
   Suíte completa: 754/754 testes aprovados.
 
-As demais 58 TASKs permanecem com status **Pendente**.
+- **TASK-090** — concluída (abertura de página, novo
+  `backend/app/web_search/page_fetcher.py` — `open_page(url)`, função
+  simples via `urllib.request`, sem fornecedor a abstrair, não segue
+  links do conteúdo — ver `docs/tasks/TASK-090.md`). Suíte completa:
+  764/764 testes aprovados. **Checkpoint de 10 TASKs: `main` enviada ao
+  GitHub e `docs/HANDOFF.md` atualizado nesta TASK.**
 
-Próxima TASK executável: **TASK-090 — Implementar abertura de página**.
-Com o marco do primeiro Claudião utilizável certificado (TASK-087), o
-restante da V1 (TASK-088 a TASK-147) completa o escopo — ver
-`docs/V1_SCOPE.md`.
+As demais 57 TASKs permanecem com status **Pendente**.
+
+Próxima TASK executável: **TASK-091 — Implementar normalização
+HTML/text/JSON/XML**. Com o marco do primeiro Claudião utilizável
+certificado (TASK-087), o restante da V1 (TASK-088 a TASK-147) completa
+o escopo — ver `docs/V1_SCOPE.md`.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

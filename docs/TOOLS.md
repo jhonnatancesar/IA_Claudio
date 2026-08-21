@@ -44,6 +44,15 @@ descartar DuckDuckGo: scraping HTML bloqueado por proteção anti-bot real
 (não contornável), API oficial de Instant Answer vazia para buscas
 genéricas do dia a dia.
 
+**Implementação (TASK-090):** `backend/app/web_search/page_fetcher.py` —
+`open_page(url)`, função simples (não é fornecedor, não precisa de
+abstração) que faz uma requisição HTTP e devolve `PageContent`
+(url/final_url/status_code/content_type/body bruto). Não segue links
+encontrados no conteúdo da página — só abre a URL recebida, exatamente
+como a especificação pede. Nenhuma normalização de conteúdo por tipo
+ainda (TASK-091), nenhuma extração de referências (TASK-092), nenhuma
+política de PDF seguro (TASK-093).
+
 Purposes possíveis: `GENERAL_RESEARCH`, `ENTITY_VERIFICATION`,
 `CURRENT_INFORMATION`, `PRODUCT_IDENTITY` e outros futuros.
 
