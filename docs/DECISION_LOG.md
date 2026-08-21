@@ -133,3 +133,26 @@ da TASK-068), documentação automática. Dependências novas: `fastapi` e
 `uvicorn` (`backend/pyproject.toml`).
 
 `docs/OPEN_QUESTIONS.md`, item 1, atualizado para refletir a resolução.
+
+## DEC-010 — Persistir Execution Trace no PostgreSQL
+
+**Data:** 2026-08-21
+
+A TASK-082 ("mostrar execuções no painel") esbarrou num ponto que a
+especificação mestre não decide: ao contrário da fila ("A V1 tem fila
+FIFO **persistida no PostgreSQL**" — texto explícito, seção 27), a seção
+que descreve o Execution Trace (35/44) nunca diz que ele deve ser
+persistido — e, de fato, `ExecutionTrace` (TASK-078/079) só existe
+durante a duração de uma requisição HTTP, nunca gravado em lugar nenhum.
+Sem persistência, o painel não tem como mostrar execuções passadas.
+
+Pedido explicitamente ao usuário via pergunta de múltipla escolha (não é
+decisão técnica de baixo risco: cria uma tabela nova e passa a gravar
+dado a cada execução, decisão de arquitetura fora do que a especificação
+mestre define). Duas opções apresentadas: (a) reaproveitar
+`usage_records` (TASK-073), já persistido, sem tabela nova, mas só com
+`execution_id`/`status`/`quando`/aplicação — sem objetivo, resultado,
+etapas ou duração; (b) persistir o `ExecutionTrace` inteiro numa tabela
+nova. O usuário escolheu **(b)** — persistir o Execution Trace numa
+tabela nova (`execution_traces`), para um painel mais rico (objetivo,
+resultado, duração, número de etapas, ferramentas usadas).

@@ -71,6 +71,23 @@ Registro de erros (`record_error`, já existente desde a TASK-078) **não**
 foi conectado ao orquestrador aqui — o título desta TASK é
 especificamente "ferramentas/passos/tempos", não erros; a conexão fica
 disponível para quando for pedida.
+
+Esta TASK (TASK-082) acrescenta persistência real no PostgreSQL —
+`save_execution_trace`/`get_execution_trace`/`list_execution_traces`,
+tabela `execution_traces`
+(`backend/app/db/migrations/0017_execution_traces.sql`). Decisão
+tomada com confirmação explícita do usuário (`DEC-010`,
+`docs/DECISION_LOG.md`) — a especificação mestre, ao contrário da fila
+(seção 27), nunca exige que o Execution Trace seja persistido; sem
+persistência, porém, o painel (TASK-082, "mostrar execuções") não teria
+como mostrar execuções passadas. Só o **resumo** é persistido —
+`step_count`/`tools_used` (não `steps` completos com cada `ModelStep` e
+seus parâmetros, nem `step_durations`/`tool_durations` individuais);
+`errors`/`error_codes`/`usage`/`orchestrator_rules_version` também não
+são persistidos (permanecem sem fonte de dado real, mesma lacuna já
+registrada). `ExecutionTraceRecord` é o modelo de leitura — não reaproveita
+`ExecutionTrace` diretamente, para não fingir que `steps`/`errors` vieram
+do banco quando na verdade nunca foram gravados lá.
 """
 
 from __future__ import annotations
@@ -79,6 +96,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from psycopg.types.json import Json
+
+from app.db.connection import connect
 from app.llm.prompt import PROMPT_VERSION
 from app.llm.protocol import ModelStep
 
@@ -175,3 +195,126 @@ class ExecutionTrace:
         sucesso)."""
         self.finished_at = datetime.now(timezone.utc)
         self.result = result
+
+
+_SELECT_COLUMNS = (
+    "execution_id, origin, requester, objective, started_at, finished_at, "
+    "result, step_count, tools_used, prompt_version, created_at"
+)
+
+
+@dataclass(frozen=True)
+class ExecutionTraceRecord:
+    """Resumo persistido de um `ExecutionTrace` (TASK-082) — só o que
+    `execution_traces` guarda de fato; ver docstring do módulo para o
+    que fica de fora (`steps`/`errors`/`usage` completos)."""
+
+    execution_id: str
+    origin: str
+    requester: str
+    objective: str
+    started_at: datetime
+    finished_at: datetime | None
+    result: str | None
+    step_count: int
+    tools_used: list[str]
+    prompt_version: str
+    created_at: datetime
+
+    @property
+    def duration_seconds(self) -> float | None:
+        if self.finished_at is None:
+            return None
+        return (self.finished_at - self.started_at).total_seconds()
+
+    @property
+    def succeeded(self) -> bool:
+        return self.result is not None
+
+
+def _execution_trace_record_from_row(row: tuple) -> ExecutionTraceRecord:
+    (
+        execution_id,
+        origin,
+        requester,
+        objective,
+        started_at,
+        finished_at,
+        result,
+        step_count,
+        tools_used,
+        prompt_version,
+        created_at,
+    ) = row
+    return ExecutionTraceRecord(
+        execution_id=str(execution_id),
+        origin=origin,
+        requester=requester,
+        objective=objective,
+        started_at=started_at,
+        finished_at=finished_at,
+        result=result,
+        step_count=step_count,
+        tools_used=list(tools_used),
+        prompt_version=prompt_version,
+        created_at=created_at,
+    )
+
+
+def save_execution_trace(trace: ExecutionTrace) -> None:
+    """Persiste o resumo de `trace` (TASK-082): `INSERT` na primeira
+    vez, `UPDATE` (via `ON CONFLICT`) se chamado de novo para o mesmo
+    `execution_id` — reflete `finished_at`/`result`/`step_count`/
+    `tools_used` atuais.
+
+    Mecânico — só grava o que já está em `trace`, não decide quando
+    chamar isto."""
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO execution_traces (execution_id, origin, requester, objective, "
+            "started_at, finished_at, result, step_count, tools_used, prompt_version) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+            "ON CONFLICT (execution_id) DO UPDATE SET "
+            "finished_at = EXCLUDED.finished_at, result = EXCLUDED.result, "
+            "step_count = EXCLUDED.step_count, tools_used = EXCLUDED.tools_used",
+            (
+                trace.execution_id,
+                trace.origin,
+                trace.requester,
+                trace.objective,
+                trace.started_at,
+                trace.finished_at,
+                trace.result,
+                trace.step_count,
+                Json(trace.tools_used),
+                trace.prompt_version,
+            ),
+        )
+
+
+def get_execution_trace(execution_id: str) -> ExecutionTraceRecord | None:
+    """Busca um trace persistido pelo `execution_id`. Retorna `None` se
+    não existir."""
+    with connect() as conn:
+        row = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM execution_traces WHERE execution_id = %s",
+            (execution_id,),
+        ).fetchone()
+
+    if row is None:
+        return None
+    return _execution_trace_record_from_row(row)
+
+
+def list_execution_traces(limit: int = 50) -> list[ExecutionTraceRecord]:
+    """Lista os traces persistidos mais recentes primeiro (`started_at`
+    decrescente), até `limit` (padrão 50 — painel read-only, não uma
+    exportação completa)."""
+    with connect() as conn:
+        rows = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM execution_traces "
+            "ORDER BY started_at DESC LIMIT %s",
+            (limit,),
+        ).fetchall()
+
+    return [_execution_trace_record_from_row(row) for row in rows]

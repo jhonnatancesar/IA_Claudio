@@ -1,4 +1,4 @@
-"""Painel web read-only (TASK-081).
+"""Painel web read-only (TASK-081, TASK-082).
 
 "Painel inicial (somente leitura)" (`docs/PANEL.md`, seções 37/38): antes
 do painel administrativo completo (TASK-115 em diante), existe uma
@@ -9,12 +9,8 @@ resultados das execuções.
 Esta TASK cria a base (router FastAPI, incluído no mesmo `app`
 de `app.api.app` — não há decisão de rodar o painel num processo/porta
 separados) e mostra o primeiro item da lista que já tem dado real e
-persistido hoje: a fila (`app.queue.queue_model.list_queue_items`,
-TASK-075). "Execução atual"/"resultados das execuções" (TASK-082) e
-"logs/erros/consumo" (TASK-083) mostram o resto depois —
-`ExecutionTrace` (TASK-078/079) não é persistido em lugar nenhum ainda,
-então essas duas provavelmente vão exigir uma decisão de arquitetura
-nova (onde guardar traces) fora do escopo desta TASK.
+persistido: a fila (`app.queue.queue_model.list_queue_items`,
+TASK-075). "Logs/erros/consumo" (TASK-083) mostram o resto depois.
 
 Sem autenticação por ora: `docs/PANEL.md` descreve regras de acesso
 (confirmação, senha do `ADMIN`, logout por inatividade) só na seção do
@@ -26,13 +22,26 @@ seria inventar um mecanismo de sessão não pedido por esta TASK. Página
 somente leitura (só rotas `GET`), sem exibir nada além do que a fila já
 guarda (`item_id`/`status`/`created_at`/`finished_at` — nunca
 `payload`, que pode conter dado arbitrário de quem enfileirou).
+
+Esta TASK (TASK-082) acrescenta "Execuções": `app.observability.
+execution_trace.list_execution_traces` (persistência decidida nesta
+mesma TASK, `DEC-010`, `docs/DECISION_LOG.md`, já que a especificação
+mestre não exige isso para o Execution Trace) — `execution_id`/
+`requester`/`objective`/status (derivado de `succeeded`)/`result`/
+`duration_seconds`. `objective`/`result` são texto livre (vêm da
+aplicação chamadora/do modelo) — escapados via `html.escape` antes de
+entrar na página, diferente dos campos da fila (todos gerados pelo
+próprio sistema, sem risco de injeção).
 """
 
 from __future__ import annotations
 
+from html import escape
+
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
+from app.observability.execution_trace import ExecutionTraceRecord, list_execution_traces
 from app.queue.queue_model import QueueItem, list_queue_items
 
 router = APIRouter()
@@ -58,10 +67,36 @@ def _render_queue_table(items: list[QueueItem]) -> str:
     )
 
 
-def render_panel_page(items: list[QueueItem]) -> str:
+def _render_executions_table(traces: list[ExecutionTraceRecord]) -> str:
+    if not traces:
+        return "<p>Nenhuma execução registrada ainda.</p>"
+    rows = "\n".join(
+        "<tr><td>{id}</td><td>{requester}</td><td>{objective}</td><td>{status}</td>"
+        "<td>{result}</td><td>{duration}</td></tr>".format(
+            id=escape(trace.execution_id),
+            requester=escape(trace.requester),
+            objective=escape(trace.objective),
+            status="sucesso" if trace.succeeded else "falha",
+            result=escape(trace.result) if trace.result is not None else "",
+            duration=(
+                f"{trace.duration_seconds:.2f}s" if trace.duration_seconds is not None else ""
+            ),
+        )
+        for trace in traces
+    )
+    return (
+        "<table>\n"
+        "<thead><tr><th>ID</th><th>Aplicação</th><th>Objetivo</th><th>Status</th>"
+        "<th>Resultado</th><th>Duração</th></tr></thead>\n"
+        f"<tbody>\n{rows}\n</tbody>\n"
+        "</table>"
+    )
+
+
+def render_panel_page(items: list[QueueItem], traces: list[ExecutionTraceRecord]) -> str:
     """Monta a página HTML completa do painel a partir dos itens da
-    fila — separado de `panel_home` para ser testável sem passar pelo
-    FastAPI."""
+    fila e dos traces de execução persistidos — separado de `panel_home`
+    para ser testável sem passar pelo FastAPI."""
     return (
         "<!doctype html>\n"
         '<html lang="pt-BR">\n'
@@ -73,6 +108,8 @@ def render_panel_page(items: list[QueueItem]) -> str:
         "<h1>Claudião — Painel (somente leitura)</h1>\n"
         "<h2>Fila</h2>\n"
         f"{_render_queue_table(items)}\n"
+        "<h2>Execuções</h2>\n"
+        f"{_render_executions_table(traces)}\n"
         "</body>\n"
         "</html>\n"
     )
@@ -80,5 +117,6 @@ def render_panel_page(items: list[QueueItem]) -> str:
 
 @router.get("/panel", response_class=HTMLResponse)
 def panel_home() -> str:
-    """Painel web read-only (TASK-081) — mostra o estado atual da fila."""
-    return render_panel_page(list_queue_items())
+    """Painel web read-only (TASK-081/082) — mostra o estado atual da
+    fila e as execuções mais recentes."""
+    return render_panel_page(list_queue_items(), list_execution_traces())

@@ -127,9 +127,24 @@ que lê/grava nela — `FifoQueue`/`QueueItem` (TASK-074) continuam
 puramente em memória; `save_queue_item`/`get_queue_item`/
 `list_queue_items` (TASK-075) são a persistência explícita.
 
-Os demais domínios de dados (conversas, resumos, execuções, auditoria,
-cotas completas, atualizações, backups) ainda não têm schema — cada um
-ganha o seu na TASK do bloco funcional correspondente, conforme
+## Execution Trace (TASK-082)
+
+`backend/app/db/migrations/0017_execution_traces.sql` — tabela
+`execution_traces` (`execution_id` PK, `origin`, `requester`,
+`objective`, `started_at`, `finished_at`, `result`, `step_count`,
+`tools_used jsonb`, `prompt_version`, `created_at`), índice em
+`started_at DESC`. Decisão de persistir (`DEC-010`,
+`docs/DECISION_LOG.md`) tomada nesta TASK com confirmação explícita do
+usuário — a especificação mestre não exige isso para o Execution Trace.
+Só o resumo é guardado; `steps`/`step_durations`/`tool_durations`/
+`errors`/`error_codes`/`usage` completos de `ExecutionTrace`
+(TASK-078/079) não são persistidos. Ver `docs/OBSERVABILITY.md` e
+`backend/app/observability/README.md` para o módulo
+(`app.observability.execution_trace`) que lê/grava nela.
+
+Os demais domínios de dados (conversas, resumos, auditoria, cotas
+completas, atualizações, backups) ainda não têm schema — cada um ganha
+o seu na TASK do bloco funcional correspondente, conforme
 `docs/BACKLOG.md`.
 
 ## TASKs relacionadas
