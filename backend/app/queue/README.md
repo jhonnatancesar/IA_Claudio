@@ -4,7 +4,7 @@ Documentação: docs/QUEUE.md. TASKs: TASK-074 a TASK-077.
 
 Fila FIFO persistida no PostgreSQL, estados PENDING/RUNNING/COMPLETED/FAILED, retenção/limpeza. Sem retry automático.
 
-- `queue_model.py` (TASK-074, TASK-075) — `QueueItemStatus`
+- `queue_model.py` (TASK-074 a TASK-076) — `QueueItemStatus`
   (`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`). `QueueItem` (dataclass:
   `item_id`/`payload`/`status`/`error`/`created_at`/`finished_at`) —
   `start()`/`complete()`/`fail(error)` com transições validadas
@@ -23,9 +23,18 @@ Fila FIFO persistida no PostgreSQL, estados PENDING/RUNNING/COMPLETED/FAILED, re
   cada transição, mesmo padrão de `app.usage.usage_model.record_usage`
   (TASK-073); `get_queue_item(item_id)`; `list_queue_items()` (ordem
   FIFO, `created_at` crescente).
+  Estados aplicados a um item já persistido (TASK-076):
+  `start_queue_item(item_id)`/`complete_queue_item(item_id)`/
+  `fail_queue_item(item_id, error)` — carregam o item pelo `item_id`
+  (sem precisar do objeto `QueueItem` original em memória), reaplicam a
+  mesma validação de `QueueItem.start`/`complete`/`fail` e gravam com
+  `save_queue_item`; `QueueItemNotFoundError` se `item_id` não existir.
+  `list_queue_items_by_status(status)` filtra a listagem por estado.
 
 Testes em `tests/unit/test_queue_model.py` (estados, transições
-inválidas, ordem FIFO, fila vazia, ciclo completo, sem tocar o banco) e
+inválidas, ordem FIFO, fila vazia, ciclo completo, sem tocar o banco),
 `tests/integration/test_queue_persistence_integration.py` (persistência
 real: save/get/list, atualização por `ON CONFLICT`, uso em conjunto com
-`FifoQueue`).
+`FifoQueue`) e `tests/integration/test_queue_states_integration.py`
+(transições por `item_id` direto no banco, filtro por status, item
+desconhecido).

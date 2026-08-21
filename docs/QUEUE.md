@@ -51,3 +51,16 @@ o banco sozinhas; quem processa a fila chama `save_queue_item` a cada
 transição, mesmo padrão de `record_usage` (TASK-073). `list_queue_items`
 devolve em ordem FIFO (`created_at` crescente). Estados adicionais
 (TASK-076) e retenção/limpeza (TASK-077) não são desta TASK.
+
+**Implementação (TASK-076):** `start_queue_item(item_id)`/
+`complete_queue_item(item_id)`/`fail_queue_item(item_id, error)` (mesmo
+módulo) — transições de estado aplicadas direto a um item já persistido,
+a partir só do `item_id`, para quando quem processa a fila não tem mais
+o `QueueItem` original em memória (carregado de novo via
+`get_queue_item`/`list_queue_items`, outro processo, outra requisição).
+Cada função carrega o item, reaplica a mesma validação de transição de
+`QueueItem.start`/`complete`/`fail` (TASK-074, reaproveitada — nenhuma
+regra nova) e grava com `save_queue_item` (TASK-075).
+`QueueItemNotFoundError` se `item_id` não existir.
+`list_queue_items_by_status(status)` filtra a listagem por estado (ex.:
+todos os `PENDING`). Retenção/limpeza (TASK-077) não é desta TASK.

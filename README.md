@@ -11,7 +11,7 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-075** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-076** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
 "Memória", "Conhecimento", "Fontes" e "Aplicações" completos (API local
 FastAPI, validação de payload, execução síncrona, timeout com erro
@@ -41,5 +41,5 @@ Ver
 
 ## Próxima TASK
 
-**TASK-076 — Criar estados da fila**
-([docs/tasks/TASK-076.md](docs/tasks/TASK-076.md)).
+**TASK-077 — Implementar retenção/limpeza**
+([docs/tasks/TASK-077.md](docs/tasks/TASK-077.md)).
