@@ -4,10 +4,13 @@ Documentação: docs/API.md. TASKs: TASK-067 a TASK-073, TASK-079.
 
 Camada de entrada HTTP usada por aplicações externas: autenticação por API key, validação de payload, execução síncrona, timeout, resposta JSON final e rastreio de consumo.
 
-- `app.py` (TASK-067, TASK-068) — aplicação FastAPI (`DEC-009`), com
-  handlers globais convertendo `ClaudiaoError` (TASK-008) e
-  `RequestValidationError` (TASK-068, reaproveitando os códigos `1001`/
-  `1002` já existentes) para o formato JSON de erro padrão do projeto.
+- `app.py` (TASK-067, TASK-068, TASK-081) — aplicação FastAPI
+  (`DEC-009`), com handlers globais convertendo `ClaudiaoError`
+  (TASK-008) e `RequestValidationError` (TASK-068, reaproveitando os
+  códigos `1001`/`1002` já existentes) para o formato JSON de erro padrão
+  do projeto. Inclui `executions_router` e, desde a TASK-081,
+  `panel_router` (`app.panel.routes`) — API de aplicações e painel web
+  humano no mesmo processo/porta, sem decisão de separá-los.
 - `auth.py` (TASK-067) — `get_current_application(authorization)`:
   dependência do FastAPI que autentica via header `Authorization: Bearer
   <api_key>`, reaproveitando `app.auth.api_keys.authenticate_application`

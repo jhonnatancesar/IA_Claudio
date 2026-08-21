@@ -1,4 +1,4 @@
-"""API local do Claudião (TASK-067, TASK-068).
+"""API local do Claudião (TASK-067, TASK-068, TASK-081).
 
 Camada de entrada HTTP para aplicações externas (`docs/API.md`, seções
 24/25/26) — FastAPI escolhido pelo usuário nesta TASK (framework web
@@ -21,6 +21,10 @@ em vez de criar códigos novos só para isto.
 Montar a `ExecutionPolicy` de fato e executar via `ExecutionOrchestrator`
 (TASK-069), timeout (TASK-070/071), formato de resposta de sucesso
 (TASK-072) e rastreio de consumo (TASK-073) não são desta TASK.
+
+TASK-081 acrescenta o painel web read-only (`app.panel.routes`) no mesmo
+`app` — sem decisão de rodar API de aplicações e painel humano em
+processos/portas separados, V1 mínima.
 """
 
 from __future__ import annotations
@@ -32,9 +36,11 @@ from fastapi.responses import JSONResponse
 from app.api.executions import router as executions_router
 from app.errors.catalog import INVALID_FIELD_VALUE, MISSING_REQUIRED_FIELD
 from app.errors.response import ClaudiaoError, build_error_response, error_response_from_exception
+from app.panel.routes import router as panel_router
 
 app = FastAPI(title="Claudião API")
 app.include_router(executions_router)
+app.include_router(panel_router)
 
 
 @app.exception_handler(ClaudiaoError)

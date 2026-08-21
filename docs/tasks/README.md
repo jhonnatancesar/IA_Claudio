@@ -325,10 +325,14 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `tool_usage_counts`/`request_count_by_status`, 5 lacunas conhecidas
   documentadas sem fonte de dado real ainda — ver
   `docs/tasks/TASK-080.md`). Suíte completa: 668/668 testes aprovados.
+- **TASK-081** — concluída (painel web read-only, novo
+  `backend/app/panel/routes.py`, `GET /panel` mostrando a fila real —
+  ver `docs/tasks/TASK-081.md`). Suíte completa: 676/676 testes
+  aprovados.
 
-As demais 67 TASKs permanecem com status **Pendente**.
+As demais 66 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-081 — Criar painel web read-only**.
+Próxima TASK executável: **TASK-082 — Mostrar execuções no painel**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito
