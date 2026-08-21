@@ -314,10 +314,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
 - **TASK-078** — concluída (Execution Trace, novo
   `backend/app/observability/execution_trace.py`, `ExecutionTrace` — ver
   `docs/tasks/TASK-078.md`). Suíte completa: 640/640 testes aprovados.
+- **TASK-079** — concluída (Execution Trace conectado ao
+  `ExecutionOrchestrator` de verdade, `trace` opcional em
+  `run_step`/`run_until_response`, `step_durations`/`tool_durations` —
+  ver `docs/tasks/TASK-079.md`). Suíte completa: 654/654 testes
+  aprovados.
 
-As demais 69 TASKs permanecem com status **Pendente**.
+As demais 68 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-079 — Registrar ferramentas/passos/tempos**.
+Próxima TASK executável: **TASK-080 — Criar métricas básicas**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

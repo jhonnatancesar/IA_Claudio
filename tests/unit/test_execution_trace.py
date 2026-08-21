@@ -30,6 +30,8 @@ def test_new_trace_has_expected_defaults():
     assert trace.requester == "usuario-1"
     assert trace.objective == "testar"
     assert trace.steps == []
+    assert trace.step_durations == []
+    assert trace.tool_durations == []
     assert trace.errors == []
     assert trace.error_codes == []
     assert trace.usage is None
@@ -87,6 +89,33 @@ def test_tools_used_empty_when_no_tool_steps():
     trace.add_step(_step(action=Action.RESPOND))
 
     assert trace.tools_used == []
+
+
+def test_add_step_records_duration_aligned_with_steps():
+    trace = ExecutionTrace.new(execution_id="exec-1", origin="chat", requester="u", objective="x")
+
+    trace.add_step(_step(), duration_seconds=0.5)
+    trace.add_step(_step(), duration_seconds=1.5)
+
+    assert trace.step_durations == [0.5, 1.5]
+
+
+def test_add_step_without_duration_does_not_append_to_step_durations():
+    trace = ExecutionTrace.new(execution_id="exec-1", origin="chat", requester="u", objective="x")
+
+    trace.add_step(_step())
+
+    assert len(trace.steps) == 1
+    assert trace.step_durations == []
+
+
+def test_record_tool_execution_appends_duration():
+    trace = ExecutionTrace.new(execution_id="exec-1", origin="chat", requester="u", objective="x")
+
+    trace.record_tool_execution(0.3)
+    trace.record_tool_execution(0.7)
+
+    assert trace.tool_durations == [0.3, 0.7]
 
 
 def test_record_error_appends_error_and_code():

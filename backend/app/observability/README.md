@@ -15,18 +15,21 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   `psycopg` (DEC-006). A montagem de DSN (`build_dsn_from_env()`) foi movida
   para `app.db.connection` na TASK-009, quando um segundo consumidor
   (autenticação) precisou dela — reexportada aqui para compatibilidade.
-- `execution_trace.py` (TASK-078) — `ExecutionTrace` (dataclass): registro
-  observável de uma execução (`execution_id`/`origin`/`requester`/
-  `objective`/`steps`/`errors`/`error_codes`/`usage`/`result`/
-  `prompt_version`/`orchestrator_rules_version`), com
-  `step_count`/`tools_used`/`duration_seconds` derivados. `add_step`/
-  `record_error`/`finish` registram o ciclo de vida. Ainda não conectado
-  ao `ExecutionOrchestrator` (TASK-079) nem persistido.
+- `execution_trace.py` (TASK-078, TASK-079) — `ExecutionTrace` (dataclass):
+  registro observável de uma execução (`execution_id`/`origin`/`requester`/
+  `objective`/`steps`/`step_durations`/`tool_durations`/`errors`/
+  `error_codes`/`usage`/`result`/`prompt_version`/
+  `orchestrator_rules_version`), com `step_count`/`tools_used`/
+  `duration_seconds` derivados. `add_step(step, duration_seconds=None)`/
+  `record_tool_execution(duration_seconds)`/`record_error`/`finish`
+  registram o ciclo de vida. Conectado de verdade ao
+  `ExecutionOrchestrator` (TASK-079, `app.orchestrator.orchestrator`) —
+  ver `backend/app/orchestrator/README.md`. Ainda não persistido.
 
 Testes em `tests/unit/test_observability_logging.py`,
 `tests/unit/test_postgres_log_handler.py`,
 `tests/unit/test_execution_trace.py` (criação, validação, registro de
-etapas/erros, propriedades derivadas — sem tocar rede/banco) e
+etapas/tempos/erros, propriedades derivadas — sem tocar rede/banco) e
 `tests/integration/test_postgres_log_handler_integration.py` (grava/lê/limpa de
 verdade no PostgreSQL local; pula automaticamente se o banco não estiver
 disponível).

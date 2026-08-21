@@ -6,6 +6,7 @@ import pytest
 
 from app.llm.protocol import Action
 from app.llm.provider import CompletionRequest, CompletionResponse, LocalLLMProvider
+from app.observability.execution_trace import ExecutionTrace
 from app.orchestrator.execution import Execution, ExecutionStatus
 from app.orchestrator.orchestrator import ExecutionOrchestrator
 from app.orchestrator.planner import ExecutionAlreadyPlannedError, plan_initial_step
@@ -69,3 +70,17 @@ def test_plan_initial_step_raises_when_execution_already_has_steps():
 
     with pytest.raises(ExecutionAlreadyPlannedError):
         plan_initial_step(orchestrator, execution, objective="outra pergunta", model="qualquer")
+
+
+def test_plan_initial_step_forwards_trace():
+    execution = Execution.new(origin="chat")
+    orchestrator = _orchestrator(_ScriptedProvider([_respond_json(execution.execution_id)]))
+    trace = ExecutionTrace.new(
+        execution_id=execution.execution_id, origin="chat", requester="chat", objective="pergunta"
+    )
+
+    plan_initial_step(
+        orchestrator, execution, objective="pergunta", model="qualquer", trace=trace
+    )
+
+    assert trace.step_count == 1
