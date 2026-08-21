@@ -11,15 +11,15 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-079** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-080** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
 "Memória", "Conhecimento", "Fontes" e "Aplicações" completos (API local
 FastAPI, validação de payload, execução síncrona, timeout com erro
 específico, resposta JSON final e rastreio de consumo); bloco "Fila"
 completo (FIFO persistida no PostgreSQL, estados, retenção/limpeza);
 "Observabilidade inicial" em andamento (Execution Trace criado e
-conectado de verdade ao orquestrador — etapas/ferramentas/tempos reais;
-métricas e painel ainda pendentes).
+conectado de verdade ao orquestrador, métricas básicas — painel web
+ainda pendente).
 Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
@@ -44,5 +44,5 @@ Ver
 
 ## Próxima TASK
 
-**TASK-080 — Criar métricas básicas**
-([docs/tasks/TASK-080.md](docs/tasks/TASK-080.md)).
+**TASK-081 — Criar painel web read-only**
+([docs/tasks/TASK-081.md](docs/tasks/TASK-081.md)).

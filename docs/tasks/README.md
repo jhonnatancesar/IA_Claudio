@@ -319,10 +319,16 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `run_step`/`run_until_response`, `step_durations`/`tool_durations` —
   ver `docs/tasks/TASK-079.md`). Suíte completa: 654/654 testes
   aprovados.
+- **TASK-080** — concluída (métricas básicas, novo
+  `backend/app/observability/metrics.py` —
+  `success_rate`/`average_duration_seconds`/`average_step_count`/
+  `tool_usage_counts`/`request_count_by_status`, 5 lacunas conhecidas
+  documentadas sem fonte de dado real ainda — ver
+  `docs/tasks/TASK-080.md`). Suíte completa: 668/668 testes aprovados.
 
-As demais 68 TASKs permanecem com status **Pendente**.
+As demais 67 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-080 — Criar métricas básicas**.
+Próxima TASK executável: **TASK-081 — Criar painel web read-only**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

@@ -26,10 +26,21 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   `ExecutionOrchestrator` (TASK-079, `app.orchestrator.orchestrator`) —
   ver `backend/app/orchestrator/README.md`. Ainda não persistido.
 
+- `metrics.py` (TASK-080) — funções puras agregando sobre coleções de
+  `ExecutionTrace`/`UsageRecord`: `success_rate`,
+  `average_duration_seconds`, `average_step_count`, `tool_usage_counts`,
+  `failure_counts_by_error_code`, `request_count_by_status`. Cobrem taxa
+  de sucesso/tempo médio/número de passos/uso de ferramentas/consumo
+  (por status) de `docs/OBSERVABILITY.md`; lacunas conhecidas (uso
+  correto/incorreto, falhas por ferramenta/provider, respostas
+  bloqueadas por confiança, replanejamentos, erros por provider)
+  documentadas no próprio módulo — sem fonte de dado real ainda.
+
 Testes em `tests/unit/test_observability_logging.py`,
 `tests/unit/test_postgres_log_handler.py`,
 `tests/unit/test_execution_trace.py` (criação, validação, registro de
-etapas/tempos/erros, propriedades derivadas — sem tocar rede/banco) e
-`tests/integration/test_postgres_log_handler_integration.py` (grava/lê/limpa de
+etapas/tempos/erros, propriedades derivadas — sem tocar rede/banco),
+`tests/unit/test_metrics.py` (cada métrica isolada, sem tocar rede/banco)
+e `tests/integration/test_postgres_log_handler_integration.py` (grava/lê/limpa de
 verdade no PostgreSQL local; pula automaticamente se o banco não estiver
 disponível).
