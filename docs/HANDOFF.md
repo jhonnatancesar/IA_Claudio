@@ -13,12 +13,12 @@ estão resumidas aqui.
 
 ## Checkpoint atual
 
-**Data:** 2026-08-19 · **TASK:** TASK-070 · **TASKs concluídas:** 70 de 147
-(TASK-001 a TASK-070) · **Próxima TASK executável:** TASK-071 — Implementar
-erro de timeout.
+**Data:** 2026-08-21 · **TASK:** TASK-080 · **TASKs concluídas:** 80 de 147
+(TASK-001 a TASK-080) · **Próxima TASK executável:** TASK-081 — Criar
+painel web read-only.
 
 Este checkpoint rodou no prazo certo (10 TASKs desde o checkpoint anterior,
-TASK-060) — sétimo checkpoint seguido no prazo desde que o item 13 de
+TASK-070) — oitavo checkpoint seguido no prazo desde que o item 13 de
 "Armadilhas" passou a ser aplicado (TASK-060).
 
 ## O que já existe (resumo, não repete `docs/tasks/`)
@@ -82,23 +82,49 @@ TASK-060) — sétimo checkpoint seguido no prazo desde que o item 13 de
   bloqueio automático quando a reputação cai para `LOW`
   (`auto_block_rule.py`) e desbloqueio restrito a `ADMIN`
   (`unblock_rule.py`, reaproveita `app.auth.roles.require_admin`).
-- **Bloco "Aplicações" em andamento (TASK-067 a TASK-070 concluídas, de
-  TASK-067 a TASK-073):** API local via FastAPI (`backend/app/api/`,
-  DEC-009) com `uvicorn` como servidor ASGI. `POST /v1/executions`
-  autentica por API key (`Authorization: Bearer`), valida o payload
-  (`ExecutionRequest`) e executa de fato via `ExecutionOrchestrator.
-  run_until_response`, de forma síncrona, com `timeout_seconds` aplicado
-  como limite de verdade (roda o orquestrador num worker de
-  `ThreadPoolExecutor`, `future.result(timeout=...)` retorna assim que o
-  prazo estoura mesmo com o modelo travado, cancela o `CancellationToken`
-  compartilhado — código de erro `APPLICATION_TIMEOUT_EXCEEDED`, `4009`,
-  HTTP `504`). Nenhum modelo Ollama real foi baixado ainda, então os
-  testes da API usam `LocalLLMProvider`/modelo ativo fakes via
-  `app.dependency_overrides`. Faltam: formato específico do erro de
-  timeout com etapa atual/ferramenta ativa (TASK-071), envelope de
-  sucesso formal `"success": true` (TASK-072), rastreio de consumo
-  (TASK-073).
-- **Testes:** 562/562 aprovados (unitários + integração real contra
+- **Bloco "Aplicações" completo (TASK-067 a TASK-073):** API local via
+  FastAPI (`backend/app/api/`, DEC-009) com `uvicorn` como servidor ASGI.
+  `POST /v1/executions` autentica por API key (`Authorization: Bearer`),
+  valida o payload (`ExecutionRequest`) e executa de fato via
+  `ExecutionOrchestrator.run_until_response`, de forma síncrona, com
+  `timeout_seconds` aplicado como limite de verdade (roda o orquestrador
+  num worker de `ThreadPoolExecutor`, `future.result(timeout=...)` retorna
+  assim que o prazo estoura mesmo com o modelo travado, cancela o
+  `CancellationToken` compartilhado — `APPLICATION_TIMEOUT_EXCEEDED`,
+  código `4009`, HTTP `504`, com `details` trazendo etapa atual/ferramenta
+  ativa). Resposta segue o envelope `{"success": bool, ...}` em sucesso e
+  erro (`build_success_response`/`build_error_response`). Rastreio de
+  consumo (`app.usage.usage_model.record_usage`) grava uma linha em
+  `usage_records` a cada desfecho. Nenhum modelo Ollama real foi baixado
+  ainda, então os testes da API usam `LocalLLMProvider`/modelo ativo
+  fakes via `app.dependency_overrides`.
+- **Bloco "Fila" completo (TASK-074 a TASK-077):** `FifoQueue`/`QueueItem`
+  em memória (`backend/app/queue/queue_model.py`, mesmo espírito de
+  `Execution`) com persistência real em `queue_items`
+  (`save_queue_item`/`get_queue_item`/`list_queue_items`), transições de
+  estado aplicadas a um item já persistido por `item_id`
+  (`start_queue_item`/`complete_queue_item`/`fail_queue_item`) e retenção/
+  limpeza (`app.queue.retention_policy`, só itens terminais mais antigos
+  que 7 dias). Nenhuma TASK conecta esta fila a `POST /v1/executions`,
+  que continua síncrono ponta a ponta.
+- **Bloco "Observabilidade inicial" em andamento (TASK-078 a TASK-080
+  concluídas, de TASK-078 a TASK-083):** `ExecutionTrace`
+  (`backend/app/observability/execution_trace.py`) conectado de verdade
+  ao `ExecutionOrchestrator` — `trace` opcional em `run_step`/
+  `run_until_response` (mesmo padrão de `cancellation_token`), registrando
+  etapas e o tempo real de cada chamada ao modelo/ferramenta
+  (`step_durations`/`tool_durations`). `POST /v1/executions` cria e
+  popula um trace real por requisição (não persistido, não devolvido na
+  resposta). `backend/app/observability/metrics.py`: 5 métricas com dado
+  real (`success_rate`/`average_duration_seconds`/`average_step_count`/
+  `tool_usage_counts`/`request_count_by_status`) + 5 lacunas conhecidas
+  documentadas explicitamente (uso correto/incorreto de ferramentas,
+  falhas por ferramenta/provider, respostas bloqueadas por confiança,
+  replanejamentos, erros por provider — nenhuma tem fonte de dado real
+  ainda). Registro de erros no trace (`record_error`, já existe desde a
+  TASK-078) deliberadamente não conectado. Falta: painel web read-only
+  (TASK-081/082/083).
+- **Testes:** 668/668 aprovados (unitários + integração real contra
   PostgreSQL e Ollama locais — **Ollama precisa estar rodando** para a suíte
   completa passar sem pular nada; abra o app se os testes de integração do
   Ollama pularem, não trate o skip como aceitável). Rodar com:
@@ -112,20 +138,22 @@ TASK-060) — sétimo checkpoint seguido no prazo desde que o item 13 de
 | Módulo | Status | Arquivos |
 |---|---|---|
 | `errors/` | Implementado (TASK-007/008) | `catalog.py`, `response.py` |
-| `observability/` | Implementado (TASK-005/006) | `logging_config.py`, `postgres_log_handler.py` |
-| `db/` | Implementado (várias TASKs) | `connection.py`, `migrations/000N_*.sql` (0001–0011) |
+| `observability/` | Em andamento (TASK-005/006, TASK-078 a TASK-080 de TASK-078 a TASK-083) | `logging_config.py`, `postgres_log_handler.py`, `execution_trace.py`, `metrics.py` |
+| `db/` | Implementado (várias TASKs) | `connection.py`, `migrations/000N_*.sql` (0001–0016) |
 | `auth/` | Completo (TASK-009 a TASK-013) | `password.py`, `users.py`, `roles.py`, `api_keys.py`, `crypto.py`, `master_key.py` |
 | `llm/` | Completo (TASK-014 a TASK-019) | `provider.py`, `providers/ollama_provider.py`, `protocol.py`, `protocol_validator.py`, `prompt.py`, `prompt_composer.py` |
 | `policies/` | Implementado (TASK-022) | `execution_policy.py` |
-| `orchestrator/` | Completo (TASK-020 a TASK-030) | `execution.py`, `execution_id.py`, `orchestrator.py`, `planner.py`, `plan_validator.py`, `replanner.py`, `loop_detector.py`, `cancellation.py` |
+| `orchestrator/` | Completo (TASK-020 a TASK-030, TASK-079) | `execution.py`, `execution_id.py`, `orchestrator.py`, `planner.py`, `plan_validator.py`, `replanner.py`, `loop_detector.py`, `cancellation.py` |
 | `confidence/` | Completo (TASK-031 a TASK-036) | `model_confidence.py`, `volatility.py`, `confidence_engine.py`, `response_guardrail.py`, `revalidation_guardrail.py`, `ambiguity_guardrail.py` |
 | `context/` | Completo (TASK-037 a TASK-043) | `context_manager.py`, `context_window.py` |
 | `memory/` | Completo (TASK-044 a TASK-051) | `memory_model.py`, `retention_policy.py` |
 | `knowledge/` | Completo (TASK-052 a TASK-058) | `knowledge_model.py`, `promotion_rule.py`, `usefulness.py` |
 | `sources/` | Completo (TASK-059 a TASK-066) | `source_registry.py`, `reputation_rule.py`, `auto_block_rule.py`, `unblock_rule.py` |
 | `tools/` | Em andamento (Memory/Knowledge Tools prontas; outras ferramentas são TASKs futuras) | `memory_tool.py`, `knowledge_tool.py` |
-| `api/` | Em andamento (TASK-067 a TASK-070 de TASK-067 a TASK-073) | `app.py`, `auth.py`, `schemas.py`, `dependencies.py`, `executions.py` |
-| Demais módulos (`panel/`, `queue/`, ...) | Só README.md, sem código | — |
+| `api/` | Completo (TASK-067 a TASK-073, TASK-079) | `app.py`, `auth.py`, `schemas.py`, `dependencies.py`, `executions.py`, `responses.py` |
+| `usage/` | Completo (TASK-073) | `usage_model.py` |
+| `queue/` | Completo (TASK-074 a TASK-077) | `queue_model.py`, `retention_policy.py` |
+| Demais módulos (`panel/`, `quotas/`, ...) | Só README.md, sem código | — |
 
 ## Decisões técnicas já tomadas (ver `docs/DECISION_LOG.md` para o texto completo)
 
@@ -179,7 +207,7 @@ TASK-060) — sétimo checkpoint seguido no prazo desde que o item 13 de
   perguntar ao usuário primeiro**, mesmo nesta máquina de dev/teste — usar
   serviços já instalados (abrir o Ollama, rodar o Postgres) é livre; instalar
   algo novo não é.
-- **Migrations aplicadas manualmente via `psql`** (0001 a 0014) — não há
+- **Migrations aplicadas manualmente via `psql`** (0001 a 0016) — não há
   script/comando único que reaplique todas; cada TASK que criou uma migration
   a aplicou na hora com `psql -h 127.0.0.1 -p 5432 -U claudiao_app -d claudiao
   -f backend/app/db/migrations/000N_*.sql`, usando `CLAUDIAO_POSTGRES_PASSWORD`
@@ -296,6 +324,27 @@ TASK-060) — sétimo checkpoint seguido no prazo desde que o item 13 de
     exato entre threads (o teste de timeout usa um provider fake que dorme
     muito mais que o timeout configurado, então o resultado nunca é
     ambíguo).
+19. **O mesmo padrão de single-writer da TASK-070 (item 18) se repete
+    sempre que um objeto mutável em memória é compartilhado entre a
+    thread da requisição HTTP e a thread do `ThreadPoolExecutor` rodando
+    o orquestrador.** A TASK-079 aplicou a mesma regra a `ExecutionTrace`
+    (`trace`, além de `execution`): a thread principal só chama
+    `trace.finish(...)` nos desfechos em que sabe que a thread do
+    orquestrador já terminou de vez (sucesso, falha de modelo/ferramenta
+    — não no timeout). Ao adicionar qualquer novo objeto mutável passado
+    para `run_until_response`, replicar essa mesma disciplina.
+20. **Quando a especificação pede uma métrica/comportamento mas nenhuma
+    TASK anterior gravou o sinal necessário em lugar nenhum** (ex.:
+    TASK-080, "respostas bloqueadas por baixa confiança" — os guardrails
+    de confiança nunca disparam de verdade porque não estão acoplados ao
+    orquestrador, item 11), a solução adotada foi **implementar a função
+    de qualquer forma, corretamente, mesmo que hoje sempre devolva vazio/
+    zero na prática**, e documentar isso explicitamente como lacuna
+    conhecida (no docstring do módulo e em `docs/OBSERVABILITY.md`) — não
+    inventar a coleta de dado que falta (isso seria adiantar uma TASK
+    futura de conexão, mesmo tipo de trabalho que a TASK-079 fez para
+    etapas/tempos) nem simplesmente pular a métrica sem registrar por
+    quê. Mesmo espírito do item 11, generalizado para métricas.
 
 ## Workflow que está sendo seguido
 
@@ -311,20 +360,22 @@ termina, sem precisar pedir); não são deletadas depois do merge.
 
 ## Próximos passos imediatos
 
-**TASK-071 — Implementar erro de timeout** (dependência: TASK-070
-concluída). Continua o bloco "Aplicações" (TASK-067 a TASK-073, ver
-`docs/API.md` e `docs/BACKLOG.md`): a TASK-070 já aplica `timeout_seconds`
-como limite de verdade e devolve um erro padronizado mínimo
-(`APPLICATION_TIMEOUT_EXCEEDED`, código `4009`, `details={"timeout_seconds":
-...}`) — falta o formato **específico** que a especificação pede ("registra
-etapa atual e ferramenta ativa", `docs/API.md` seção 26): enriquecer os
-`details` desse erro com a última etapa registrada em `execution`
-(`execution.steps[-1]`, se houver) e a ferramenta ativa no momento do
-cancelamento. TASK-072 (envelope de sucesso formal `"success": true`) e
-TASK-073 (rastreio de consumo) constroem em cima depois. **Próximo
-checkpoint de 10 TASKs devido na TASK-080** — conferir a contagem
-explicitamente ao concluir qualquer TASK terminada em 0 (ver item 13 de
-"Armadilhas").
+**TASK-081 — Criar painel web read-only** (dependência: TASK-080
+concluída). Continua o bloco "Observabilidade inicial" (TASK-078 a
+TASK-083, ver `docs/OBSERVABILITY.md` e `docs/BACKLOG.md`): o Execution
+Trace (TASK-078/079) e as métricas básicas (TASK-080) já existem e têm
+dado real — falta a superfície web read-only que os expõe. TASK-082
+("Mostrar execuções no painel") e TASK-083 ("Mostrar erros/logs/consumo")
+constroem em cima depois — provavelmente vão precisar decidir COMO os
+traces chegam ao painel, já que `ExecutionTrace` hoje só existe durante a
+duração de uma requisição HTTP (não é persistido, TASK-078/079
+deliberadamente não fizeram isso). Isso pode exigir uma decisão de
+arquitetura nova (armazenar traces em algum lugar — tabela própria?
+reaproveitar `logs`?) que talvez precise de `AskUserQuestion`, já que não
+há TASK numerada explícita para "persistir Execution Trace" no backlog
+entre TASK-078 e TASK-083. **Próximo checkpoint de 10 TASKs devido na
+TASK-090** — conferir a contagem explicitamente ao concluir qualquer
+TASK terminada em 0 (ver item 13 de "Armadilhas").
 
 ## Histórico de checkpoints
 
@@ -345,9 +396,16 @@ explicitamente ao concluir qualquer TASK terminada em 0 (ver item 13 de
   vez desde o atraso da TASK-030. Bloco "Conhecimento" completo
   (RAW/PROVISIONAL/CONFIRMED, versionamento, escopo, evidências, promoção,
   utilidade); bloco "Fontes" iniciado (cadastro + tipo). 487/487 testes.
-- **2026-08-19 — TASK-070 (este checkpoint):** sétimo checkpoint, no prazo.
-  Bloco "Fontes" completo (reputação, histórico, blacklist, bloqueio
-  automático, desbloqueio só `ADMIN`); bloco "Aplicações" iniciado (API
-  FastAPI local — DEC-009 —, autenticação, validação de payload, execução
-  síncrona real, timeout aplicado de fato via `ThreadPoolExecutor` +
+- **2026-08-19 — TASK-070:** sétimo checkpoint, no prazo. Bloco "Fontes"
+  completo (reputação, histórico, blacklist, bloqueio automático,
+  desbloqueio só `ADMIN`); bloco "Aplicações" iniciado (API FastAPI local
+  — DEC-009 —, autenticação, validação de payload, execução síncrona
+  real, timeout aplicado de fato via `ThreadPoolExecutor` +
   `future.result(timeout=...)`). 562/562 testes.
+- **2026-08-21 — TASK-080 (este checkpoint):** oitavo checkpoint, no
+  prazo. Bloco "Aplicações" completo (erro de timeout específico,
+  resposta JSON final com envelope `success`, rastreio de consumo); bloco
+  "Fila" completo (FIFO persistida, estados, retenção/limpeza); bloco
+  "Observabilidade inicial" iniciado (Execution Trace conectado de
+  verdade ao orquestrador — etapas/ferramentas/tempos reais —, métricas
+  básicas com 5 lacunas conhecidas documentadas). 668/668 testes.
