@@ -335,10 +335,15 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   `save_execution_trace`/`get_execution_trace`/`list_execution_traces`
   — ver `docs/tasks/TASK-082.md`). Suíte completa: 688/688 testes
   aprovados.
+- **TASK-083** — concluída (erros/logs/consumo no painel —
+  `list_failed_execution_traces`/`list_recent_logs`/
+  `list_recent_usage_records` — ver `docs/tasks/TASK-083.md`). Suíte
+  completa: 707/707 testes aprovados. **Com esta TASK, o bloco
+  "Observabilidade inicial" (TASK-078 a TASK-083) está completo.**
 
-As demais 65 TASKs permanecem com status **Pendente**.
+As demais 64 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-083 — Mostrar erros/logs/consumo**.
+Próxima TASK executável: **TASK-084 — Criar CLI/chat de teste**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

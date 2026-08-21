@@ -69,3 +69,24 @@ painel **administrativo completo** (TASK-115+), não para este painel
 inicial somente leitura — nenhuma TASK anterior construiu sessão de
 usuário via navegador, então exigir login aqui seria inventar mecanismo
 não pedido.
+
+**Implementação (TASK-082):** "Execuções" — `app.observability.
+execution_trace.list_execution_traces`, persistência decidida nesta
+TASK com confirmação explícita do usuário (`DEC-010`,
+`docs/DECISION_LOG.md`, já que a especificação mestre não exige isso
+para o Execution Trace, diferente da fila).
+
+**Implementação (TASK-083):** as três seções finais do painel inicial
+somente leitura. "Erros" —
+`app.observability.execution_trace.list_failed_execution_traces`
+(execuções persistidas com `result IS NULL`, o único sinal de erro com
+dado real hoje, já que `ExecutionTrace.errors`/`error_codes` nunca
+foram populados). "Logs recentes" —
+`app.observability.postgres_log_handler.list_recent_logs` (lê a tabela
+`logs`, TASK-006 — na prática costuma vir vazia, já que nenhum módulo
+da aplicação chama `logger.error`/`logger.warning` em nenhum ponto real
+ainda, lacuna conhecida documentada no próprio módulo). "Consumo" —
+`app.usage.usage_model.list_recent_usage_records` (leitura global de
+`usage_records`, TASK-073, já persistida e populada de verdade a cada
+requisição). Com esta TASK, o bloco "Observabilidade inicial" (TASK-078
+a TASK-083) está completo.

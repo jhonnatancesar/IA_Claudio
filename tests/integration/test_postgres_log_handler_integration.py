@@ -9,7 +9,7 @@ import re
 
 import psycopg
 
-from app.observability.postgres_log_handler import attach_postgres_handler
+from app.observability.postgres_log_handler import attach_postgres_handler, list_recent_logs
 
 
 def test_log_record_is_persisted_in_logs_table(postgres_dsn):
@@ -37,3 +37,28 @@ def test_log_record_is_persisted_in_logs_table(postgres_dsn):
         with psycopg.connect(postgres_dsn) as conn:
             conn.execute("DELETE FROM logs WHERE message = %s", (marker,))
         logger.handlers.clear()
+
+
+def test_list_recent_logs_reads_real_persisted_entry(postgres_dsn):
+    logger = logging.getLogger("claudiao.test.integration.list")
+    logger.handlers.clear()
+    logger.setLevel(logging.INFO)
+    attach_postgres_handler(logger, dsn=postgres_dsn)
+
+    marker = "teste TASK-083 list_recent_logs " + re.sub(r"\D", "", str(id(logger)))
+    logger.warning(marker)
+
+    try:
+        entries = list_recent_logs(limit=50)
+        matching = [entry for entry in entries if entry.message == marker]
+        assert len(matching) == 1
+        assert matching[0].level == "WARNING"
+        assert matching[0].logger == "claudiao.test.integration.list"
+    finally:
+        with psycopg.connect(postgres_dsn) as conn:
+            conn.execute("DELETE FROM logs WHERE message = %s", (marker,))
+        logger.handlers.clear()
+
+
+def test_list_recent_logs_respects_limit(postgres_dsn):
+    assert len(list_recent_logs(limit=1)) <= 1
