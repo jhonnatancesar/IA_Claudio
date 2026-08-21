@@ -305,10 +305,16 @@ enviada ao GitHub e `docs/HANDOFF.md` atualizado.
   persistido, `start_queue_item`/`complete_queue_item`/
   `fail_queue_item`/`list_queue_items_by_status` — ver
   `docs/tasks/TASK-076.md`). Suíte completa: 610/610 testes aprovados.
+- **TASK-077** — concluída (retenção/limpeza da fila, novo
+  `backend/app/queue/retention_policy.py`,
+  `is_eligible_for_retention_removal`/`apply_retention_policy`,
+  `DEFAULT_MAX_AGE_DAYS = 7.0` — ver `docs/tasks/TASK-077.md`). Suíte
+  completa: 624/624 testes aprovados. **Com esta TASK, o bloco "Fila"
+  (TASK-074 a TASK-077) está completo.**
 
-As demais 71 TASKs permanecem com status **Pendente**.
+As demais 70 TASKs permanecem com status **Pendente**.
 
-Próxima TASK executável: **TASK-077 — Implementar retenção/limpeza**.
+Próxima TASK executável: **TASK-078 — Criar Execution Trace**.
 
 Este documento é atualizado a cada TASK concluída (etapa "Encerramento" do workflow
 em `AGENTS.md`), registrando data de conclusão e um resumo curto — no mesmo espírito

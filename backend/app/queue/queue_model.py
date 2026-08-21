@@ -38,8 +38,15 @@ validação de transição de `QueueItem.start`/`complete`/`fail`
 (TASK-074, `InvalidQueueItemStateError` — nenhuma regra nova, só
 reaproveitada) e grava com `save_queue_item`. `QueueItemNotFoundError`
 se `item_id` não existir. `list_queue_items_by_status(status)` filtra a
-listagem por estado. Retenção/limpeza é TASK-077, não implementada
-aqui.
+listagem por estado.
+
+Esta TASK (TASK-077) acrescenta `delete_queue_item(item_id)`: remoção
+mecânica de um item persistido, sem checar existência prévia
+(idempotente). A política de *quando* remover (idade, estado terminal) é
+`app.queue.retention_policy`, não aqui — mesma separação mecânico
+(model) vs. regra de negócio (rule module) usada em `app.memory.
+retention_policy`/`memory_model` (TASK-049) e `app.sources.
+reputation_rule`/`source_registry` (TASK-062).
 """
 
 from __future__ import annotations
@@ -241,6 +248,14 @@ def list_queue_items_by_status(status: QueueItemStatus) -> list[QueueItem]:
         ).fetchall()
 
     return [_queue_item_from_row(row) for row in rows]
+
+
+def delete_queue_item(item_id: str) -> None:
+    """Remove um item persistido, sem checar se existia (mecânico —
+    remoção idempotente). Usado pela política de retenção/limpeza
+    (TASK-077, `app.queue.retention_policy`)."""
+    with connect() as conn:
+        conn.execute("DELETE FROM queue_items WHERE id = %s", (item_id,))
 
 
 class QueueItemNotFoundError(ValueError):

@@ -4,7 +4,7 @@ Documentação: docs/QUEUE.md. TASKs: TASK-074 a TASK-077.
 
 Fila FIFO persistida no PostgreSQL, estados PENDING/RUNNING/COMPLETED/FAILED, retenção/limpeza. Sem retry automático.
 
-- `queue_model.py` (TASK-074 a TASK-076) — `QueueItemStatus`
+- `queue_model.py` (TASK-074 a TASK-077) — `QueueItemStatus`
   (`PENDING`/`RUNNING`/`COMPLETED`/`FAILED`). `QueueItem` (dataclass:
   `item_id`/`payload`/`status`/`error`/`created_at`/`finished_at`) —
   `start()`/`complete()`/`fail(error)` com transições validadas
@@ -30,11 +30,24 @@ Fila FIFO persistida no PostgreSQL, estados PENDING/RUNNING/COMPLETED/FAILED, re
   mesma validação de `QueueItem.start`/`complete`/`fail` e gravam com
   `save_queue_item`; `QueueItemNotFoundError` se `item_id` não existir.
   `list_queue_items_by_status(status)` filtra a listagem por estado.
+  `delete_queue_item(item_id)` (TASK-077, mecânico, idempotente) remove
+  um item persistido.
+- `retention_policy.py` (TASK-077) —
+  `is_eligible_for_retention_removal(item, now, max_age_days=7.0)`
+  (função pura: só itens terminais — `COMPLETED`/`FAILED` — contados a
+  partir de `finished_at`; um item `PENDING`/`RUNNING` nunca é elegível,
+  mesmo antigo) e `apply_retention_policy(now, max_age_days=7.0)`
+  (aplica de verdade, via `delete_queue_item`). Mesma separação
+  mecânico/regra de `app.memory.retention_policy` (TASK-049).
 
 Testes em `tests/unit/test_queue_model.py` (estados, transições
 inválidas, ordem FIFO, fila vazia, ciclo completo, sem tocar o banco),
+`tests/unit/test_queue_retention_policy.py`
+(`is_eligible_for_retention_removal` isolada),
 `tests/integration/test_queue_persistence_integration.py` (persistência
 real: save/get/list, atualização por `ON CONFLICT`, uso em conjunto com
-`FifoQueue`) e `tests/integration/test_queue_states_integration.py`
+`FifoQueue`), `tests/integration/test_queue_states_integration.py`
 (transições por `item_id` direto no banco, filtro por status, item
-desconhecido).
+desconhecido) e `tests/integration/test_queue_retention_integration.py`
+(`delete_queue_item`/`apply_retention_policy` reais: remove antigo,
+preserva recente, nunca remove `PENDING`).
