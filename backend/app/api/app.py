@@ -1,4 +1,4 @@
-"""API local do Claudião (TASK-067, TASK-068, TASK-081).
+"""API local do Claudião (TASK-067, TASK-068, TASK-081, TASK-085).
 
 Camada de entrada HTTP para aplicações externas (`docs/API.md`, seções
 24/25/26) — FastAPI escolhido pelo usuário nesta TASK (framework web
@@ -25,22 +25,43 @@ Montar a `ExecutionPolicy` de fato e executar via `ExecutionOrchestrator`
 TASK-081 acrescenta o painel web read-only (`app.panel.routes`) no mesmo
 `app` — sem decisão de rodar API de aplicações e painel humano em
 processos/portas separados, V1 mínima.
+
+TASK-085 acrescenta o health check inicial (`app.observability.
+health_check`): roda uma vez no evento de inicialização (`_lifespan`,
+abaixo — "roda apenas em eventos importantes: inicialização...",
+`docs/OPERATIONS.md`) e fica exposto sob demanda em `GET /health`
+(`app.api.health`) para os outros eventos (saída de manutenção/
+atualização/restore, TASK-123+) chamarem de novo mais tarde. `lifespan`
+em vez do decorador `@app.on_event("startup")` (obsoleto no FastAPI
+usado aqui, DEC-009) — mesmo efeito, sem aviso de depreciação.
 """
 
 from __future__ import annotations
+
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.api.executions import router as executions_router
+from app.api.health import router as health_router
 from app.errors.catalog import INVALID_FIELD_VALUE, MISSING_REQUIRED_FIELD
 from app.errors.response import ClaudiaoError, build_error_response, error_response_from_exception
+from app.observability.health_check import run_health_check
 from app.panel.routes import router as panel_router
 
-app = FastAPI(title="Claudião API")
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    run_health_check()
+    yield
+
+
+app = FastAPI(title="Claudião API", lifespan=_lifespan)
 app.include_router(executions_router)
 app.include_router(panel_router)
+app.include_router(health_router)
 
 
 @app.exception_handler(ClaudiaoError)

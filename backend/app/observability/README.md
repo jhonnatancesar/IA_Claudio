@@ -1,6 +1,6 @@
 # Observabilidade
 
-Documentação: docs/OBSERVABILITY.md. TASKs: TASK-005, TASK-006, TASK-078 a TASK-083.
+Documentação: docs/OBSERVABILITY.md, docs/OPERATIONS.md. TASKs: TASK-005, TASK-006, TASK-078 a TASK-083, TASK-085.
 
 Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas básicas.
 
@@ -46,15 +46,29 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   correto/incorreto, falhas por ferramenta/provider, respostas
   bloqueadas por confiança, replanejamentos, erros por provider)
   documentadas no próprio módulo — sem fonte de dado real ainda.
+- `health_check.py` (TASK-085) — `run_health_check()`: `modelo/runtime`
+  (`OllamaProvider().is_available()`), `postgresql` (`SELECT 1` real),
+  `fila` (`list_queue_items()`), `ferramentas/providers principais`
+  (`SKIPPED`, nada existe ainda), `configurações críticas`
+  (`CLAUDIAO_ACTIVE_MODEL` + chave mestra). `HealthCheckResult.healthy`
+  é `False` se qualquer item `FAILED` (`SKIPPED` não conta). Cada
+  `FAILED` vira `logger.error`; um resumo vira `INFO`/`WARNING` —
+  primeiro código de aplicação a chamar `logger.error`/`warning` de
+  verdade (docs/OPERATIONS.md). Chamada no evento de inicialização
+  (`app.api.app`, `_lifespan`) e exposta em `GET /health`
+  (`app.api.health`).
 
 Testes em `tests/unit/test_observability_logging.py`,
 `tests/unit/test_postgres_log_handler.py`,
 `tests/unit/test_execution_trace.py` (criação, validação, registro de
 etapas/tempos/erros, propriedades derivadas — sem tocar rede/banco),
 `tests/unit/test_metrics.py` (cada métrica isolada, sem tocar rede/banco),
+`tests/unit/test_health_check.py` (`HealthCheckResult.healthy` isolada),
 `tests/integration/test_postgres_log_handler_integration.py` (grava/lê/limpa
-de verdade no PostgreSQL local, inclui `list_recent_logs`) e
+de verdade no PostgreSQL local, inclui `list_recent_logs`),
 `tests/integration/test_execution_trace_persistence_integration.py`
 (`save_execution_trace`/`get_execution_trace`/`list_execution_traces`/
-`list_failed_execution_traces` reais); todos pulam automaticamente se o
+`list_failed_execution_traces` reais) e
+`tests/integration/test_health_check_integration.py` (cada checagem
+real, com/sem configuração crítica); todos pulam automaticamente se o
 banco não estiver disponível.

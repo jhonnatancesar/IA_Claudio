@@ -1,16 +1,25 @@
 # API para aplicações
 
-Documentação: docs/API.md. TASKs: TASK-067 a TASK-073, TASK-079.
+Documentação: docs/API.md, docs/OPERATIONS.md. TASKs: TASK-067 a TASK-073, TASK-079, TASK-085.
 
 Camada de entrada HTTP usada por aplicações externas: autenticação por API key, validação de payload, execução síncrona, timeout, resposta JSON final e rastreio de consumo.
 
-- `app.py` (TASK-067, TASK-068, TASK-081) — aplicação FastAPI
+- `app.py` (TASK-067, TASK-068, TASK-081, TASK-085) — aplicação FastAPI
   (`DEC-009`), com handlers globais convertendo `ClaudiaoError`
   (TASK-008) e `RequestValidationError` (TASK-068, reaproveitando os
   códigos `1001`/`1002` já existentes) para o formato JSON de erro padrão
-  do projeto. Inclui `executions_router` e, desde a TASK-081,
-  `panel_router` (`app.panel.routes`) — API de aplicações e painel web
-  humano no mesmo processo/porta, sem decisão de separá-los.
+  do projeto. Inclui `executions_router`, `panel_router`
+  (`app.panel.routes`, TASK-081) e `health_router` (`app.api.health`,
+  TASK-085) — API de aplicações, painel web humano e health check no
+  mesmo processo/porta, sem decisão de separá-los. `_lifespan` (TASK-085,
+  substitui `@app.on_event("startup")`, obsoleto) roda
+  `run_health_check()` uma vez na inicialização.
+- `health.py` (TASK-085) — `GET /health`:
+  `app.observability.health_check.run_health_check()` sob demanda, sem
+  autenticação (mesmo padrão do painel). HTTP `200` se saudável, `503`
+  caso contrário; corpo `{"healthy": bool, "checks": [...]}` em ambos —
+  não usa o envelope `success`/`error` do resto da API (não é um erro de
+  aplicação sendo levantado, é consulta de estado).
 - `auth.py` (TASK-067) — `get_current_application(authorization)`:
   dependência do FastAPI que autentica via header `Authorization: Bearer
   <api_key>`, reaproveitando `app.auth.api_keys.authenticate_application`
@@ -62,6 +71,9 @@ consumo reais via `fastapi.testclient.TestClient`, com `LocalLLMProvider`
 fake — nenhum modelo Ollama real foi baixado), `tests/unit/
 test_api_executions.py` (`_timeout_error_details` isolada, sem tocar
 rede/banco), `tests/unit/test_api_responses.py` (`build_success_response`
-isolada) e `tests/unit/test_api_auth.py`/`tests/unit/test_api_schemas.py`/
+isolada), `tests/unit/test_api_auth.py`/`tests/unit/test_api_schemas.py`/
 `tests/unit/test_api_dependencies.py` (extração do token, validação de
-schema, leitura de `CLAUDIAO_ACTIVE_MODEL`, sem tocar o banco).
+schema, leitura de `CLAUDIAO_ACTIVE_MODEL`, sem tocar o banco) e
+`tests/integration/test_health_endpoint_integration.py` (`GET /health`
+real, 200/503, e o `lifespan` de inicialização rodando o health check de
+verdade).
