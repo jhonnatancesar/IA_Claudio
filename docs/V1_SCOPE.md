@@ -43,6 +43,22 @@ Itens que compõem o mínimo utilizável:
 
 A partir da TASK-087, o Claudião é considerado **utilizável em produção controlada**.
 
+**Implementação (TASK-084):** `scripts/chat.py` — "chat simples de
+terminal para teste". Cliente HTTP puro de `POST /v1/executions`
+(biblioteca padrão, `urllib.request`, sem dependência nova) — não é uma
+via de entrada privilegiada, usa a API exatamente como qualquer
+aplicação externa (mesma autenticação/validação/timeout já
+implementados, TASK-067 a TASK-073). Dois subcomandos: `create-application
+<nome>` (cria uma aplicação de teste via `app.auth.api_keys.
+create_application`, TASK-011, e imprime a API key uma única vez — o
+banco só guarda o hash) e `chat --api-key ...` (laço interativo contra
+um servidor já rodando, `uvicorn app.api.app:app`, porta padrão 8000 —
+o script não sobe seu próprio servidor). Verificado manualmente contra
+um servidor real: autenticação e validação funcionam ponta a ponta;
+sem `CLAUDIAO_ACTIVE_MODEL` configurado nesta máquina, toda mensagem
+retorna o erro `3001` do catálogo — comportamento esperado, não um
+defeito do CLI.
+
 ## V1 completa (TASK-147)
 
 Itens que fecham a V1 completa, além do mínimo utilizável:

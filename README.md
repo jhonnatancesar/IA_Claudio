@@ -11,13 +11,12 @@ integrações são **ferramentas** — nunca fallback de inteligência.
 ## Status
 
 Repositório organizado (estrutura, documentação e planejamento das TASKs).
-**TASK-001** a **TASK-083** concluídas — blocos "Fundação", "Segurança e
+**TASK-001** a **TASK-084** concluídas — blocos "Fundação", "Segurança e
 identidade", "LLM", "Orquestração", "Confiança e guardrails", "Contexto",
-"Memória", "Conhecimento", "Fontes", "Aplicações" e "Fila" completos; bloco
-"Observabilidade inicial" completo (Execution Trace conectado ao
-orquestrador e persistido no PostgreSQL — DEC-010 —, métricas básicas,
-painel web read-only completo: fila, execuções, erros, logs recentes e
-consumo).
+"Memória", "Conhecimento", "Fontes", "Aplicações", "Fila" e
+"Observabilidade inicial" completos; bloco "Marco utilizável inicial"
+iniciado (`scripts/chat.py`, chat de terminal para teste, verificado
+contra um servidor real).
 Ver
 [docs/HANDOFF.md](docs/HANDOFF.md) para o estado detalhado do projeto.
 
@@ -42,5 +41,5 @@ Ver
 
 ## Próxima TASK
 
-**TASK-084 — Criar CLI/chat de teste**
-([docs/tasks/TASK-084.md](docs/tasks/TASK-084.md)).
+**TASK-085 — Criar health check inicial**
+([docs/tasks/TASK-085.md](docs/tasks/TASK-085.md)).
