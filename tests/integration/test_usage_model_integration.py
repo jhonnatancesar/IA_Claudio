@@ -10,7 +10,11 @@ import psycopg
 import pytest
 
 from app.auth.api_keys import create_application
-from app.usage.usage_model import list_usage_for_application, record_usage
+from app.usage.usage_model import (
+    list_recent_usage_records,
+    list_usage_for_application,
+    record_usage,
+)
 
 
 @pytest.fixture
@@ -66,3 +70,18 @@ def test_usage_records_removed_when_application_is_deleted(postgres_dsn):
         ).fetchone()
 
     assert remaining[0] == 0
+
+
+def test_list_recent_usage_records_includes_records_from_any_application(
+    postgres_dsn, registered_application
+):
+    execution_id = str(uuid.uuid4())
+    record_usage(registered_application.id, execution_id, "COMPLETED")
+
+    listed = list_recent_usage_records(limit=50)
+
+    assert any(r.execution_id == execution_id for r in listed)
+
+
+def test_list_recent_usage_records_respects_limit(postgres_dsn):
+    assert len(list_recent_usage_records(limit=1)) <= 1

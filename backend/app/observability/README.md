@@ -8,14 +8,19 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   configura o logger raiz `claudiao` lendo `CLAUDIAO_LOG_LEVEL`/`CLAUDIAO_LOG_DIR`/
   `CLAUDIAO_LOG_FILE` do ambiente (DEBUG desativado por padrão); `get_logger(nome)`
   retorna um logger filho (`claudiao.<nome>`). Rotação por tamanho (10 MB, 5 backups).
-- `postgres_log_handler.py` (TASK-006) — `PostgresLogHandler` grava cada
-  `LogRecord` na tabela `logs` (`backend/app/db/migrations/0002_logs.sql`).
-  `configure_logging()` anexa esse handler automaticamente quando
-  `CLAUDIAO_POSTGRES_*` está disponível; sem isso, segue só com arquivo. Driver:
-  `psycopg` (DEC-006). A montagem de DSN (`build_dsn_from_env()`) foi movida
-  para `app.db.connection` na TASK-009, quando um segundo consumidor
+- `postgres_log_handler.py` (TASK-006, TASK-083) — `PostgresLogHandler`
+  grava cada `LogRecord` na tabela `logs`
+  (`backend/app/db/migrations/0002_logs.sql`). `configure_logging()`
+  anexa esse handler automaticamente quando `CLAUDIAO_POSTGRES_*` está
+  disponível; sem isso, segue só com arquivo. Driver: `psycopg`
+  (DEC-006). A montagem de DSN (`build_dsn_from_env()`) foi movida para
+  `app.db.connection` na TASK-009, quando um segundo consumidor
   (autenticação) precisou dela — reexportada aqui para compatibilidade.
-- `execution_trace.py` (TASK-078, TASK-079, TASK-082) — `ExecutionTrace`
+  `list_recent_logs(limit=50)` (TASK-083) — leitura, mais nova primeiro;
+  lacuna conhecida documentada no módulo: nenhum código da aplicação
+  chama `logger.error`/`logger.warning` em nenhum ponto real ainda,
+  então costuma devolver lista vazia na prática.
+- `execution_trace.py` (TASK-078, TASK-079, TASK-082, TASK-083) — `ExecutionTrace`
   (dataclass): registro observável de uma execução (`execution_id`/
   `origin`/`requester`/`objective`/`steps`/`step_durations`/
   `tool_durations`/`errors`/`error_codes`/`usage`/`result`/
@@ -29,7 +34,9 @@ Logging local rotativo e estruturado no PostgreSQL, Execution Trace, métricas b
   `save_execution_trace`/`get_execution_trace`/`list_execution_traces`
   em `execution_traces` — só o resumo (`step_count`/`tools_used`, não
   `steps`/`errors`/`usage` completos); `ExecutionTraceRecord` é o
-  modelo de leitura.
+  modelo de leitura. `list_failed_execution_traces(limit=50)`
+  (TASK-083) — traces com `result IS NULL`, o único sinal de erro com
+  dado real hoje.
 - `metrics.py` (TASK-080) — funções puras agregando sobre coleções de
   `ExecutionTrace`/`UsageRecord`: `success_rate`,
   `average_duration_seconds`, `average_step_count`, `tool_usage_counts`,
@@ -45,8 +52,9 @@ Testes em `tests/unit/test_observability_logging.py`,
 `tests/unit/test_execution_trace.py` (criação, validação, registro de
 etapas/tempos/erros, propriedades derivadas — sem tocar rede/banco),
 `tests/unit/test_metrics.py` (cada métrica isolada, sem tocar rede/banco),
-`tests/integration/test_postgres_log_handler_integration.py` (grava/lê/limpa de
-verdade no PostgreSQL local) e
+`tests/integration/test_postgres_log_handler_integration.py` (grava/lê/limpa
+de verdade no PostgreSQL local, inclui `list_recent_logs`) e
 `tests/integration/test_execution_trace_persistence_integration.py`
-(`save_execution_trace`/`get_execution_trace`/`list_execution_traces`
-reais); ambas pulam automaticamente se o banco não estiver disponível.
+(`save_execution_trace`/`get_execution_trace`/`list_execution_traces`/
+`list_failed_execution_traces` reais); todos pulam automaticamente se o
+banco não estiver disponível.

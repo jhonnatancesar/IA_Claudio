@@ -12,6 +12,7 @@ from app.observability.execution_trace import (
     ExecutionTrace,
     get_execution_trace,
     list_execution_traces,
+    list_failed_execution_traces,
     save_execution_trace,
 )
 
@@ -93,3 +94,28 @@ def test_list_execution_traces_respects_limit(postgres_dsn):
 
 def test_list_execution_traces_empty_when_none_persisted(postgres_dsn):
     assert list_execution_traces() == []
+
+
+def test_list_failed_execution_traces_includes_only_failures(postgres_dsn):
+    succeeded = _trace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+    succeeded.finish(result="tudo certo")
+    save_execution_trace(succeeded)
+
+    failed = _trace("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+    failed.finish(result=None)
+    save_execution_trace(failed)
+
+    listed = list_failed_execution_traces()
+
+    assert [t.execution_id for t in listed] == [failed.execution_id]
+
+
+def test_list_failed_execution_traces_excludes_unfinished(postgres_dsn):
+    unfinished = _trace("cccccccc-cccc-cccc-cccc-cccccccccccc")
+    save_execution_trace(unfinished)
+
+    assert list_failed_execution_traces() == []
+
+
+def test_list_failed_execution_traces_empty_when_none_persisted(postgres_dsn):
+    assert list_failed_execution_traces() == []

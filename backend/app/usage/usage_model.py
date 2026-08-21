@@ -15,6 +15,12 @@ fila/observabilidade, TASK-074 em diante) e o status final. É a base sobre
 a qual o sistema de cotas completo mede/agrega depois — "número de
 requisições" já é coberto por `COUNT(*)`; tokens/volume ainda não têm
 onde ser gravados (não fazem parte desta TASK).
+
+Esta TASK (TASK-083) acrescenta `list_recent_usage_records`: leitura
+global (não filtrada por `application_id`, diferente de
+`list_usage_for_application`), para o painel (`app.panel.routes`,
+"consumo básico", `docs/PANEL.md`) mostrar requisições reais de
+qualquer aplicação.
 """
 
 from __future__ import annotations
@@ -72,6 +78,20 @@ def list_usage_for_application(application_id: UUID) -> list[UsageRecord]:
             f"SELECT {_SELECT_COLUMNS} FROM usage_records "
             "WHERE application_id = %s ORDER BY created_at ASC",
             (application_id,),
+        ).fetchall()
+
+    return [_usage_record_from_row(row) for row in rows]
+
+
+def list_recent_usage_records(limit: int = 50) -> list[UsageRecord]:
+    """Lista as requisições mais recentes de **qualquer** aplicação
+    (TASK-083), mais nova primeiro — até `limit` (padrão 50, painel
+    read-only, não exportação completa)."""
+    with connect() as conn:
+        rows = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM usage_records "
+            "ORDER BY created_at DESC LIMIT %s",
+            (limit,),
         ).fetchall()
 
     return [_usage_record_from_row(row) for row in rows]

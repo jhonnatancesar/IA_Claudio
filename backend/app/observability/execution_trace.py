@@ -88,6 +88,12 @@ são persistidos (permanecem sem fonte de dado real, mesma lacuna já
 registrada). `ExecutionTraceRecord` é o modelo de leitura — não reaproveita
 `ExecutionTrace` diretamente, para não fingir que `steps`/`errors` vieram
 do banco quando na verdade nunca foram gravados lá.
+
+Esta TASK (TASK-083) acrescenta `list_failed_execution_traces`: traces
+persistidos com `result IS NULL` (execução terminada sem sucesso) —
+"erros" do painel (`docs/PANEL.md`). É o único sinal de erro com fonte
+de dado real hoje, já que `errors`/`error_codes` nunca foram
+populados.
 """
 
 from __future__ import annotations
@@ -314,6 +320,25 @@ def list_execution_traces(limit: int = 50) -> list[ExecutionTraceRecord]:
         rows = conn.execute(
             f"SELECT {_SELECT_COLUMNS} FROM execution_traces "
             "ORDER BY started_at DESC LIMIT %s",
+            (limit,),
+        ).fetchall()
+
+    return [_execution_trace_record_from_row(row) for row in rows]
+
+
+def list_failed_execution_traces(limit: int = 50) -> list[ExecutionTraceRecord]:
+    """Lista os traces persistidos de execuções que terminaram sem
+    sucesso (`result IS NULL`, já finalizadas), mais recentes primeiro
+    (TASK-083, "erros" do painel — `docs/PANEL.md`). É o único sinal de
+    erro com fonte de dado real hoje: `ExecutionTrace.errors`/
+    `error_codes` nunca foram conectados ao orquestrador (decisão da
+    TASK-079), então não há mensagem/código de erro guardado — só o
+    fato de que a execução falhou."""
+    with connect() as conn:
+        rows = conn.execute(
+            f"SELECT {_SELECT_COLUMNS} FROM execution_traces "
+            "WHERE result IS NULL AND finished_at IS NOT NULL "
+            "ORDER BY finished_at DESC LIMIT %s",
             (limit,),
         ).fetchall()
 
